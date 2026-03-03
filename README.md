@@ -59,6 +59,13 @@
 
 > `/kickstart` のスキル定義ファイルは [skills/kickstart/SKILL.md](skills/kickstart/SKILL.md) にあります。使い方は上記リンクを参照。
 
+### 実践例
+
+| # | セクション | 内容 |
+|---|-----------|------|
+| — | [Gitコミット履歴ビジュアライザー](examples/git-visualizer-walkthrough.md) | /kickstart → Phase A → Phase B の流れを実際のプロジェクトで体験する |
+| — | [エージェントチーム クイックデモ](examples/team-demo-quick.md) | Phase A完了後にAIチームの並列開発を10分で見せるデモ手順 |
+
 ### 困ったとき
 
 | # | セクション | 内容 |

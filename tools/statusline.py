@@ -196,6 +196,7 @@ def _main():
         # Get branch + ahead/behind via git (stdin doesn't include it)
         branch = ""
         git_status = ""
+        ahead = behind = 0
         if cwd:
             result = subprocess.run(
                 ["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"],
@@ -225,6 +226,8 @@ def _main():
                 git_part = f"{git_part}:{branch}" if git_part else branch
             if git_status:
                 git_part = f"{git_part} {YELLOW}{git_status}{RESET}"
+            if behind > 0:
+                git_part = f"{git_part} {RED}●{RESET}"
             parts.append(f"{BOLD}{CYAN}{git_part}{RESET}")
     except Exception:
         pass

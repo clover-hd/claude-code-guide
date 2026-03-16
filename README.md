@@ -1,3 +1,5 @@
+[🇺🇸 English](README.en.md)
+
 # Claude Code 使い方ガイド
 
 ---

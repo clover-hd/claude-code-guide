@@ -340,16 +340,15 @@ A1〜A4の成果物を**実際に読み込んだ上で**、プロジェクトル
 
 A4のアーキテクチャに基づいて `.claude/agents/` にエージェントを作成する。
 
-### 作成する順序と理由
+### まず3エージェントから始める
 
 | 順序 | エージェント | 理由 |
 |------|-------------|------|
 | 1 | **system_architect** | 全体設計の番人。他エージェントが参照するルールの源泉 |
-| 2 | **tech_researcher** | 技術調査担当。Read-Onlyなので安全。実装前の調査に必要 |
-| 3 | **開発者エージェント** | アーキテクチャに合わせて。backend, frontend等 |
-| 4 | **qa_engineer** | テスト担当。アーキテクチャとフレームワークに依存 |
-| 5 | **ui_ux_designer** | デザイン担当（UI開発がある場合） |
-| 6 | **technical_writer** | ドキュメント担当。上記全てが揃ってから |
+| 2 | **developer** | アーキテクチャに合わせた実装担当（例：`backend_developer`） |
+| 3 | **qa_engineer** | テスト作成・品質管理 |
+
+> **ポイント**: プロジェクトが成長して分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加すればよい。最初から大量に作る必要はない。
 
 ### 各エージェントに必ず含める項目
 
@@ -525,7 +524,7 @@ chore: プロジェクトの開発基盤を構築
   CLAUDE.md                      — プロジェクト設定
   .claude/skills/consult/        — 要件相談スキル
   .claude/skills/commit/         — コミットスキル
-  .claude/agents/                — 専門エージェントチーム
+  .claude/agents/                — サブエージェント（最小3人から）
   .gitignore                     — セキュリティ基本設定
 
 ■ これからの開発の進め方（Phase B）

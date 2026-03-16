@@ -222,17 +222,15 @@ src/
 
 **アーキテクチャが決まっているから、各エージェントの専門領域を定義できます。**
 
-作成する順序と理由：
+まずは最小構成の3エージェントから始めます。
 
 | 順序 | エージェント | 理由 |
 |------|-------------|------|
 | 1 | **system_architect** | 全体設計の番人。他のエージェントが参照するルールの源泉 |
-| 2 | **tech_researcher** | 技術選定・調査担当。実装前の調査に必要。Read-Onlyなので安全 |
-| 3 | **backend_developer** | アーキテクチャ（Express + Prisma等）に合わせた実装担当 |
-| 4 | **frontend_developer** | フレームワーク（React Native等）に合わせた実装担当 |
-| 5 | **qa_engineer** | テスト戦略はアーキテクチャとフレームワークに依存 |
-| 6 | **ui_ux_designer** | デザインシステムは技術スタック（React Native等）を考慮 |
-| 7 | **technical_writer** | 上記全てが揃ってから、ドキュメントルールを整備 |
+| 2 | **developer** | アーキテクチャに合わせた実装担当（例：`backend_developer`） |
+| 3 | **qa_engineer** | テスト作成、品質管理 |
+
+プロジェクトが大きくなって分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加していきます。詳しくは[サブエージェント](07-sub-agents.md)を参照してください。
 
 各エージェントに書くべき内容：
 
@@ -271,13 +269,11 @@ Node.js (Express), MySQL, Prisma ORM のスペシャリスト。
 │   └── review/SKILL.md      ← コードレビュー
 ├── agents/
 │   ├── system_architect.md  ← A6で作成済み
-│   ├── backend_developer.md
-│   ├── frontend_developer.md
-│   ├── qa_engineer.md
-│   ├── ui_ux_designer.md
-│   ├── tech_researcher.md
-│   └── technical_writer.md
+│   ├── developer.md         ← 実装担当（例：backend_developer）
+│   └── qa_engineer.md       ← 品質管理
 └── settings.json            ← Hooks（自動フォーマット等）
 ```
+
+> 必要に応じて tech_researcher, frontend_developer 等を追加。詳しくは[サブエージェント](07-sub-agents.md)を参照。
 
 **ここまで来たら、開発の土台は完成です。[Phase B](06-workflow-daily.md)へ進みましょう。**

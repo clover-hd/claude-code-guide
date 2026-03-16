@@ -12,14 +12,15 @@
 
 ### スキルが自動でやること
 
-- `.gitignore` の作成（セキュリティ基本設定）
-- ドキュメント用ディレクトリの作成（`docs/specs/`, `docs/architecture-decisions/`）
-- git初期化（未初期化の場合）
-- 各ステップに適したモデル（Opus/Sonnet）の切り替え案内
-- 対話結果のドキュメント化と永続化
-- `/consult`, `/commit` スキルの作成
-- サブエージェントチームの構築
+[Phase Aの手順](05-workflow-setup.md)（A0〜A7）を、Claude Codeが対話形式で順番に進めてくれます。具体的には：
+
+- プロジェクトの初期化（`.gitignore`、ディレクトリ構成、git init）
+- サービス概要の言語化と要件の壁打ち
+- アーキテクチャの決定と記録
+- CLAUDE.md、スキル、サブエージェントの構築
 - 初期コミット
+
+各ステップの詳細は[05-workflow-setup.md](05-workflow-setup.md)を参照してください。
 
 ## セットアップ
 
@@ -137,12 +138,11 @@ my-new-project/
     │   └── commit/SKILL.md                ← コミットスキル
     └── agents/
         ├── system_architect.md            ← 設計責任者
-        ├── tech_researcher.md             ← 技術調査
-        ├── backend_developer.md           ← バックエンド（例）
-        ├── frontend_developer.md          ← フロントエンド（例）
-        ├── qa_engineer.md                 ← 品質管理
-        └── technical_writer.md            ← ドキュメント管理
+        ├── developer.md                   ← 実装担当（例：backend_developer）
+        └── qa_engineer.md                 ← 品質管理
 ```
+
+> **Note**: エージェントはまず3人（architect, developer, qa）から始め、プロジェクトの成長に合わせて追加します。詳しくは[サブエージェント](07-sub-agents.md)を参照。
 
 Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデルの使い分け、コンテキスト管理のコツ）を表示して完了です。
 
@@ -150,16 +150,18 @@ Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデ
 
 ## 各ステップの概要
 
+各ステップの詳しい内容と考え方は [Phase A：プロジェクトの立ち上げ](05-workflow-setup.md) で解説しています。
+
 | ステップ | 内容 | モデル推奨 |
 |----------|------|-----------|
 | **A0** | 自動初期化（.gitignore, ディレクトリ, git init） | — |
-| **A1** | サービス概要ドキュメント作成 | Sonnet |
-| **A2** | /consult スキル作成 | Sonnet |
-| **A3** | /consult で要件を壁打ち | Sonnet |
-| **A4** | アーキテクチャ決定（技術スタック選定） | **Opus** |
-| **A5** | CLAUDE.md 作成 | Sonnet |
-| **A6** | サブエージェント作成 | Sonnet |
-| **A7** | /commit スキル・Hooks・テスト戦略・初期コミット | Sonnet |
+| **A1** | サービス概要 — 何を作るか言語化 | Sonnet |
+| **A2** | /consult スキル — 相談相手を作る | Sonnet |
+| **A3** | 要件の壁打ち — MVP・優先順位を固める | Sonnet |
+| **A4** | アーキテクチャ決定 — 技術スタック・設計パターン | **Opus** |
+| **A5** | CLAUDE.md — プロジェクトルールの定義 | Sonnet |
+| **A6** | サブエージェント — 最小構成から始める | Sonnet |
+| **A7** | スキル・Hooks・初期コミット | Sonnet |
 
 ## よくある質問
 

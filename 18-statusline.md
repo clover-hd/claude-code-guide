@@ -26,7 +26,19 @@ ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | c
 - コンテキスト残量: 🟢 50%以上 → 🟡 20〜50% → 🔴 20%未満
 - リセットまでの残り時間も表示（例: `3h24m`）
 
-## セットアップ
+## 他のステータスラインツール
+
+ステータスライン機能はClaude Codeの標準機能で、表示内容はスクリプトで自由にカスタマイズできます。本ガイドでは `statusline.py` を使いますが、OSSでも様々な実装が公開されています。
+
+| ツール | 特徴 |
+|--------|------|
+| 本ガイドの `statusline.py` | 使用率・コンテキスト・git情報をシンプルに表示 |
+| [claude-code-power-pack](https://github.com/nicobailon/claude-code-power-pack) | ステータスライン含む総合ツールキット |
+| コミュニティ実装各種 | GitHubで `claude code statusline` で検索 |
+
+どのツールを使っても構いません。大事なのは**使用量を常に見える状態にしておくこと**です。
+
+## セットアップ（statusline.py）
 
 ### 1. スクリプトを配置
 

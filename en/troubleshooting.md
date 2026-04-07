@@ -1,6 +1,6 @@
 # Troubleshooting / FAQ
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -53,7 +53,7 @@ Solution:
 | Give specific instructions | Fewer trial-and-error iterations |
 | Plan in Plan Mode first | Read-only mode uses fewer tokens than implementation |
 
-→ See [Cost & Token Management](14-cost.md) for details
+→ See [Cost & Token Management](cost.md) for details
 
 ---
 
@@ -113,7 +113,7 @@ Solution:
 /clear                             ← Complete reset (when moving to a different task)
 ```
 
-→ See [Best Practices > Context Management](11-best-practices.md#2-manage-your-context-window) for details
+→ See [Best Practices > Context Management](best-practices.md#2-manage-your-context-window) for details
 
 ---
 
@@ -171,7 +171,7 @@ git add .gitignore && git commit -m "fix: exclude .env from git management"
 
 In the default Claude Code configuration, there's always a confirmation before pushing. Even in Auto-Accept mode, pushes are confirmed. If you push unintentionally, get in the habit of reading approval prompts carefully.
 
-→ See [Permission Modes and Approvals](03-overview.md#permission-modes-and-approvals-important)
+→ See [Permission Modes and Approvals](overview.md#permission-modes-and-approvals-important)
 
 ---
 

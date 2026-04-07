@@ -1,6 +1,6 @@
 # Practical Example: Building an Outing Planner
 
-This document is a practical guide for getting your project up and running from scratch using the [/kickstart skill](../17-kickstart-skill.md) and advancing development through Phase B.
+This document is a practical guide for getting your project up and running from scratch using the [/kickstart skill](kickstart-skill.md) and advancing development through Phase B.
 
 By actually following these steps, you'll experience the entire guide workflow firsthand.
 
@@ -10,8 +10,8 @@ By actually following these steps, you'll experience the entire guide workflow f
 
 ## Prerequisites
 
-1. Claude Code is installed ([installation instructions](../01-setup.md))
-2. The `/kickstart` skill is installed ([setup instructions](../17-kickstart-skill.md#setup))
+1. Claude Code is installed ([installation instructions](setup.md))
+2. The `/kickstart` skill is installed ([setup instructions](kickstart-skill.md#setup))
 
 No special data preparation is needed. Location data is CRUD that you'll register within the app itself, so you can get started right away.
 

@@ -1,6 +1,6 @@
 # Practical Know-How
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -43,7 +43,7 @@ Your conversations with Claude, files read, command output...everything accumula
 | `/compact Focusing on API changes` | When you want to retain specific topics | Control summary content with instructions |
 | `Esc + Esc` → "Summarize from here" | When you want to summarize from a point | Compress only from selection onward |
 
-> **Tip**: If you set up [the status line](18-statusline.md), remaining context is always displayed, so you won't miss the right time for `/compact`.
+> **Tip**: If you set up [the status line](statusline.md), remaining context is always displayed, so you won't miss the right time for `/compact`.
 
 ### Common Mistakes
 

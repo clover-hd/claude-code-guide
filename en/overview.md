@@ -1,6 +1,6 @@
 # Claude Code Basics and Core Operations
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 

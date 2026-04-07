@@ -1,6 +1,6 @@
 # Development Workflow Phase A: Project Initialization
 
-[< Back to Guide](README.en.md) | [Phase B: Daily Development Cycle >](06-workflow-daily.en.md)
+[< Back to Guide](../README.en.md) | [Phase B: Daily Development Cycle >](workflow-daily.md)
 
 ---
 
@@ -147,7 +147,7 @@ Claude: Good call. So the revised MVP would be...
 Keep the outcomes of idea bouncing in `docs/service-overview.md`. As the consult skill's reference documents become richer, it gets smarter.
 
 > **Critical: Always save discussion results in documents**
-> Consult conversations disappear when the session ends. Once the discussion solidifies, instruct Claude to "save this to `docs/service-overview.md`" to make it permanent. Without documented persistence, you'll have to explain everything from scratch in the next session. This same pattern applies in Phase B too—"planning → save as specification document" becomes the fundamental workflow ([see Step 2.5](06-workflow-daily.en.md#step-25-persistence--save-plan-as-specification-document)).
+> Consult conversations disappear when the session ends. Once the discussion solidifies, instruct Claude to "save this to `docs/service-overview.md`" to make it permanent. Without documented persistence, you'll have to explain everything from scratch in the next session. This same pattern applies in Phase B too—"planning → save as specification document" becomes the fundamental workflow ([see Step 2.5](workflow-daily.md#step-25-persistence--save-plan-as-specification-document)).
 
 ---
 
@@ -230,7 +230,7 @@ Start with a minimum of three agents:
 | 2 | **developer** | Implementation specialist per architecture (e.g., `backend_developer`) |
 | 3 | **qa_engineer** | Test creation, quality management |
 
-As the project grows and requires division of labor, add tech_researcher, frontend_developer, ui_ux_designer, etc. See [Sub-agents](07-sub-agents.en.md) for details.
+As the project grows and requires division of labor, add tech_researcher, frontend_developer, ui_ux_designer, etc. See [Sub-agents](sub-agents.md) for details.
 
 What each agent should contain:
 
@@ -274,6 +274,6 @@ Final infrastructure setup.
 └── settings.json            ← Hooks (auto-format, etc.)
 ```
 
-> Add tech_researcher, frontend_developer, etc. as needed. See [Sub-agents](07-sub-agents.en.md) for details.
+> Add tech_researcher, frontend_developer, etc. as needed. See [Sub-agents](sub-agents.md) for details.
 
-**Now the foundation is complete. Let's move to [Phase B](06-workflow-daily.en.md).**
+**Now the foundation is complete. Let's move to [Phase B](workflow-daily.md).**

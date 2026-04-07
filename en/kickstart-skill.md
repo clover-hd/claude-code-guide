@@ -1,18 +1,18 @@
 # /kickstart Skill — Automate Project Setup
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
 ## What Is This?
 
-This skill automatically guides Claude Code through the steps of [Phase A: Project Setup](05-workflow-setup.md) (A0-A7) in a conversational manner.
+This skill automatically guides Claude Code through the steps of [Phase A: Project Setup](workflow-setup.md) (A0-A7) in a conversational manner.
 
 You can follow the guide manually, but with `/kickstart`, **Claude Code itself understands the guide steps and builds your project foundation with you**.
 
 ### What the Skill Does Automatically
 
-Claude Code walks through [Phase A steps](05-workflow-setup.md) (A0-A7) interactively. Specifically:
+Claude Code walks through [Phase A steps](workflow-setup.md) (A0-A7) interactively. Specifically:
 
 - Initialize project (`.gitignore`, directory structure, git init)
 - Articulate service overview and validate requirements
@@ -20,7 +20,7 @@ Claude Code walks through [Phase A steps](05-workflow-setup.md) (A0-A7) interact
 - Build CLAUDE.md, skills, and sub-agents
 - Make initial commit
 
-For details on each step, see [05-workflow-setup.md](05-workflow-setup.md).
+For details on each step, see [workflow-setup.md](workflow-setup.md).
 
 ## Setup
 
@@ -140,7 +140,7 @@ my-new-project/
         └── qa_engineer.md                 ← QA
 ```
 
-> **Note**: Start with 3 agents (architect, developer, qa) and add more as the project grows. See [Sub-agents](07-sub-agents.md) for details.
+> **Note**: Start with 3 agents (architect, developer, qa) and add more as the project grows. See [Sub-agents](sub-agents.md) for details.
 
 Claude displays **Phase B Transition Guide** (daily development cycle, model selection, context management tips) and completes.
 
@@ -148,7 +148,7 @@ Claude displays **Phase B Transition Guide** (daily development cycle, model sel
 
 ## Step Overview
 
-For details and rationale on each step, see [Phase A: Project Setup](05-workflow-setup.md).
+For details and rationale on each step, see [Phase A: Project Setup](workflow-setup.md).
 
 | Step | Purpose | Recommended Model |
 |----------|------|-----------|

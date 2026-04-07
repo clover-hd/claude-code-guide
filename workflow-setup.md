@@ -1,6 +1,6 @@
 # 開発ワークフロー Phase A：プロジェクトの立ち上げ
 
-[< ガイド目次に戻る](README.md) | [Phase B：日常の開発サイクル >](06-workflow-daily.md)
+[< ガイド目次に戻る](README.md) | [Phase B：日常の開発サイクル >](workflow-daily.md)
 
 ---
 
@@ -147,7 +147,7 @@ Claude: いいですね。MVPを整理すると...
 壁打ちで固まった内容は `docs/service-overview.md` に反映していきます。consultスキルも参照ドキュメントが充実するほど賢くなります。
 
 > **重要：壁打ちの結果は必ずドキュメントに残す**
-> consultの会話はセッションが終わると消えます。議論がまとまったら「今の内容を `docs/service-overview.md` に反映して」と指示して永続化しましょう。ドキュメントに残さない限り、次のセッションではゼロから説明し直すことになります。これはPhase Bの日常開発でも同様で、「計画→仕様書として保存」が基本の動きになります（[Step 2.5参照](06-workflow-daily.md#step-25永続化--計画を仕様書としてドキュメントに残す)）。
+> consultの会話はセッションが終わると消えます。議論がまとまったら「今の内容を `docs/service-overview.md` に反映して」と指示して永続化しましょう。ドキュメントに残さない限り、次のセッションではゼロから説明し直すことになります。これはPhase Bの日常開発でも同様で、「計画→仕様書として保存」が基本の動きになります（[Step 2.5参照](workflow-daily.md#step-25永続化--計画を仕様書としてドキュメントに残す)）。
 
 ---
 
@@ -230,7 +230,7 @@ src/
 | 2 | **developer** | アーキテクチャに合わせた実装担当（例：`backend_developer`） |
 | 3 | **qa_engineer** | テスト作成、品質管理 |
 
-プロジェクトが大きくなって分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加していきます。詳しくは[サブエージェント](07-sub-agents.md)を参照してください。
+プロジェクトが大きくなって分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加していきます。詳しくは[サブエージェント](sub-agents.md)を参照してください。
 
 各エージェントに書くべき内容：
 
@@ -274,6 +274,6 @@ Node.js (Express), MySQL, Prisma ORM のスペシャリスト。
 └── settings.json            ← Hooks（自動フォーマット等）
 ```
 
-> 必要に応じて tech_researcher, frontend_developer 等を追加。詳しくは[サブエージェント](07-sub-agents.md)を参照。
+> 必要に応じて tech_researcher, frontend_developer 等を追加。詳しくは[サブエージェント](sub-agents.md)を参照。
 
-**ここまで来たら、開発の土台は完成です。[Phase B](06-workflow-daily.md)へ進みましょう。**
+**ここまで来たら、開発の土台は完成です。[Phase B](workflow-daily.md)へ進みましょう。**

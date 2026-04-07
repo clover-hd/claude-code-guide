@@ -23,60 +23,52 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ## Guide Structure
 
 ### Getting Started
-| # | Section | Covers |
-|---|---------|--------|
-| 1 | [Installation & Setup](en/01-setup.md) | macOS / Linux / Windows (WSL) setup |
-| 2 | [First 30 Minutes Tutorial](en/02-first-session.md) | Hands-on tutorial to experience your first "wow" moment |
-
-### Claude Code Fundamentals
-| # | Section | Covers |
-|---|---------|--------|
-| 3 | [Overview & Basic Operations](en/03-overview.md) | Capabilities, **permission modes & approval safety**, common commands |
-| 4 | [Model Selection](en/04-models.md) | Opus / Sonnet / Haiku comparison, choosing the right model per task |
-
-### Development Workflow
-| # | Section | Covers |
-|---|---------|--------|
-| 5 | [Phase A: Project Setup](en/05-workflow-setup.md) | Building foundations from scratch (steps A1–A7 with dependencies) |
-| 6 | [Phase B: Daily Development Cycle](en/06-workflow-daily.md) | consult → Plan → persist → implement → test → commit |
-
-### Extending Claude Code
-| # | Section | Covers |
-|---|---------|--------|
-| 7 | [Sub-Agents](en/07-sub-agents.md) | Start with 3 agents, scale up as needed |
-| 8 | [Skills](en/08-skills.md) | Reusable prompt templates (`/commit`, `/consult`, etc.) |
-| 9 | [MCP Servers](en/09-mcp.md) | External tool integration (Sequential Thinking, Serena, Context7) |
-| 10 | [CLAUDE.md & Hooks](en/10-project-config.md) | Project-specific config and automation |
-
-### Practical Guide
-| # | Section | Covers |
-|---|---------|--------|
-| 11 | [Best Practices](en/11-best-practices.md) | Verification, context management, session handling, anti-patterns (12 topics) |
-| 12 | [Security Basics](en/12-security.md) | Files to never commit, sensitive data handling, .gitignore |
-| 13 | [Debugging](en/13-debugging.md) | Error investigation patterns, log analysis, test-driven reproduction |
-| 14 | [Cost & Token Management](en/14-cost.md) | Pricing, usage limits, token-saving techniques |
-
-### Customization
-| # | Section | Covers |
-|---|---------|--------|
-| 18 | [Status Line](en/18-statusline.md) | Real-time usage rate, context remaining, and branch display |
-
-### Included Skills
-| # | Section | Covers |
-|---|---------|--------|
-| 17 | [/kickstart Skill](en/17-kickstart-skill.md) | Interactive project scaffolding — automates Phase A (A1–A7) |
-
-### Walkthroughs
 | Section | Covers |
 |---------|--------|
-| [Outing Planner](en/examples/walkthrough.md) | Full walkthrough: /kickstart → Phase A → Phase B on a real project |
-| [Agent Team Quick Demo](en/examples/team-demo-quick.md) | 10-minute demo of parallel AI team development |
+| [Installation & Setup](en/setup.md) | macOS / Linux / Windows (WSL) setup |
+| [First 30 Minutes Tutorial](en/tutorial.md) | Hands-on tutorial to experience your first "wow" moment |
+| [Walkthrough: Build an Outing Planner](en/walkthrough.md) | Full walkthrough: /kickstart → Phase A → Phase B on a real project |
 
-### Troubleshooting
-| # | Section | Covers |
-|---|---------|--------|
-| 15 | [Troubleshooting / FAQ](en/15-troubleshooting.md) | Rate limits, hallucinations, repetitive errors |
-| 16 | [Glossary](en/16-glossary.md) | Context window, tokens, hallucination, and other key terms |
+### Claude Code Fundamentals
+| Section | Covers |
+|---------|--------|
+| [Overview & Basic Operations](en/overview.md) | Capabilities, **permission modes & approval safety**, common commands |
+| [Model Selection](en/models.md) | Opus / Sonnet / Haiku comparison, choosing the right model per task |
+
+### Development Workflow
+| Section | Covers |
+|---------|--------|
+| [Phase A: Project Setup](en/workflow-setup.md) | Building foundations from scratch (steps A1–A7 with dependencies) |
+| [Phase B: Daily Development Cycle](en/workflow-daily.md) | consult → Plan → persist → implement → test → commit |
+
+### Extending Claude Code
+| Section | Covers |
+|---------|--------|
+| [Sub-Agents](en/sub-agents.md) | Start with 3 agents, scale up as needed |
+| [Skills](en/skills.md) | Reusable prompt templates (`/commit`, `/consult`, etc.) |
+| [MCP Servers](en/mcp.md) | External tool integration (Sequential Thinking, Serena, Context7) |
+| [CLAUDE.md & Hooks](en/project-config.md) | Project-specific config and automation |
+
+### Practical Guide
+| Section | Covers |
+|---------|--------|
+| [Best Practices](en/best-practices.md) | Verification, context management, session handling, anti-patterns (12 topics) |
+| [Security Basics](en/security.md) | Files to never commit, sensitive data handling, .gitignore |
+| [Debugging](en/debugging.md) | Error investigation patterns, log analysis, test-driven reproduction |
+| [Cost & Token Management](en/cost.md) | Pricing, usage limits, token-saving techniques |
+
+### Customization
+| Section | Covers |
+|---------|--------|
+| [Status Line](en/statusline.md) | Real-time usage rate, context remaining, and branch display |
+| [/kickstart Skill](en/kickstart-skill.md) | Interactive project scaffolding — automates Phase A (A1–A7) |
+
+### More
+| Section | Covers |
+|---------|--------|
+| [Agent Team Quick Demo](en/examples/team-demo-quick.md) | 10-minute demo of parallel AI team development |
+| [Troubleshooting / FAQ](en/troubleshooting.md) | Rate limits, hallucinations, repetitive errors |
+| [Glossary](en/glossary.md) | Context window, tokens, hallucination, and other key terms |
 
 ---
 

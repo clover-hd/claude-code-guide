@@ -1,8 +1,10 @@
-# Practical Example: Building a Git Commit History Visualizer
+# Practical Example: Building an Outing Planner
 
 This document is a practical guide for getting your project up and running from scratch using the [/kickstart skill](../17-kickstart-skill.md) and advancing development through Phase B.
 
 By actually following these steps, you'll experience the entire guide workflow firsthand.
+
+> **Note**: This project uses the [Open-Meteo API](https://open-meteo.com/) to retrieve weather data. It's free for non-commercial and learning purposes, but please check the [terms of service](https://open-meteo.com/en/terms) before running.
 
 ---
 
@@ -10,30 +12,8 @@ By actually following these steps, you'll experience the entire guide workflow f
 
 1. Claude Code is installed ([installation instructions](../01-setup.md))
 2. The `/kickstart` skill is installed ([setup instructions](../17-kickstart-skill.md#setup))
-3. Demo repositories are prepared in advance (see below)
 
-### Preparing Demo Repositories
-
-Prepare repositories for the visualizer to display by cloning them in advance.
-
-```bash
-mkdir -p ~/demo-repos && cd ~/demo-repos
-
-# Recommended: small and fast to clone & lots of contributors
-git clone --bare https://github.com/honojs/hono.git
-git clone --bare https://github.com/colinhacks/zod.git
-
-# This guide's own repository ("We built this together with AI")
-git clone --bare https://github.com/clover-hd/claude-code-guide.git
-```
-
-> Using `--bare` retrieves just the git history without source code, making it faster and more storage-efficient.
-
-| Repository | Features | Demo Highlights |
-|-----------|----------|-----------------|
-| **honojs/hono** | Lightweight web framework | Many contributors, active development patterns |
-| **colinhacks/zod** | TS validation library | Growing commit frequency during growth phase |
-| **clover-hd/claude-code-guide** | This guide itself | Story: "A repository built with AI" |
+No special data preparation is needed. Location data is CRUD that you'll register within the app itself, so you can get started right away.
 
 ---
 
@@ -42,7 +22,7 @@ git clone --bare https://github.com/clover-hd/claude-code-guide.git
 ### Step 0: Create Project → Run /kickstart
 
 ```bash
-mkdir git-visualizer && cd git-visualizer
+mkdir outing-planner && cd outing-planner
 claude
 ```
 
@@ -61,30 +41,31 @@ A0 (automatic initialization) runs, creating `.gitignore` and directories.
 Claude will ask "What would you like to build?" Answer with something like:
 
 ```
-I want to build a web app that visualizes commit history in a Git repository.
+I want to build a web app that lets you register your favorite outing spots
+and combines them with weather forecasts to help you decide where to go today.
 ```
 
 Claude will dive deeper, so communicate these key points:
 
 | Question | Reference Answer |
 |----------|----------|
-| Who's the target? | Individual engineers to small teams |
+| Who's the target? | Individuals to families |
 | What matters most? | Visual appeal and ease of use |
-| Vision? | A dashboard where you just specify a repository and instantly see your team's development activity |
+| Vision? | An app where you register spots in advance, then get today's recommendations based on the weather |
 | MVP features? | See below |
 
 **Example MVP features (narrow down to about 4):**
 
-1. Load a local git repository by specifying its path
-2. Display commit history as a timeline
-3. Show contributor contributions as a graph
-4. Display commit frequency by day and time of day
+1. Register, edit, and delete favorite outing spots (CRUD)
+2. Fetch and display weather forecasts for current location and registered spots via weather API
+3. Display weekly weather as graphs (temperature trends and precipitation probability)
+4. Suggest "today's recommended spots" based on weather and category
 
 **Example future features:**
-- Visualize branch branching and merging
-- Heatmap of file changes
-- GitHub API integration (remote repository support)
-- Team comparison dashboard
+- Map display (Leaflet + OpenStreetMap)
+- Photo uploads for spots
+- Sharing with family and friends
+- Visit history logging and reflection
 
 > **Key Point**: Keep the MVP to "the minimum that would make it fun." If there's too much, Claude will ask "Which can we defer?"
 
@@ -104,16 +85,16 @@ No special instructions needed — Claude will proceed. Review and say "OK."
 
 Claude uses `/consult` to dive deeper into requirements. Discussion progresses from perspectives like:
 
-- **User Flow**: Specify repository → analyze → display dashboard
-- **Error Cases**: What if the path specified isn't a git repository?
-- **Data Volume**: What happens with huge repositories (tens of thousands of commits)?
-- **Authentication**: Not needed (local tool, no login)
+- **User Flow**: Register spot → check weather → see recommendations
+- **Error Cases**: What if the weather API is down? What if location isn't available?
+- **Data Volume**: How does performance scale as more spots are added?
+- **Authentication**: Not needed (local tool, no login required)
 
 ```
 Thinking hints:
-- "Should repository specification be text input or drag-and-drop?"
-- "Do we need loading indicators during analysis?"
-- "Should date range filtering be available?" → Is this MVP or future?
+- "How should we categorize spots? (parks, cafes, museums, shopping...)"
+- "What's the weather threshold? What precipitation % triggers indoor recommendations?"
+- "Should the recommendation logic be simple? (Sunny → outdoor, rainy → indoor)"
 ```
 
 Once brainstorming is complete, `docs/service-overview.md` is updated. Review and say "OK."
@@ -133,19 +114,20 @@ Claude will present technology options in a comparison table. Here's guidance fo
 
 #### Decision-Making Points
 
-Since this project is "a local web app":
+Since this project is "a local web app + external API integration":
 
 | Perspective | Recommended Direction | Reason |
 |------------|------------------|--------|
-| Frontend | React or Vue + chart library | Visualization is primary, charting library richness matters |
-| Backend | Lightweight framework | Mainly git command execution and JSON conversion; no heavy framework needed |
-| DB | None or SQLite | MVP just reads directly from git; SQLite available for caching |
-| Infrastructure | Local execution | MVP on localhost, set up for future deployment |
+| Frontend | React or Vue + charting library | Weather graphs and card displays are central; charting library richness matters |
+| Backend | Lightweight framework | Focused on CRUD and API relay; no heavy framework needed |
+| DB | SQLite | Necessary for persisting location data; lightweight is sufficient |
+| External API | Open-Meteo (no API key) | Free, no authentication, and permissive limits for non-commercial use |
+| Infrastructure | Local execution | MVP runs on localhost; set up for future deployment |
 
 ```
 You can tell Claude:
-"I want visually appealing chart libraries.
-For MVP, no DB — just read directly from git.
+"I want visually appealing weather cards and graphs.
+Use SQLite for the DB and Open-Meteo for the weather API.
 Choose the tech stack and show me a comparison table."
 ```
 
@@ -182,11 +164,9 @@ For this project, you'll likely get a team like:
 | Agent | Role |
 |-------|------|
 | system_architect | Guardian of overall design |
-| tech_researcher | Technology investigation (chart library comparison, etc.) |
-| frontend_developer | UI and chart implementation |
-| backend_developer | Git analysis logic and API |
+| backend_developer | CRUD API and weather API integration |
+| frontend_developer | UI, charts, and card implementation |
 | qa_engineer | Testing |
-| technical_writer | Documentation |
 
 Verify that each agent's description includes **specific technology stack names** (not just "frontend developer" but "build dashboard with React + Recharts").
 
@@ -204,7 +184,7 @@ Claude creates and executes:
 When asked about test strategy:
 ```
 Reference:
-- Unit tests: git analysis logic tests (commit count, etc.)
+- Unit tests: CRUD operations, weather API integration mocking, recommendation logic
 - E2E: Can defer for MVP
 ```
 
@@ -266,10 +246,10 @@ Sub-agents can reference current context (conversation flow). There are two patt
 **Pattern A: Consecutive calls in same session (without /clear)**
 
 ```
-@.claude/agents/tech_researcher.md investigates
+@.claude/agents/backend_developer.md implements
   ↓ context remains
-@.claude/agents/backend_developer.md is called
-  → Can see previous investigation results and start work immediately
+@.claude/agents/frontend_developer.md is called
+  → Can see previous implementation and start work immediately
 ```
 
 - Information passes without file saving
@@ -279,12 +259,12 @@ Sub-agents can reference current context (conversation flow). There are two patt
 **Pattern B: Reset session, then call (using /clear)**
 
 ```
-@.claude/agents/tech_researcher.md investigates → saves to docs/research/
+@.claude/agents/backend_developer.md implements → saves to docs/specs/
   ↓
 /clear to reset context
   ↓
-@.claude/agents/backend_developer.md is called
-  → Tell it to "read docs/research/xxx.md and implement" — share info via files
+@.claude/agents/frontend_developer.md is called
+  → Tell it to "read docs/specs/xxx.md and implement" — share info via files
 ```
 
 - Documentation remains for future reference
@@ -293,7 +273,7 @@ Sub-agents can reference current context (conversation flow). There are two patt
 
 **Pattern B is recommended** because:
 
-1. **Reusability**: Investigation results remain in files, referenced from other sessions/agents
+1. **Reusability**: Implementation results remain in files, referenced from other sessions/agents
 2. **Context Savings**: Context margin is crucial for long feature development
 3. **Best Practice**: "Always save deliverables" is fundamental to project management where knowledge persists even when sessions disappear
 
@@ -301,43 +281,32 @@ Sub-agents can reference current context (conversation flow). There are two patt
 
 #### Example Agent Calls
 
-**tech_researcher — Pre-implementation investigation**
-
-```
-> @.claude/agents/tech_researcher.md
-> Research libraries for parsing git log output into JSON.
-  Compare pros/cons of building a parser vs. using libraries.
-  Save results to docs/research/git-log-parsing.md.
-```
-
-```
-> @.claude/agents/tech_researcher.md
-> Compare 3 chart libraries good for rendering commit frequency heatmaps.
-  Look at performance, customizability, and bundle size.
-  Save results to docs/research/chart-libraries.md.
-```
-
-> Investigation tasks are efficiently delegated to tech_researcher. Read-only and safe, plus doesn't consume main context.
->
-> **Important**: Always have research results saved to `docs/research/`. Sub-agent context ends with the session, so without saving, the next agent can't reference it.
-
-**backend_developer — Git analysis logic**
+**backend_developer — Spot CRUD API**
 
 ```
 > @.claude/agents/backend_developer.md
-> Following the investigation results in docs/research/git-log-parsing.md and
-  the specification in docs/specs/feature-git-reader.md,
-  implement the module that retrieves commit information from git repositories.
-  Write unit tests too.
+> Following the spec in docs/specs/feature-spot-crud.md,
+  implement the CRUD API for outing spots.
+  Persist data to SQLite and write unit tests too.
 ```
 
-**frontend_developer — UI and chart implementation**
+**backend_developer — Weather API integration**
+
+```
+> @.claude/agents/backend_developer.md
+> Following the spec in docs/specs/feature-weather.md,
+  implement the module that fetches weather forecasts from Open-Meteo API
+  using spot latitude and longitude.
+  Include caching of API responses (about 30 minutes). Mock the API in unit tests.
+```
+
+**frontend_developer — UI and charts**
 
 ```
 > @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-timeline.md,
-  implement the timeline chart component.
-  Set it up so it can be tested with sample data.
+> Following the spec in docs/specs/feature-weather.md,
+  implement the weather forecast card and weekly weather graph components.
+  Make them work with sample data.
 ```
 
 **system_architect — Design review**
@@ -345,9 +314,9 @@ Sub-agents can reference current context (conversation flow). There are two patt
 ```
 > @.claude/agents/system_architect.md
 > Review the current implementation from these perspectives:
-  - Is the separation of concerns between backend and frontend appropriate?
-  - Is there any waste in data flow?
-  - Is the structure set up for future GitHub API integration?
+  - Is the separation between backend and frontend appropriate?
+  - Is the weather API caching strategy sound?
+  - Is the structure set up for future map display?
 ```
 
 > Getting system_architect to review after 2-3 features are done helps find design issues early.
@@ -356,22 +325,11 @@ Sub-agents can reference current context (conversation flow). There are two patt
 
 ```
 > @.claude/agents/qa_engineer.md
-> Enhance unit tests for the git analysis module.
+> Enhance unit tests for spot CRUD and recommendation logic.
   Cover these edge cases:
-  - Repository with 0 commits
-  - Handling of merge commits
-  - Commit messages containing Japanese characters
-```
-
-**technical_writer — Documentation**
-
-```
-> @.claude/agents/technical_writer.md
-> Create README.md. Include:
-  - Project overview and where to place screenshots
-  - Setup instructions
-  - How to use it
-  - Development method (for contributors)
+  - No spots registered
+  - Weather API returns an error
+  - Spot category is unset
 ```
 
 #### Agent Usage Tips
@@ -379,10 +337,9 @@ Sub-agents can reference current context (conversation flow). There are two patt
 | Tip | Explanation |
 |------|-----------|
 | **Pass specifications** | When you say "follow the spec in docs/specs/xxx.md", agent reads spec then implements |
-| **Save investigation results** | Always have tech_researcher save to `docs/research/`. Without saving, next agent can't reference |
+| **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
 | **One agent, one task** | Don't say "build UI and API too" — delegate by responsibility |
-| **Investigate → Save → Implement order** | tech_researcher investigates → save to `docs/research/` → pass both investigation and spec to implementation agent |
-| **Include reviews** | Have system_architect review once implementation hits a milestone to maintain quality |
+| **Review intermediate results** | Have system_architect review once implementation hits a milestone to maintain quality |
 | **Separate testing** | Have implementer write tests too, but having qa_engineer write additional edge case tests improves coverage |
 
 ---
@@ -391,80 +348,79 @@ Sub-agents can reference current context (conversation flow). There are two patt
 
 Implementing the 4 MVP features in this order shows progress at each stage:
 
-#### First Cycle: Load git Repository and Fetch Data
+#### First Cycle: Spot CRUD
 
 ```
 > /consult
-> As the first feature, I want to load a local git repository and
-  retrieve commit information in JSON format.
-  Save the spec to docs/specs/feature-git-reader.md.
+> As the first feature, I want to register, edit, and delete outing spots.
+  Each spot has a name, address (or latitude/longitude), and category
+  (park, cafe, museum, etc.). Save the spec to docs/specs/feature-spot-crud.md.
 ```
 
-Once spec is saved, investigate → implement:
-
-```
-> /clear
-> @.claude/agents/tech_researcher.md
-> Research git log output format and parsing methods.
-  Summarize what information you can get with the --format option.
-  Save results to docs/research/git-log-parsing.md.
-```
-
-After reviewing investigation results, `/clear` then implement:
+Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
 > @.claude/agents/backend_developer.md
-> Following the investigation results in docs/research/git-log-parsing.md and
-  the spec in docs/specs/feature-git-reader.md, implement it.
-  Write unit tests too.
+> Following the spec in docs/specs/feature-spot-crud.md, implement it.
+  Use SQLite for persistence. Write unit tests too.
 ```
 
-What you're building:
-- Repository path input UI
-- git log execution and parsing logic
-- Commit data structure (datetime, author, message, changed lines, etc.)
-
-```
-Completion image: Input path → commit data displays as JSON in console or screen
-```
-
-#### Second Cycle: Timeline Display
-
-```
-> /consult
-> I want to visualize retrieved commit data as a timeline.
-  Think of it like horizontal axis for date, vertical for commit count.
-  Save spec to docs/specs/feature-timeline.md.
-```
-
-Once spec is saved, investigate → implement:
-
-```
-> /clear
-> @.claude/agents/tech_researcher.md
-> Compare timeline chart libraries.
-  Consider compatibility with the tech stack from A4.
-  Save results to docs/research/chart-libraries.md.
-```
-
-After reviewing, `/clear` then implement:
+Once backend is done, implement frontend:
 
 ```
 > /clear
 > @.claude/agents/frontend_developer.md
-> Following the investigation in docs/research/chart-libraries.md and
-  the spec in docs/specs/feature-timeline.md,
-  implement the timeline chart. Make it work with sample data.
+> Following the spec in docs/specs/feature-spot-crud.md,
+  implement the spot list display, registration form, edit, and delete UI.
+  Use category-specific icons to make it visually appealing.
 ```
 
 What you're building:
-- Group commit data by date
-- Render timeline with chart library
-- Basic dashboard layout
+- Spot registration form (name, address, category)
+- Spot list (card display)
+- Edit and delete functionality
+- SQLite data persistence
 
 ```
-Completion image: Load repository → timeline chart displays
+Completion image: Register spot → displays as a card in the list
+```
+
+#### Second Cycle: Weather Display
+
+```
+> /consult
+> I want to display weather forecasts for registered spots.
+  Use the Open-Meteo API to fetch weather for spot latitude/longitude.
+  Show weather icons, temperature, and precipitation probability in an easy-to-read card.
+  Save the spec to docs/specs/feature-weather.md.
+```
+
+Once spec is saved, `/clear` then implement:
+
+```
+> /clear
+> @.claude/agents/backend_developer.md
+> Following the spec in docs/specs/feature-weather.md,
+  implement the module that fetches weather forecasts from Open-Meteo API.
+  Include caching (about 30 minutes). Mock the API in unit tests.
+```
+
+```
+> /clear
+> @.claude/agents/frontend_developer.md
+> Following the spec in docs/specs/feature-weather.md,
+  implement the weather forecast card component.
+  Display weather icons, temperature, and precipitation probability. Make it work with sample data.
+```
+
+What you're building:
+- Open-Meteo API integration module
+- API response caching
+- Weather forecast card (weather icons, temperature, precipitation)
+
+```
+Completion image: Select a spot → weather forecast card displays
 ```
 
 **Recommended: Have system_architect review once here:**
@@ -476,13 +432,13 @@ Completion image: Load repository → timeline chart displays
   Any issues that might come up adding the remaining 2 features?
 ```
 
-#### Third Cycle: Contributor Contributions
+#### Third Cycle: Weekly Weather Graph
 
 ```
 > /consult
-> I want to add a feature to visualize contributor contributions.
-  Pie chart or bar chart showing who committed how much.
-  Save spec to docs/specs/feature-contributors.md.
+> I want to visualize a spot's weekly weather as a graph.
+  Display temperature trends as a line graph and precipitation probability as a bar chart.
+  Save the spec to docs/specs/feature-weather-chart.md.
 ```
 
 Once spec is saved, `/clear` then implement:
@@ -490,24 +446,34 @@ Once spec is saved, `/clear` then implement:
 ```
 > /clear
 > @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-contributors.md, implement it.
+> Following the spec in docs/specs/feature-weather-chart.md, implement it.
+  Use a chart library to make visually appealing graphs.
 ```
 
-#### Fourth Cycle: Time-of-Day Analysis
+#### Fourth Cycle: Recommended Spots
 
 ```
 > /consult
-> I want to add time-of-day analysis of commits.
-  Want to see which day of week and what time commits happen most in a heatmap.
-  Save spec to docs/specs/feature-heatmap.md.
+> I want to add a feature that suggests "today's recommended spots" based on weather.
+  Recommend outdoor spots like parks if it's sunny, and indoor spots like museums and cafes if it's rainy.
+  Save the spec to docs/specs/feature-recommend.md.
 ```
 
 Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
+> @.claude/agents/backend_developer.md
+> Following the spec in docs/specs/feature-recommend.md,
+  implement the recommendation logic. Write tests too.
+```
+
+```
+> /clear
 > @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-heatmap.md, implement it.
+> Following the spec in docs/specs/feature-recommend.md,
+  implement the "today's recommended" spot card UI.
+  Make the card background color and icons change based on the weather.
 ```
 
 **Wrapping up after MVP completion:**
@@ -517,11 +483,6 @@ Once spec is saved, `/clear` then implement:
 > Test all features end-to-end. If any areas lack coverage, add tests.
 ```
 
-```
-> @.claude/agents/technical_writer.md
-> Create README.md. Write setup instructions and usage guide.
-```
-
 ---
 
 ## What to Keep in Mind Each Cycle
@@ -529,7 +490,7 @@ Once spec is saved, `/clear` then implement:
 ### After /consult
 
 - After Plan Mode planning, **always save specs to `docs/specs/`**
-- Be explicit: "Save the spec to docs/specs/feature-timeline.md"
+- Be explicit: "Save the spec to docs/specs/feature-weather.md"
 
 ### During Implementation
 
@@ -563,6 +524,7 @@ Reset context before tackling the next feature.
 | Context is full | `/compact` to compress, or `/clear` to reset |
 | Want to undo | `Esc + Esc` to rewind to checkpoint |
 | Unsure about design | Switch with `/model opus` to discuss |
+| Weather API is erroring | Check Open-Meteo status page. If you have cached data, the app works with older data |
 
 ---
 
@@ -606,18 +568,17 @@ Add to `~/.claude/settings.json` (if not already set):
 
 ### Demo: Second Cycle Parallel Development with Team
 
-Example of doing the second cycle (timeline display) with the team, starting from where the first cycle (git loading) is done.
+Example of doing the second cycle (weather display) with the team, starting from where the first cycle (spot CRUD) is done.
 
 #### 1. Instruct the Leader
 
 ```
-> I want to parallelize the second cycle's "timeline chart" with the team.
-  Based on the spec in docs/specs/feature-timeline.md,
+> I want to parallelize the second cycle's "weather display" with the team.
+  Based on the spec in docs/specs/feature-weather.md,
   form these teams and proceed in parallel:
 
-  - researcher: Research and compare chart libraries
-  - backend: Date-grouped commit data API
-  - frontend: Timeline chart UI implementation
+  - backend: Open-Meteo API integration + caching
+  - frontend: Weather forecast card UI
   - qa: Test creation
 ```
 
@@ -629,20 +590,16 @@ The leader auto-forms the team and assigns tasks. The following happens **simult
 ┌─────────────────────────────────────────────────────────┐
 │ Leader                                                   │
 │ > Forming team. Creating task list...                   │
-│ > Launched researcher, backend, frontend, qa            │
+│ > Launched backend, frontend, qa                        │
 └─────────────────────────────────────────────────────────┘
      │
-     ├── researcher launches
-     │   "Researching chart libraries...
-     │    Comparing Recharts, Chart.js, D3.js"
-     │
      ├── backend launches
-     │   "Implementing commit data grouping logic...
-     │    Creating src/services/commit-grouper.ts"
+     │   "Implementing Open-Meteo API client...
+     │    Creating src/services/weather-api.ts"
      │
      ├── frontend launches
-     │   "Implementing dashboard layout...
-     │    Creating src/components/Timeline.tsx"
+     │   "Implementing weather forecast card...
+     │    Creating src/components/WeatherCard.tsx"
      │
      └── qa launches
          "Considering test strategy...
@@ -652,34 +609,24 @@ The leader auto-forms the team and assigns tasks. The following happens **simult
 #### 3. Team Members Communicate
 
 ```
-researcher → Leader:
-  "Research complete. Recommending Recharts. Reasons:
-   High React compatibility, abundant timeline chart samples.
-   Saved comparison to docs/"
+backend → Leader:
+  "API integration and caching complete.
+   Weather data type: WeatherForecast { ... }"
 
 Leader → frontend:
-  "Decided on Recharts.
-   Refer to researcher's investigation results and continue"
-
-backend → Leader:
-  "Date grouping API implementation done.
-   Tests passing."
-
-Leader → qa:
-  "Backend implementation complete. Write tests."
+  "Backend API is ready.
+   Refer to the WeatherForecast type and finish the UI"
 
 frontend → Leader:
-  "Timeline component done.
-   Want to wire up to backend API.
-   What's the endpoint spec?"
+  "Weather card implementation complete.
+   Weather icons and responsive design included"
 
-Leader → frontend:
-  "Refer to backend's src/services/commit-grouper.ts.
-   Interface is like this..."
+Leader → qa:
+  "Backend and frontend implementation complete. Write tests."
 
 qa → Leader:
-  "All tests created. 15/15 passing.
-   Edge cases (empty repo, single commit) covered"
+  "All tests created. 12/12 passing.
+   API error fallback covered"
 ```
 
 #### 4. Leader Integrates and Commits
@@ -689,10 +636,9 @@ Once all members complete, leader integrates and commits:
 ```
 Leader:
   "All members complete.
-   - Library research ✓
-   - Backend API ✓
-   - Frontend UI ✓
-   - Tests 15/15 pass ✓
+   - API integration + caching ✓
+   - Weather card UI ✓
+   - Tests 12/12 pass ✓
    Committing now."
 ```
 
@@ -703,10 +649,9 @@ Use `Shift + ↓` to switch between team members and see **in real-time what eac
 ```
 ┌─ Leader ──────────────────────────────────────────┐
 │ Task progress:                                    │
-│ ✓ researcher: library research complete           │
-│ ✓ backend: API implementation complete            │
+│ ✓ backend: API integration complete              │
 │ ● frontend: UI implementation... (80%)            │
-│ ✓ qa: test creation complete                      │
+│ ✓ qa: test creation complete                     │
 │                                                   │
 │ [Shift+↓ to switch to other members]              │
 └───────────────────────────────────────────────────┘
@@ -721,10 +666,10 @@ Once comfortable, you can let the team handle the entire MVP:
   parallelize development of all MVP features.
 
   Team composition:
-  - backend: git loading + data conversion API
-  - frontend-timeline: timeline chart
-  - frontend-contrib: contributor contributions graph
-  - frontend-heatmap: time-of-day heatmap
+  - backend: Spot CRUD + weather API integration + recommendation logic
+  - frontend-spots: Spot management UI
+  - frontend-weather: Weather card + weekly graph
+  - frontend-recommend: Recommended spots UI
   - qa: tests for each feature (sequential as members complete)
 
   Once backend finishes, share with frontend members.
@@ -737,7 +682,7 @@ Once comfortable, you can let the team handle the entire MVP:
 
 | Item | Details |
 |------|---------|
-| **Token consumption** | Uses context per member. 4-person team ≈ 4 session costs |
+| **Token consumption** | Uses context per member. 3-person team ≈ 3 session costs |
 | **Experimental** | Unexpected errors or member stalling can happen |
 | **Specs are essential** | Team members read `docs/specs/`. Ambiguous specs → scattered implementations |
 | **Conflicts** | Multiple members touching same file → git conflicts. Keep responsibilities clear |

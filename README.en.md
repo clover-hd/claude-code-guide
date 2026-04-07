@@ -69,7 +69,7 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ### Walkthroughs
 | Section | Covers |
 |---------|--------|
-| [Git Commit Visualizer](en/examples/git-visualizer-walkthrough.md) | Full walkthrough: /kickstart → Phase A → Phase B on a real project |
+| [Outing Planner](en/examples/walkthrough.md) | Full walkthrough: /kickstart → Phase A → Phase B on a real project |
 | [Agent Team Quick Demo](en/examples/team-demo-quick.md) | 10-minute demo of parallel AI team development |
 
 ### Troubleshooting

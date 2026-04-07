@@ -71,7 +71,7 @@
 
 | # | セクション | 内容 |
 |---|-----------|------|
-| — | [Gitコミット履歴ビジュアライザー](examples/git-visualizer-walkthrough.md) | /kickstart → Phase A → Phase B の流れを実際のプロジェクトで体験する |
+| — | [おでかけプランナー](examples/walkthrough.md) | /kickstart → Phase A → Phase B の流れを実際のプロジェクトで体験する |
 | — | [エージェントチーム クイックデモ](examples/team-demo-quick.md) | Phase A完了後にAIチームの並列開発を10分で見せるデモ手順 |
 
 ### 困ったとき

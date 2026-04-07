@@ -42,10 +42,11 @@ ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | c
 
 ### 1. スクリプトを配置
 
-本リポジトリの [`tools/statusline.py`](tools/statusline.py) を `~/.claude/` にコピーします。
+本リポジトリの [`tools/statusline.py`](tools/statusline.py) を `~/.claude/` にダウンロードします。
 
 ```bash
-cp tools/statusline.py ~/.claude/statusline.py
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/tools/statusline.py \
+  -o ~/.claude/statusline.py
 ```
 
 ### 2. settings.json に追加

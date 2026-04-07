@@ -42,10 +42,11 @@ You can use any tool. What matters is **keeping usage visible at all times**.
 
 ### 1. Place the script
 
-Copy [`tools/statusline.py`](tools/statusline.py) from this repository to `~/.claude/`.
+Download [`tools/statusline.py`](tools/statusline.py) from this repository to `~/.claude/`.
 
 ```bash
-cp tools/statusline.py ~/.claude/statusline.py
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/tools/statusline.py \
+  -o ~/.claude/statusline.py
 ```
 
 ### 2. Add to settings.json

@@ -27,11 +27,10 @@ For details on each step, see [05-workflow-setup.md](05-workflow-setup.md).
 ### Method 1: Install as Personal Skill (Available in All Projects)
 
 ```bash
-# Create skills directory
+# Create directory and download
 mkdir -p ~/.claude/skills/kickstart
-
-# Copy SKILL.md
-cp /path/to/claude-code-guide/skills/kickstart/SKILL.md ~/.claude/skills/kickstart/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/skills/kickstart/SKILL.md \
+  -o ~/.claude/skills/kickstart/SKILL.md
 ```
 
 Now `/kickstart` works in **any project**.
@@ -41,9 +40,8 @@ Now `/kickstart` works in **any project**.
 ```bash
 # Run in project root
 mkdir -p .claude/skills/kickstart
-
-# Copy SKILL.md
-cp /path/to/claude-code-guide/skills/kickstart/SKILL.md .claude/skills/kickstart/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/skills/kickstart/SKILL.md \
+  -o .claude/skills/kickstart/SKILL.md
 ```
 
 > **We recommend Method 1**. Since kickstart is used every time you start a new project, it's convenient to have it always available as a personal skill.

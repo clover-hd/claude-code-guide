@@ -27,11 +27,10 @@
 ### 方法1：個人スキルとしてインストール（全プロジェクトで使える）
 
 ```bash
-# スキルディレクトリを作成
+# スキルディレクトリを作成してダウンロード
 mkdir -p ~/.claude/skills/kickstart
-
-# SKILL.mdをコピー
-cp /path/to/claude-code-guide/skills/kickstart/SKILL.md ~/.claude/skills/kickstart/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/skills/kickstart/SKILL.md \
+  -o ~/.claude/skills/kickstart/SKILL.md
 ```
 
 これで**どのプロジェクトでも** `/kickstart` が使えるようになります。
@@ -41,9 +40,8 @@ cp /path/to/claude-code-guide/skills/kickstart/SKILL.md ~/.claude/skills/kicksta
 ```bash
 # プロジェクトルートで実行
 mkdir -p .claude/skills/kickstart
-
-# SKILL.mdをコピー
-cp /path/to/claude-code-guide/skills/kickstart/SKILL.md .claude/skills/kickstart/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/skills/kickstart/SKILL.md \
+  -o .claude/skills/kickstart/SKILL.md
 ```
 
 > **おすすめは方法1**です。kickstartは新しいプロジェクトを始めるたびに使うものなので、個人スキルとして常に使える状態にしておくと便利です。

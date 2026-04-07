@@ -31,51 +31,35 @@ Use an existing spec from Phase A `/consult` brainstorming in `docs/specs/`.
 If none exists, you can create one manually with this content:
 
 ```markdown
-# Commit Timeline Display
+# Weather Forecast Display
 
 ## Overview
-Display the commit history from a local git repository as a timeline chart grouped by date.
+Fetch weather forecasts from Open-Meteo API for registered outing spots and display them as visually appealing cards.
 
 ## Input
-- Local git repository path (e.g.: ~/demo-repos/hono.git)
+- Latitude/longitude of registered spots (from SQLite)
 
 ## Output
-- Bar or line chart with date on horizontal axis, commit count on vertical axis
-- Filterable by committer name
+- Weather cards with weather icon, temperature, and precipitation probability
+- Current weather and 24-hour forecast per spot
 
 ## Technical constraints (Important)
-- Data retrieval only via `git log` command execution (no GitHub API)
-- No external API network requests
-- Parse git log with custom implementation (use `--format` option to fetch needed info)
-- No database (convert git log output directly to JSON)
+- Use Open-Meteo API (https://api.open-meteo.com/) for weather data
+- No API key required (uses Open-Meteo free tier)
+- Cache API responses for ~30 minutes (prevent excessive requests)
+- Spot data is retrieved from SQLite (implemented in cycle 1)
 
-## How to Get Data
-Backend parses output from:
-  git log --format="%H|%an|%ae|%ad|%s" --date=iso <repo-path>
-
-Fields to retrieve:
-- Commit hash
-- Author name
-- Author email
-- Datetime (ISO format)
-- Commit message
+## API Endpoint
+Backend calls:
+  https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=temperature_2m,precipitation_probability
 
 ## Work Division
-- Backend: Execute the above git log command, parse it, and create date-grouping API
-- Frontend: Render timeline with chart library
-- Testing: Unit tests for backend data transformation logic (using sample git log output)
+- Backend: Open-Meteo API integration + response cache
+- Frontend: Weather card UI
+- Testing: Unit tests using mocked API responses
 ```
 
-Save this as `docs/specs/feature-timeline.md`.
-
-### 2. Confirm Demo Repositories
-
-Verify that pre-cloned repositories exist for visualizer testing:
-
-```bash
-ls ~/demo-repos/
-# hono.git  zod.git  claude-code-guide.git etc.
-```
+Save this as `docs/specs/feature-weather.md`.
 
 ---
 
@@ -88,17 +72,15 @@ ls ~/demo-repos/
 ### Step 2: Instruct the Team
 
 ```
-> Based on the spec in docs/specs/feature-timeline.md,
+> Based on the spec in docs/specs/feature-weather.md,
   develop it with the team in parallel. Must follow the spec's "technical constraints".
 
   Team:
-  - researcher: Research chart libraries suitable for timelines
-  - backend: Execute git log, parse it, create date-grouped API
-             (No GitHub API. git log only)
-  - frontend: Render timeline with chart
-  - qa: Unit tests for backend
+  - backend: Open-Meteo API integration + response cache
+  - frontend: Weather card UI (weather icon, temperature, precipitation)
+  - qa: Unit tests with mocked API responses
 
-  Once researcher's investigation is done, share with frontend.
+  Once backend is done, share type definitions with frontend.
   When everyone's done, run tests and report results.
 ```
 
@@ -110,14 +92,14 @@ As the team works, use `Shift + ↓` to switch between members and explain.
 
 ```
 ① Team formation moment
-  "Leader just created the task list and launched 4 members"
+  "Leader just created the task list and launched 3 members"
 
 ② Working in parallel
-  "Shift+↓ to switch. See? Backend's writing API while
-   researcher's investigating libraries. Simultaneous."
+  "Shift+↓ to switch. See? Backend's writing the API integration while
+   frontend's building the card UI. Simultaneous."
 
 ③ Member communication
-  "Researcher finished, leader shared with frontend.
+  "Backend finished, leader shared type definitions with frontend.
    Same as human Slack coordination, fully automatic."
 
 ④ Test execution
@@ -138,7 +120,7 @@ When the team finishes:
 npm run dev  # or yarn dev, etc.
 ```
 
-Open browser, specify the path to `~/demo-repos/hono.git`, and if the timeline displays, perfect.
+Open browser, select a spot, and if the weather forecast card displays, perfect.
 
 > Even if the team's implementation doesn't work perfectly, that's fine. The demo's goal is **showing AI teams collaborating** — not perfect code.
 

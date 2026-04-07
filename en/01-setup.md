@@ -74,7 +74,7 @@ cd my-project && claude
 
 # 3. Set up the status line (recommended)
 #    Display usage rates and remaining context in real-time → See 18-statusline.md for details
-cp tools/statusline.py ~/.claude/statusline.py
+curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/tools/statusline.py -o ~/.claude/statusline.py
 
 # 4. Diagnose installation (if you have issues)
 claude doctor

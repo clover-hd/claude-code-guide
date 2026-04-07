@@ -1,6 +1,6 @@
 # MCP Servers
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Cost & Token Management
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -23,9 +23,9 @@
 
 The most effective token management is to **make usage visible in real-time**.
 
-Setting up the [status line](18-statusline.md) displays your 5-hour and 7-day usage rates directly on the Claude Code screen. By watching this while you work, you naturally make decisions like "I'm getting close to the limit, let me switch to Sonnet" or "I still have plenty, so let me design with Opus."
+Setting up the [status line](statusline.md) displays your 5-hour and 7-day usage rates directly on the Claude Code screen. By watching this while you work, you naturally make decisions like "I'm getting close to the limit, let me switch to Sonnet" or "I still have plenty, so let me design with Opus."
 
-See [18-statusline.md](18-statusline.md) for setup instructions.
+See [statusline.md](statusline.md) for setup instructions.
 
 ## Tips for Saving Tokens
 
@@ -38,6 +38,6 @@ See [18-statusline.md](18-statusline.md) for setup instructions.
 | **Give specific instructions** | Reduce trial-and-error iterations | Specify file names, function names, expected behavior |
 | **Plan first in Plan Mode** | Read-only mode is lighter than implementation | Always plan large tasks first |
 
-For more details on model selection by workflow, see [Model Differences and Selection Guide](04-models.md#workflow-specific-usage-guide).
+For more details on model selection by workflow, see [Model Differences and Selection Guide](models.md#workflow-specific-usage-guide).
 
 > **Tip**: When you hit the 5-hour limit, use that time to manually organize specifications and documentation for your next session. Development isn't just about writing code.

@@ -6,13 +6,13 @@
 
 ## これは何？
 
-[Phase A：プロジェクトの立ち上げ](05-workflow-setup.md)の手順（A0〜A7）を、Claude Codeが対話しながら順番に進めてくれるスキルです。
+[Phase A：プロジェクトの立ち上げ](workflow-setup.md)の手順（A0〜A7）を、Claude Codeが対話しながら順番に進めてくれるスキルです。
 
 ガイドを読みながら手動で進めることもできますが、`/kickstart` を使えば **Claude Code自身がガイドの手順を把握した状態で、あなたと一緒にプロジェクトの土台を作ってくれます**。
 
 ### スキルが自動でやること
 
-[Phase Aの手順](05-workflow-setup.md)（A0〜A7）を、Claude Codeが対話形式で順番に進めてくれます。具体的には：
+[Phase Aの手順](workflow-setup.md)（A0〜A7）を、Claude Codeが対話形式で順番に進めてくれます。具体的には：
 
 - プロジェクトの初期化（`.gitignore`、ディレクトリ構成、git init）
 - サービス概要の言語化と要件の壁打ち
@@ -20,7 +20,7 @@
 - CLAUDE.md、スキル、サブエージェントの構築
 - 初期コミット
 
-各ステップの詳細は[05-workflow-setup.md](05-workflow-setup.md)を参照してください。
+各ステップの詳細は[workflow-setup.md](workflow-setup.md)を参照してください。
 
 ## セットアップ
 
@@ -140,7 +140,7 @@ my-new-project/
         └── qa_engineer.md                 ← 品質管理
 ```
 
-> **Note**: エージェントはまず3人（architect, developer, qa）から始め、プロジェクトの成長に合わせて追加します。詳しくは[サブエージェント](07-sub-agents.md)を参照。
+> **Note**: エージェントはまず3人（architect, developer, qa）から始め、プロジェクトの成長に合わせて追加します。詳しくは[サブエージェント](sub-agents.md)を参照。
 
 Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデルの使い分け、コンテキスト管理のコツ）を表示して完了です。
 
@@ -148,7 +148,7 @@ Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデ
 
 ## 各ステップの概要
 
-各ステップの詳しい内容と考え方は [Phase A：プロジェクトの立ち上げ](05-workflow-setup.md) で解説しています。
+各ステップの詳しい内容と考え方は [Phase A：プロジェクトの立ち上げ](workflow-setup.md) で解説しています。
 
 | ステップ | 内容 | モデル推奨 |
 |----------|------|-----------|

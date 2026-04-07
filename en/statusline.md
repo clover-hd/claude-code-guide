@@ -1,6 +1,6 @@
 # Status Line
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -42,7 +42,7 @@ You can use any tool. What matters is **keeping usage visible at all times**.
 
 ### 1. Place the script
 
-Download [`tools/statusline.py`](tools/statusline.py) from this repository to `~/.claude/`.
+Download [`tools/statusline.py`](../tools/statusline.py) from this repository to `~/.claude/`.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/tools/statusline.py \

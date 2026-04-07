@@ -73,7 +73,7 @@ cd my-project && claude
 > /init
 
 # 3. ステータスラインを設定（推奨）
-#    使用率やコンテキスト残量をリアルタイム表示 → 詳細は 18-statusline.md
+#    使用率やコンテキスト残量をリアルタイム表示 → 詳細は statusline.md
 curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/tools/statusline.py -o ~/.claude/statusline.py
 
 # 4. インストール状態の診断（問題がある場合）

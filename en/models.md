@@ -1,6 +1,6 @@
 # Model Differences and Selection / Sonnet 4.6's Major Leap
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -99,4 +99,4 @@ Whether you're in Phase A (project setup) or Phase B (daily development), the th
 
 ### Monitor Token Usage in Real-Time
 
-To make model selection a habit, visibility into current token consumption is key. Setting up the [status line](18-statusline.md) displays your 5-hour and 7-day usage rate in real-time on your Claude Code screen. You can then make judgments like "Sonnet is enough here" or "Let me switch to Opus just for this part" based on remaining quota.
+To make model selection a habit, visibility into current token consumption is key. Setting up the [status line](statusline.md) displays your 5-hour and 7-day usage rate in real-time on your Claude Code screen. You can then make judgments like "Sonnet is enough here" or "Let me switch to Opus just for this part" based on remaining quota.

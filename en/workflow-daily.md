@@ -1,6 +1,6 @@
 # Development Workflow Phase B: Daily Development Cycle
 
-[< Back to Guide](README.en.md) | [< Phase A: Project Initialization](05-workflow-setup.en.md)
+[< Back to Guide](../README.en.md) | [< Phase A: Project Initialization](workflow-setup.md)
 
 ---
 
@@ -455,4 +455,4 @@ For "Can we use this library?" or "Will this design work?" — investigate witho
 
 ## Model Selection Per Workflow
 
-How to pick which model for each phase is detailed in [Model Differences and Selection Guide](04-models.md#workflow-specific-selection-guide). The best practice: **default to Sonnet 4.6, switch to Opus only for deep design decisions like Plan Mode**.
+How to pick which model for each phase is detailed in [Model Differences and Selection Guide](models.md#workflow-specific-selection-guide). The best practice: **default to Sonnet 4.6, switch to Opus only for deep design decisions like Plan Mode**.

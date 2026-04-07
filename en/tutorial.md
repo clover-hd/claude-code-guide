@@ -1,6 +1,6 @@
 # Your First 30 Minutes: Hands-On Tutorial
 
-[< Back to Guide](README.en.md)
+[< Back to Guide](../README.en.md)
 
 ---
 
@@ -186,6 +186,6 @@ You've now experienced:
 
 Next steps:
 
-- Build something more complex → [Daily Development Workflow - Phase B](06-workflow-daily.md)
-- Switch models → [Model Differences](04-models.md)
-- Set up a proper project foundation → [Setup Workflow - Phase A](05-workflow-setup.md)
+- Build something more complex → [Daily Development Workflow - Phase B](workflow-daily.md)
+- Switch models → [Model Differences](models.md)
+- Set up a proper project foundation → [Setup Workflow - Phase A](workflow-setup.md)

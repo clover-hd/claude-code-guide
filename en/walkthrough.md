@@ -207,143 +207,6 @@ Once Phase A is complete, implement features one by one using this cycle:
 4. /commit                             → Commit following rules
 ```
 
-### Using Sub-agents
-
-In Phase B's development cycle, utilize the agents created in Phase A's Step 6.
-
-#### How to Call Agents
-
-When you type `@` in Claude Code's prompt, file path completion works. Specify the agent file path:
-
-```
-> @.claude/agents/backend_developer.md
-> (write your instructions here)
-```
-
-> **Completion tip**: Type `@.cl` and `.claude/` appears as an option. Then select `agents/` → filename.
-
-#### Agent Usage Map
-
-```
-/consult (requirement brainstorming)
-  ↓
-Plan Mode (implementation planning)
-  ↓ Here, ask @.claude/agents/system_architect.md for design review
-  ↓
-Persistence (save to docs/specs/)
-  ↓
-Implementation ← Agents shine here
-  ↓
-Testing ← Ask @.claude/agents/qa_engineer.md to create and run tests
-  ↓
-/commit
-```
-
-#### Information Handoff Between Agents
-
-Sub-agents can reference current context (conversation flow). There are two patterns for information handoff:
-
-**Pattern A: Consecutive calls in same session (without /clear)**
-
-```
-@.claude/agents/backend_developer.md implements
-  ↓ context remains
-@.claude/agents/frontend_developer.md is called
-  → Can see previous implementation and start work immediately
-```
-
-- Information passes without file saving
-- But consumes context (longer conversations degrade quality)
-- Without `/clear`, next agent might act on previous context
-
-**Pattern B: Reset session, then call (using /clear)**
-
-```
-@.claude/agents/backend_developer.md implements → saves to docs/specs/
-  ↓
-/clear to reset context
-  ↓
-@.claude/agents/frontend_developer.md is called
-  → Tell it to "read docs/specs/xxx.md and implement" — share info via files
-```
-
-- Documentation remains for future reference
-- Conserves context
-- Info must be saved to file or it disappears
-
-**Pattern B is recommended** because:
-
-1. **Reusability**: Implementation results remain in files, referenced from other sessions/agents
-2. **Context Savings**: Context margin is crucial for long feature development
-3. **Best Practice**: "Always save deliverables" is fundamental to project management where knowledge persists even when sessions disappear
-
-> Pattern A is handy for "quick questions, immediate handoff" type short tasks. Use what fits your situation.
-
-#### Example Agent Calls
-
-**backend_developer — Spot CRUD API**
-
-```
-> @.claude/agents/backend_developer.md
-> Following the spec in docs/specs/feature-spot-crud.md,
-  implement the CRUD API for outing spots.
-  Persist data to SQLite and write unit tests too.
-```
-
-**backend_developer — Weather API integration**
-
-```
-> @.claude/agents/backend_developer.md
-> Following the spec in docs/specs/feature-weather.md,
-  implement the module that fetches weather forecasts from Open-Meteo API
-  using spot latitude and longitude.
-  Include caching of API responses (about 30 minutes). Mock the API in unit tests.
-```
-
-**frontend_developer — UI and charts**
-
-```
-> @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-weather.md,
-  implement the weather forecast card and weekly weather graph components.
-  Make them work with sample data.
-```
-
-**system_architect — Design review**
-
-```
-> @.claude/agents/system_architect.md
-> Review the current implementation from these perspectives:
-  - Is the separation between backend and frontend appropriate?
-  - Is the weather API caching strategy sound?
-  - Is the structure set up for future map display?
-```
-
-> Getting system_architect to review after 2-3 features are done helps find design issues early.
-
-**qa_engineer — Testing**
-
-```
-> @.claude/agents/qa_engineer.md
-> Enhance unit tests for spot CRUD and recommendation logic.
-  Cover these edge cases:
-  - No spots registered
-  - Weather API returns an error
-  - Spot category is unset
-```
-
-#### Agent Usage Tips
-
-| Tip | Explanation |
-|------|-----------|
-| **Pass specifications** | When you say "follow the spec in docs/specs/xxx.md", agent reads spec then implements |
-| **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
-| **One agent, one task** | Don't say "build UI and API too" — delegate by responsibility |
-| **Review intermediate results** | Have system_architect review once implementation hits a milestone to maintain quality |
-| **Separate testing** | Have implementer write tests too, but having qa_engineer write additional edge case tests improves coverage |
-
----
-
 ### Recommended Implementation Order
 
 Implementing the 4 MVP features in this order shows progress at each stage:
@@ -482,6 +345,144 @@ Once spec is saved, `/clear` then implement:
 > @.claude/agents/qa_engineer.md
 > Test all features end-to-end. If any areas lack coverage, add tests.
 ```
+
+
+---
+
+### Using Sub-agents
+
+In Phase B's development cycle, utilize the agents created in Phase A's Step 6.
+
+#### How to Call Agents
+
+When you type `@` in Claude Code's prompt, file path completion works. Specify the agent file path:
+
+```
+> @.claude/agents/backend_developer.md
+> (write your instructions here)
+```
+
+> **Completion tip**: Type `@.cl` and `.claude/` appears as an option. Then select `agents/` → filename.
+
+#### Agent Usage Map
+
+```
+/consult (requirement brainstorming)
+  ↓
+Plan Mode (implementation planning)
+  ↓ Here, ask @.claude/agents/system_architect.md for design review
+  ↓
+Persistence (save to docs/specs/)
+  ↓
+Implementation ← Agents shine here
+  ↓
+Testing ← Ask @.claude/agents/qa_engineer.md to create and run tests
+  ↓
+/commit
+```
+
+#### Information Handoff Between Agents
+
+Sub-agents can reference current context (conversation flow). There are two patterns for information handoff:
+
+**Pattern A: Consecutive calls in same session (without /clear)**
+
+```
+@.claude/agents/backend_developer.md implements
+  ↓ context remains
+@.claude/agents/frontend_developer.md is called
+  → Can see previous implementation and start work immediately
+```
+
+- Information passes without file saving
+- But consumes context (longer conversations degrade quality)
+- Without `/clear`, next agent might act on previous context
+
+**Pattern B: Reset session, then call (using /clear)**
+
+```
+@.claude/agents/backend_developer.md implements → saves to docs/specs/
+  ↓
+/clear to reset context
+  ↓
+@.claude/agents/frontend_developer.md is called
+  → Tell it to "read docs/specs/xxx.md and implement" — share info via files
+```
+
+- Documentation remains for future reference
+- Conserves context
+- Info must be saved to file or it disappears
+
+**Pattern B is recommended** because:
+
+1. **Reusability**: Implementation results remain in files, referenced from other sessions/agents
+2. **Context Savings**: Context margin is crucial for long feature development
+3. **Best Practice**: "Always save deliverables" is fundamental to project management where knowledge persists even when sessions disappear
+
+> Pattern A is handy for "quick questions, immediate handoff" type short tasks. Use what fits your situation.
+
+#### Example Agent Calls
+
+**backend_developer — Spot CRUD API**
+
+```
+> @.claude/agents/backend_developer.md
+> Following the spec in docs/specs/feature-spot-crud.md,
+  implement the CRUD API for outing spots.
+  Persist data to SQLite and write unit tests too.
+```
+
+**backend_developer — Weather API integration**
+
+```
+> @.claude/agents/backend_developer.md
+> Following the spec in docs/specs/feature-weather.md,
+  implement the module that fetches weather forecasts from Open-Meteo API
+  using spot latitude and longitude.
+  Include caching of API responses (about 30 minutes). Mock the API in unit tests.
+```
+
+**frontend_developer — UI and charts**
+
+```
+> @.claude/agents/frontend_developer.md
+> Following the spec in docs/specs/feature-weather.md,
+  implement the weather forecast card and weekly weather graph components.
+  Make them work with sample data.
+```
+
+**system_architect — Design review**
+
+```
+> @.claude/agents/system_architect.md
+> Review the current implementation from these perspectives:
+  - Is the separation between backend and frontend appropriate?
+  - Is the weather API caching strategy sound?
+  - Is the structure set up for future map display?
+```
+
+> Getting system_architect to review after 2-3 features are done helps find design issues early.
+
+**qa_engineer — Testing**
+
+```
+> @.claude/agents/qa_engineer.md
+> Enhance unit tests for spot CRUD and recommendation logic.
+  Cover these edge cases:
+  - No spots registered
+  - Weather API returns an error
+  - Spot category is unset
+```
+
+#### Agent Usage Tips
+
+| Tip | Explanation |
+|------|-----------|
+| **Pass specifications** | When you say "follow the spec in docs/specs/xxx.md", agent reads spec then implements |
+| **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
+| **One agent, one task** | Don't say "build UI and API too" — delegate by responsibility |
+| **Review intermediate results** | Have system_architect review once implementation hits a milestone to maintain quality |
+| **Separate testing** | Have implementer write tests too, but having qa_engineer write additional edge case tests improves coverage |
 
 ---
 

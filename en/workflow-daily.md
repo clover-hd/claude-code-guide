@@ -276,7 +276,7 @@ You: (Press Escape to interrupt)
 **Automatic delegation to sub-agents**
 
 For large tasks, Claude may automatically delegate to sub-agents:
-- Backend implementation → `backend_developer` agent
+- Feature implementation → `developer` agent
 - Test creation → `qa_engineer` agent
 - Technical research needed → `tech_researcher` agent
 

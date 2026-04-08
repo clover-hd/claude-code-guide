@@ -136,7 +136,7 @@ my-new-project/
     │   └── commit/SKILL.md                ← コミットスキル
     └── agents/
         ├── system_architect.md            ← 設計責任者
-        ├── developer.md                   ← 実装担当（例：backend_developer）
+        ├── developer.md                   ← フルスタック実装担当
         └── qa_engineer.md                 ← 品質管理
 ```
 
@@ -185,7 +185,7 @@ Claudeが既存ドキュメントを読み込んでA4から進めてくれます
 
 ### 作られたエージェントやスキルが微妙だったら？
 
-そのまま手動で `.claude/agents/` や `.claude/skills/` のファイルを編集してください。もしくはClaude Codeに「backend_developerのConstraintsに○○を追加して」と指示すれば修正してくれます。プロジェクト設定は使いながら育てるものです。
+そのまま手動で `.claude/agents/` や `.claude/skills/` のファイルを編集してください。もしくはClaude Codeに「developerのConstraintsに○○を追加して」と指示すれば修正してくれます。プロジェクト設定は使いながら育てるものです。
 
 ### .gitignore の内容を変更したい
 

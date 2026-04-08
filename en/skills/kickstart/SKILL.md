@@ -343,7 +343,7 @@ Create `.claude/agents/` based on A4 architecture.
 | Order | Agent | Why |
 |-------|-------|-----|
 | 1 | **system_architect** | Guardian of design. Source of rules others reference |
-| 2 | **developer** | Implementation per architecture (e.g., `backend_developer`) |
+| 2 | **developer** | Full-stack implementation specialist per architecture |
 | 3 | **qa_engineer** | Testing and quality |
 
 > **Key**: Add tech_researcher, frontend_developer, etc. as needed. No need to create everything upfront.

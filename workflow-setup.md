@@ -227,7 +227,7 @@ src/
 | 順序 | エージェント | 理由 |
 |------|-------------|------|
 | 1 | **system_architect** | 全体設計の番人。他のエージェントが参照するルールの源泉 |
-| 2 | **developer** | アーキテクチャに合わせた実装担当（例：`backend_developer`） |
+| 2 | **developer** | アーキテクチャに合わせたフルスタック実装担当 |
 | 3 | **qa_engineer** | テスト作成、品質管理 |
 
 プロジェクトが大きくなって分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加していきます。詳しくは[サブエージェント](sub-agents.md)を参照してください。
@@ -236,24 +236,23 @@ src/
 
 ```markdown
 ---
-name: backend-developer
-description: Express + Prisma でAPIを構築する専門家。（← アーキテクチャに依存）
+name: developer
+description: React + Express + SQLite でフルスタック開発を行う専門家。（← アーキテクチャに依存）
 ---
 
 # Role
-Node.js (Express), MySQL, Prisma ORM のスペシャリスト。
+React, Node.js (Express), SQLite のフルスタックスペシャリスト。
 
 # Goals
-1. docs/ の仕様に従ってAPIを実装する
+1. docs/ の仕様に従って機能を実装する
 2. Clean Architectureのパターンを維持する    ← アーキテクチャに依存
 
 # Constraints
-- フロントエンドのコードは触らない           ← 分業の定義
 - 仕様変更が必要な場合はarchitectに差し戻す  ← architect依存
 ```
 
 > **なぜアーキテクチャが先なのか？**
-> 例えば `backend_developer` の定義に「Prisma ORMの専門家」「Clean Architectureに従う」と書くには、その技術選定が確定している必要があります。アーキテクチャ未定のまま作ると、後で全エージェントを書き直す羽目になります。
+> 例えば `developer` の定義に「SQLiteで永続化」「Clean Architectureに従う」と書くには、その技術選定が確定している必要があります。アーキテクチャ未定のまま作ると、後で全エージェントを書き直す羽目になります。
 
 ---
 
@@ -269,7 +268,7 @@ Node.js (Express), MySQL, Prisma ORM のスペシャリスト。
 │   └── review/SKILL.md      ← コードレビュー
 ├── agents/
 │   ├── system_architect.md  ← A6で作成済み
-│   ├── developer.md         ← 実装担当（例：backend_developer）
+│   ├── developer.md         ← フルスタック実装担当
 │   └── qa_engineer.md       ← 品質管理
 └── settings.json            ← Hooks（自動フォーマット等）
 ```

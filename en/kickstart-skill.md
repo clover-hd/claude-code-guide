@@ -136,7 +136,7 @@ my-new-project/
     │   └── commit/SKILL.md                ← Commit skill
     └── agents/
         ├── system_architect.md            ← System architect
-        ├── developer.md                   ← Implementation (e.g., backend_developer)
+        ├── developer.md                   ← Full-stack implementation
         └── qa_engineer.md                 ← QA
 ```
 
@@ -185,7 +185,7 @@ No. **A1-A3 on Day 1, A4-A7 on Day 2** is recommended. Sleeping on requirements 
 
 ### The generated agents or skills aren't perfect
 
-Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude Code "Add X to the backend_developer agent's Constraints" and it will fix it. Project settings grow as you use them.
+Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude Code "Add X to the developer agent's Constraints" and it will fix it. Project settings grow as you use them.
 
 ### I want to change .gitignore contents
 

@@ -227,7 +227,7 @@ Start with a minimum of three agents:
 | Order | Agent | Reason |
 |-------|-------|--------|
 | 1 | **system_architect** | Keeper of overall design. Source of truth for other agents' rules |
-| 2 | **developer** | Implementation specialist per architecture (e.g., `backend_developer`) |
+| 2 | **developer** | Full-stack implementation specialist per architecture |
 | 3 | **qa_engineer** | Test creation, quality management |
 
 As the project grows and requires division of labor, add tech_researcher, frontend_developer, ui_ux_designer, etc. See [Sub-agents](sub-agents.md) for details.
@@ -236,24 +236,23 @@ What each agent should contain:
 
 ```markdown
 ---
-name: backend-developer
-description: API development specialist using Express + Prisma. (← Architecture-dependent)
+name: developer
+description: Full-stack specialist using React + Express + SQLite. (← Architecture-dependent)
 ---
 
 # Role
-Specialist in Node.js (Express), MySQL, Prisma ORM.
+Full-stack specialist in React, Node.js (Express), SQLite.
 
 # Goals
-1. Implement APIs following specs in docs/
+1. Implement features following specs in docs/
 2. Maintain Clean Architecture patterns    ← Architecture-dependent
 
 # Constraints
-- Never touch frontend code             ← Division of labor definition
 - If spec changes needed, defer to architect ← Architect dependency
 ```
 
 > **Why architecture first?**
-> To write "Prisma ORM specialist" and "Clean Architecture follower" in `backend_developer`'s definition, those technology choices must already be confirmed. Without decided architecture, you'll end up rewriting all agents later.
+> To write "SQLite for persistence" and "Clean Architecture follower" in `developer`'s definition, those technology choices must already be confirmed. Without decided architecture, you'll end up rewriting all agents later.
 
 ---
 
@@ -269,7 +268,7 @@ Final infrastructure setup.
 │   └── review/SKILL.md      ← Code review
 ├── agents/
 │   ├── system_architect.md  ← Created in A6
-│   ├── developer.md         ← Implementation (e.g., backend_developer)
+│   ├── developer.md         ← Full-stack implementation
 │   └── qa_engineer.md       ← Quality management
 └── settings.json            ← Hooks (auto-format, etc.)
 ```

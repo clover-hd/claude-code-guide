@@ -18,7 +18,7 @@ Place Markdown files in the `.claude/agents/` directory:
 .claude/
 └── agents/
     ├── system_architect.md     ← Design lead
-    ├── developer.md            ← Implementation (e.g., backend_developer.md)
+    ├── developer.md            ← Full-stack implementation
     ├── qa_engineer.md          ← Quality management
     └── ...                     ← Add as needed
 ```
@@ -35,7 +35,7 @@ More agents don't automatically mean better. **Start with three agents**, then e
 
 These three create the "design → implement → verify" cycle. Perfect for solo work or small teams.
 
-> **Key Point**: Name and specialize the `developer` agent to your project's tech stack. For example, `backend_developer` (Express + Prisma specialist).
+> **Key Point**: Write specific tech stack names in `developer`'s description. For example, "full-stack development with React + Express + SQLite." When you need division of labor, see "Scale Up" below.
 
 ## Scale Up — For Larger Projects
 
@@ -93,7 +93,7 @@ Open-source agent definitions are published widely on GitHub. These are useful r
 
 ### Why Build Project-Specific Agents
 
-A generic "backend_developer" knows only general backend patterns. It doesn't know your project's unique rules — tech stack, design patterns, directory structure, labor division. It must guess from scratch every time.
+A generic "developer" agent knows only general development patterns. It doesn't know your project's unique rules — tech stack, design patterns, directory structure. It must guess from scratch every time.
 
 ```
 Generic agent:
@@ -162,23 +162,23 @@ Step 3: Instruct Claude Code to generate agents (↓ see below)
 ```
 You: I want to create sub-agents.
      Using the OSS agent definitions below as reference,
-     create a backend_developer agent for this project.
+     create a developer agent for this project.
 
      【Reference OSS definitions】
      (paste OSS agent definitions here)
 
      Check docs/architecture.md for project architecture.
      Reflect CLAUDE.md rules too.
-     Save to .claude/agents/backend_developer.md.
+     Save to .claude/agents/developer.md.
 
 Claude: Examined codebase.
-        - Tech Stack: Express + Prisma + TypeScript
+        - Tech Stack: React + Express + SQLite + TypeScript
         - Design Pattern: Clean Architecture
         - Directories: src/domain/, src/infrastructure/, src/interface/
         - Tests: Jest, tests/unit/
 
         Creating agent reflecting these...
-        (.claude/agents/backend_developer.md generated)
+        (.claude/agents/developer.md generated)
 ```
 
 Claude automatically incorporates:

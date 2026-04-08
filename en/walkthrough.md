@@ -164,11 +164,10 @@ For this project, you'll likely get a team like:
 | Agent | Role |
 |-------|------|
 | system_architect | Guardian of overall design |
-| backend_developer | CRUD API and weather API integration |
-| frontend_developer | UI, charts, and card implementation |
+| developer | Full-stack implementation (CRUD API, weather API integration, UI, charts) |
 | qa_engineer | Testing |
 
-Verify that each agent's description includes **specific technology stack names** (not just "frontend developer" but "build dashboard with React + Recharts").
+Verify that each agent's description includes **specific technology stack names** (not just "developer" but "build full-stack with backend framework, SQLite, React + Recharts").
 
 ---
 
@@ -224,26 +223,19 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/backend_developer.md
-> Following the spec in docs/specs/feature-spot-crud.md, implement it.
-  Use SQLite for persistence. Write unit tests too.
-```
-
-Once backend is done, implement frontend:
-
-```
-> /clear
-> @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-spot-crud.md,
-  implement the spot list display, registration form, edit, and delete UI.
-  Use category-specific icons to make it visually appealing.
+> @.claude/agents/developer.md
+> Following the spec in docs/specs/feature-spot-crud.md, implement the full-stack feature.
+  Implement the CRUD API with SQLite persistence, and build the spot list display,
+  registration form, edit, and delete UI. Use category-specific icons to make it visually appealing.
+  Write unit tests too.
 ```
 
 What you're building:
+- Spot CRUD API with SQLite persistence
 - Spot registration form (name, address, category)
 - Spot list (card display)
 - Edit and delete functionality
-- SQLite data persistence
+- Unit tests
 
 ```
 Completion image: Register spot → displays as a card in the list
@@ -263,24 +255,18 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/backend_developer.md
-> Following the spec in docs/specs/feature-weather.md,
-  implement the module that fetches weather forecasts from Open-Meteo API.
-  Include caching (about 30 minutes). Mock the API in unit tests.
-```
-
-```
-> /clear
-> @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-weather.md,
-  implement the weather forecast card component.
-  Display weather icons, temperature, and precipitation probability. Make it work with sample data.
+> @.claude/agents/developer.md
+> Following the spec in docs/specs/feature-weather.md, implement the full-stack feature.
+  Implement the module that fetches weather forecasts from Open-Meteo API with caching (about 30 minutes).
+  Build the weather forecast card component displaying weather icons, temperature, and precipitation probability.
+  Include unit tests with mocked API responses.
 ```
 
 What you're building:
 - Open-Meteo API integration module
 - API response caching
 - Weather forecast card (weather icons, temperature, precipitation)
+- Unit tests
 
 ```
 Completion image: Select a spot → weather forecast card displays
@@ -308,9 +294,10 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/frontend_developer.md
+> @.claude/agents/developer.md
 > Following the spec in docs/specs/feature-weather-chart.md, implement it.
-  Use a chart library to make visually appealing graphs.
+  Build the weekly weather graph components using a chart library to make visually appealing graphs
+  for temperature trends and precipitation probability.
 ```
 
 #### Fourth Cycle: Recommended Spots
@@ -326,16 +313,9 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/backend_developer.md
-> Following the spec in docs/specs/feature-recommend.md,
-  implement the recommendation logic. Write tests too.
-```
-
-```
-> /clear
-> @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-recommend.md,
-  implement the "today's recommended" spot card UI.
+> @.claude/agents/developer.md
+> Following the spec in docs/specs/feature-recommend.md, implement the full-stack feature.
+  Implement the recommendation logic with tests, and build the "today's recommended" spot card UI.
   Make the card background color and icons change based on the weather.
 ```
 
@@ -358,7 +338,7 @@ In Phase B's development cycle, utilize the agents created in Phase A's Step 6.
 When you type `@` in Claude Code's prompt, file path completion works. Specify the agent file path:
 
 ```
-> @.claude/agents/backend_developer.md
+> @.claude/agents/developer.md
 > (write your instructions here)
 ```
 
@@ -374,7 +354,7 @@ Plan Mode (implementation planning)
   ↓
 Persistence (save to docs/specs/)
   ↓
-Implementation ← Agents shine here
+Implementation ← Ask @.claude/agents/developer.md to implement full-stack
   ↓
 Testing ← Ask @.claude/agents/qa_engineer.md to create and run tests
   ↓
@@ -383,72 +363,56 @@ Testing ← Ask @.claude/agents/qa_engineer.md to create and run tests
 
 #### Information Handoff Between Agents
 
-Sub-agents can reference current context (conversation flow). There are two patterns for information handoff:
+Sub-agents can reference current context (conversation flow). When working with a single developer agent and other agents, this pattern works well:
 
-**Pattern A: Consecutive calls in same session (without /clear)**
-
-```
-@.claude/agents/backend_developer.md implements
-  ↓ context remains
-@.claude/agents/frontend_developer.md is called
-  → Can see previous implementation and start work immediately
-```
-
-- Information passes without file saving
-- But consumes context (longer conversations degrade quality)
-- Without `/clear`, next agent might act on previous context
-
-**Pattern B: Reset session, then call (using /clear)**
+**Reset session, then call (using /clear)**
 
 ```
-@.claude/agents/backend_developer.md implements → saves to docs/specs/
+/consult brainstorms feature → saves to docs/specs/
   ↓
 /clear to reset context
   ↓
-@.claude/agents/frontend_developer.md is called
+@.claude/agents/developer.md is called
   → Tell it to "read docs/specs/xxx.md and implement" — share info via files
+  ↓
+After implementation, /clear again if needed
+  ↓
+@.claude/agents/qa_engineer.md is called
+  → References spec and implementation files
 ```
 
 - Documentation remains for future reference
 - Conserves context
 - Info must be saved to file or it disappears
 
-**Pattern B is recommended** because:
+**This pattern is recommended** because:
 
 1. **Reusability**: Implementation results remain in files, referenced from other sessions/agents
 2. **Context Savings**: Context margin is crucial for long feature development
 3. **Best Practice**: "Always save deliverables" is fundamental to project management where knowledge persists even when sessions disappear
-
-> Pattern A is handy for "quick questions, immediate handoff" type short tasks. Use what fits your situation.
+4. **Clear handoff**: Developer agent reads the spec and implements based on documented requirements
 
 #### Example Agent Calls
 
-**backend_developer — Spot CRUD API**
+**developer — Spot CRUD (full-stack)**
 
 ```
-> @.claude/agents/backend_developer.md
+> @.claude/agents/developer.md
 > Following the spec in docs/specs/feature-spot-crud.md,
-  implement the CRUD API for outing spots.
-  Persist data to SQLite and write unit tests too.
+  implement the full-stack CRUD feature for outing spots.
+  Build the API with SQLite persistence and the UI components.
+  Write unit tests for both backend and frontend.
 ```
 
-**backend_developer — Weather API integration**
+**developer — Weather display (full-stack)**
 
 ```
-> @.claude/agents/backend_developer.md
+> @.claude/agents/developer.md
 > Following the spec in docs/specs/feature-weather.md,
-  implement the module that fetches weather forecasts from Open-Meteo API
-  using spot latitude and longitude.
-  Include caching of API responses (about 30 minutes). Mock the API in unit tests.
-```
-
-**frontend_developer — UI and charts**
-
-```
-> @.claude/agents/frontend_developer.md
-> Following the spec in docs/specs/feature-weather.md,
-  implement the weather forecast card and weekly weather graph components.
-  Make them work with sample data.
+  implement the full-stack weather feature.
+  Build the module that fetches forecasts from Open-Meteo API with caching (about 30 minutes),
+  and implement the weather forecast card component.
+  Include unit tests with mocked API responses.
 ```
 
 **system_architect — Design review**
@@ -456,7 +420,7 @@ Sub-agents can reference current context (conversation flow). There are two patt
 ```
 > @.claude/agents/system_architect.md
 > Review the current implementation from these perspectives:
-  - Is the separation between backend and frontend appropriate?
+  - Is the architecture appropriate for adding the remaining features?
   - Is the weather API caching strategy sound?
   - Is the structure set up for future map display?
 ```
@@ -480,9 +444,9 @@ Sub-agents can reference current context (conversation flow). There are two patt
 |------|-----------|
 | **Pass specifications** | When you say "follow the spec in docs/specs/xxx.md", agent reads spec then implements |
 | **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
-| **One agent, one task** | Don't say "build UI and API too" — delegate by responsibility |
+| **Focus per agent** | developer handles full-stack implementation; system_architect handles design review; qa_engineer handles testing |
 | **Review intermediate results** | Have system_architect review once implementation hits a milestone to maintain quality |
-| **Separate testing** | Have implementer write tests too, but having qa_engineer write additional edge case tests improves coverage |
+| **Separate testing** | Have developer write tests too, but having qa_engineer write additional edge case tests improves coverage |
 
 ---
 

@@ -4,7 +4,9 @@ This document is a practical guide for getting your project up and running from 
 
 By actually following these steps, you'll experience the entire guide workflow firsthand.
 
-> **Note**: This project uses the [Open-Meteo API](https://open-meteo.com/) to retrieve weather data. It's free for non-commercial and learning purposes, but please check the [terms of service](https://open-meteo.com/en/terms) before running.
+> **Note**: This project uses the following external services. Both are free and require no API key, but please review each service's usage policy before running.
+> - **Open-Meteo API** (weather data): [Terms of service](https://open-meteo.com/en/terms)
+> - **OpenStreetMap** (map tiles): [Tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (attribution `© OpenStreetMap contributors` is required; Leaflet displays this by default)
 
 ---
 
@@ -56,13 +58,12 @@ Claude will dive deeper, so communicate these key points:
 
 **Example MVP features (narrow down to about 4):**
 
-1. Register, edit, and delete favorite outing spots (CRUD)
+1. Register, edit, and delete favorite outing spots (CRUD) + display on map (Leaflet + OpenStreetMap)
 2. Fetch and display weather forecasts for current location and registered spots via weather API
 3. Display weekly weather as graphs (temperature trends and precipitation probability)
 4. Suggest "today's recommended spots" based on weather and category
 
 **Example future features:**
-- Map display (Leaflet + OpenStreetMap)
 - Photo uploads for spots
 - Sharing with family and friends
 - Visit history logging and reflection
@@ -122,6 +123,7 @@ Since this project is "a local web app + external API integration":
 | Backend | Lightweight framework | Focused on CRUD and API relay; no heavy framework needed |
 | DB | SQLite | Necessary for persisting location data; lightweight is sufficient |
 | External API | Open-Meteo (no API key) | Free, no authentication, and permissive limits for non-commercial use |
+| Map | Leaflet + OpenStreetMap | No API key needed, free, lightweight. Perfect for displaying spot locations |
 | Infrastructure | Local execution | MVP runs on localhost; set up for future deployment |
 
 ```
@@ -216,7 +218,8 @@ Implementing the 4 MVP features in this order shows progress at each stage:
 > /consult
 > As the first feature, I want to register, edit, and delete outing spots.
   Each spot has a name, address (or latitude/longitude), and category
-  (park, cafe, museum, etc.). Save the spec to docs/specs/feature-spot-crud.md.
+  (park, cafe, museum, etc.). Also display spots on a map using Leaflet and OpenStreetMap.
+  Save the spec to docs/specs/feature-spot-crud.md.
 ```
 
 Once spec is saved, `/clear` then implement:
@@ -227,6 +230,7 @@ Once spec is saved, `/clear` then implement:
 > Following the spec in docs/specs/feature-spot-crud.md, implement the full-stack feature.
   Implement the CRUD API with SQLite persistence, and build the spot list display,
   registration form, edit, and delete UI. Use category-specific icons to make it visually appealing.
+  Also implement a map component using Leaflet and OpenStreetMap to display all registered spots.
   Write unit tests too.
 ```
 
@@ -235,10 +239,11 @@ What you're building:
 - Spot registration form (name, address, category)
 - Spot list (card display)
 - Edit and delete functionality
+- Map display with spots (Leaflet + OpenStreetMap)
 - Unit tests
 
 ```
-Completion image: Register spot → displays as a card in the list
+Completion image: Register spot → displays as a card in the list and on the map
 ```
 
 #### Second Cycle: Weather Display
@@ -422,7 +427,7 @@ After implementation, /clear again if needed
 > Review the current implementation from these perspectives:
   - Is the architecture appropriate for adding the remaining features?
   - Is the weather API caching strategy sound?
-  - Is the structure set up for future map display?
+  - Is the map display integration with spot CRUD well-designed?
 ```
 
 > Getting system_architect to review after 2-3 features are done helps find design issues early.

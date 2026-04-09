@@ -4,6 +4,19 @@ This document is a practical guide for getting your project up and running from 
 
 By actually following these steps, you'll experience the entire guide workflow firsthand.
 
+### What You'll Build
+
+> The following screenshots are from an app actually built by following this walkthrough. Your results will vary depending on how you write your prompts and decisions you make, so treat these as a reference image of what's possible.
+
+<table>
+  <tr>
+    <td align="center"><img src="../images/outing-planner1.png" width="180"><br><b>Recommendations + Map</b></td>
+    <td align="center"><img src="../images/outing-planner3.png" width="180"><br><b>Spot Details + Weather</b></td>
+    <td align="center"><img src="../images/outing-planner4.png" width="180"><br><b>Weekly Weather Graph</b></td>
+    <td align="center"><img src="../images/outing-planner2.png" width="180"><br><b>Spot Registration</b></td>
+  </tr>
+</table>
+
 > **Note**: This project uses the following external services. Both are free and require no API key, but please review each service's usage policy before running.
 > - **Open-Meteo API** (weather data): [Terms of service](https://open-meteo.com/en/terms)
 > - **OpenStreetMap** (map tiles): [Tile usage policy](https://operations.osmfoundation.org/policies/tiles/) (attribution `© OpenStreetMap contributors` is required; Leaflet displays this by default)
@@ -226,13 +239,14 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-spot-crud.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-spot-crud.md, implement the full-stack feature.
   Implement the CRUD API with SQLite persistence, and build the spot list display,
   registration form, edit, and delete UI. Use category-specific icons to make it visually appealing.
   Also implement a map component using Leaflet and OpenStreetMap to display all registered spots.
   Write unit tests too.
 ```
+
+> **Note**: The `@.claude/agents/developer.md` path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
 
 What you're building:
 - Spot CRUD API with SQLite persistence
@@ -260,8 +274,7 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-weather.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather.md, implement the full-stack feature.
   Implement the module that fetches weather forecasts from Open-Meteo API with caching (about 30 minutes).
   Build the weather forecast card component displaying weather icons, temperature, and precipitation probability.
   Include unit tests with mocked API responses.
@@ -280,8 +293,7 @@ Completion image: Select a spot → weather forecast card displays
 **Recommended: Have system_architect review once here:**
 
 ```
-> @.claude/agents/system_architect.md
-> Review the first and second cycles of implementation.
+> @.claude/agents/system_architect.md Review the first and second cycles of implementation.
   Is data flow and component separation appropriate?
   Any issues that might come up adding the remaining 2 features?
 ```
@@ -299,8 +311,7 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-weather-chart.md, implement it.
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather-chart.md, implement it.
   Build the weekly weather graph components using a chart library to make visually appealing graphs
   for temperature trends and precipitation probability.
 ```
@@ -318,8 +329,7 @@ Once spec is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-recommend.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-recommend.md, implement the full-stack feature.
   Implement the recommendation logic with tests, and build the "today's recommended" spot card UI.
   Make the card background color and icons change based on the weather.
 ```
@@ -327,8 +337,7 @@ Once spec is saved, `/clear` then implement:
 **Wrapping up after MVP completion:**
 
 ```
-> @.claude/agents/qa_engineer.md
-> Test all features end-to-end. If any areas lack coverage, add tests.
+> @.claude/agents/qa_engineer.md Test all features end-to-end. If any areas lack coverage, add tests.
 ```
 
 
@@ -343,11 +352,12 @@ In Phase B's development cycle, utilize the agents created in Phase A's Step 6.
 When you type `@` in Claude Code's prompt, file path completion works. Specify the agent file path:
 
 ```
-> @.claude/agents/developer.md
-> (write your instructions here)
+> @.claude/agents/developer.md (write your instructions here)
 ```
 
-> **Completion tip**: Type `@.cl` and `.claude/` appears as an option. Then select `agents/` → filename.
+> **Important**: The `@agent-path` and your instructions must be sent as **a single message**. If you send just the path, the agent will start running without instructions.
+
+> **Completion tip**: Type `@.cl` and `.claude/` appears as an option. Then select `agents/` → filename. After completing the path, continue typing your instructions before pressing Enter.
 
 #### Agent Usage Map
 
@@ -402,8 +412,7 @@ After implementation, /clear again if needed
 **developer — Spot CRUD (full-stack)**
 
 ```
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-spot-crud.md,
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-spot-crud.md,
   implement the full-stack CRUD feature for outing spots.
   Build the API with SQLite persistence and the UI components.
   Write unit tests for both backend and frontend.
@@ -412,8 +421,7 @@ After implementation, /clear again if needed
 **developer — Weather display (full-stack)**
 
 ```
-> @.claude/agents/developer.md
-> Following the spec in docs/specs/feature-weather.md,
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather.md,
   implement the full-stack weather feature.
   Build the module that fetches forecasts from Open-Meteo API with caching (about 30 minutes),
   and implement the weather forecast card component.
@@ -423,8 +431,7 @@ After implementation, /clear again if needed
 **system_architect — Design review**
 
 ```
-> @.claude/agents/system_architect.md
-> Review the current implementation from these perspectives:
+> @.claude/agents/system_architect.md Review the current implementation from these perspectives:
   - Is the architecture appropriate for adding the remaining features?
   - Is the weather API caching strategy sound?
   - Is the map display integration with spot CRUD well-designed?
@@ -435,8 +442,7 @@ After implementation, /clear again if needed
 **qa_engineer — Testing**
 
 ```
-> @.claude/agents/qa_engineer.md
-> Enhance unit tests for spot CRUD and recommendation logic.
+> @.claude/agents/qa_engineer.md Enhance unit tests for spot CRUD and recommendation logic.
   Cover these edge cases:
   - No spots registered
   - Weather API returns an error

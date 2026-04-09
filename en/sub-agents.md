@@ -23,6 +23,45 @@ Place Markdown files in the `.claude/agents/` directory:
     └── ...                     ← Add as needed
 ```
 
+## How to Invoke
+
+Once agents are defined, there are three ways to call them. Choose based on your use case.
+
+### 1. @-mention (recommended)
+
+Type `@` to bring up the typeahead. Select the agent, then **continue typing your instructions** before pressing Enter.
+
+```
+> @.claude/agents/developer.md Following the spec in docs/specs/feature-crud.md, implement this feature.
+```
+
+> **Note**: The agent path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
+
+This is the most reliable method. You have explicit control over which agent runs.
+
+### 2. Natural language
+
+Mention the agent's name in your prompt and Claude will decide whether to delegate.
+
+```
+> Use the developer agent to implement this feature
+> Have the system_architect review this design
+```
+
+Convenient, but Claude may or may not delegate based on its judgment. Use @-mention when you need certainty.
+
+### 3. `--agent` flag for session-wide use
+
+Use this when you want the entire session to run as a single agent.
+
+```bash
+claude --agent .claude/agents/developer.md
+```
+
+In this mode, all interactions in the session use that agent's system prompt, tool restrictions, and model settings.
+
+---
+
 ## Start with Three — Starter Configuration
 
 More agents don't automatically mean better. **Start with three agents**, then expand as needed.

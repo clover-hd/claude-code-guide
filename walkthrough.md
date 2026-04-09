@@ -4,6 +4,19 @@
 
 実際にこの手順に沿って進めることで、ガイド全体の流れを体験できます。
 
+### こんなアプリが作れます
+
+> 以下は実際にこのウォークスルーに沿って作成したアプリのスクリーンショットです。プロンプトの書き方や判断によって仕上がりは変わるので、あくまで参考イメージとしてご覧ください。
+
+<table>
+  <tr>
+    <td align="center"><img src="images/outing-planner1.png" width="180"><br><b>おすすめ＋地図</b></td>
+    <td align="center"><img src="images/outing-planner3.png" width="180"><br><b>スポット＋天気</b></td>
+    <td align="center"><img src="images/outing-planner4.png" width="180"><br><b>週間グラフ</b></td>
+    <td align="center"><img src="images/outing-planner2.png" width="180"><br><b>スポット登録</b></td>
+  </tr>
+</table>
+
 > **Note**: このプロジェクトでは以下の外部サービスを使用します。いずれも無料・APIキー不要ですが、実行の際は各サービスの利用ポリシーを確認してください。
 > - **Open-Meteo API**（天気データ）: [利用規約](https://open-meteo.com/en/terms)
 > - **OpenStreetMap**（地図タイル）: [タイル利用ポリシー](https://operations.osmfoundation.org/policies/tiles/)（帰属表示 `© OpenStreetMap contributors` が必要。Leafletはデフォルトで表示します）

@@ -9,7 +9,7 @@ Claude Codeのターミナル下部に、**使用率・コンテキスト残量�
 ## 表示内容
 
 ```
-ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | ctx:85%
+ai:main ↑2 | Opus 5.5 | 5h:32% 3h24m | 7d all:18% 2d04h / fable:25% 2d04h | ctx:85%
 ```
 
 | セクション | 内容 |
@@ -17,7 +17,7 @@ ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | c
 | **repo:branch** | リポジトリ名、ブランチ名、↑↓でpush/pull状態 |
 | **モデル名** | 現在使用中のモデル |
 | **5h** | 5時間ローリングウィンドウの使用率（OAuth Usage API） |
-| **7d** | 7日間の使用率（all/opus/sonnet別） |
+| **7d** | 7日間の使用率。全体（all）に加え、モデルごとの週の上限があるもの（opus / sonnet / fable 等）はデータがあるものだけ表示 |
 | **ctx** | コンテキストウィンドウの残量 |
 
 ### 色分け
@@ -84,6 +84,8 @@ curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/to
 
 - **macOS**: macOS Keychainから自動取得（Claude Codeログイン済みなら設定不要）
 - **Linux/WSL**: `~/.claude/.credentials.json` から読み取り
+
+> 環境変数 `CLAUDE_CONFIG_DIR` で設定ディレクトリを切り替えている場合は、そのディレクトリの認証情報とキャッシュを使います（アカウントごとに別の数値が表示されます）。
 
 ### APIキャッシュ
 

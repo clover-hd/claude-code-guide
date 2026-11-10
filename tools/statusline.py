@@ -4,10 +4,15 @@
 Data sources:
   - stdin JSON: branch, workspace, session tokens, context window
   - OAuth Usage API: 5h/7d utilization % and reset time
-  - Credentials: macOS Keychain or ~/.claude/.credentials.json (WSL/Linux)
+  - Credentials: macOS Keychain or $CLAUDE_CONFIG_DIR/.credentials.json (WSL/Linux)
+
+CLAUDE_CONFIG_DIR (default ~/.claude) selects credentials and the usage cache,
+so each config dir / account gets its own numbers.
 """
 
+import hashlib
 import json
+import os
 import platform
 import select
 import subprocess
@@ -17,7 +22,8 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-CLAUDE_DIR = Path.home() / ".claude"
+_config_env = os.environ.get("CLAUDE_CONFIG_DIR")
+CLAUDE_DIR = Path(_config_env).expanduser() if _config_env else Path.home() / ".claude"
 USAGE_CACHE = CLAUDE_DIR / "statusline-usage-cache.json"
 USAGE_CACHE_TTL = 600  # seconds (10 min - API allows ~5 req before 429)
 
@@ -28,13 +34,22 @@ USAGE_CACHE_TTL = 600  # seconds (10 min - API allows ~5 req before 429)
 def get_oauth_token():
     try:
         if platform.system() == "Darwin":
-            result = subprocess.run(
-                ["security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
-                capture_output=True, text=True, timeout=5,
-            )
-            if result.returncode != 0:
+            services = ["Claude Code-credentials"]
+            if _config_env:
+                # Claude Code suffixes the Keychain entry with a hash of the config dir
+                suffix = hashlib.sha256(str(CLAUDE_DIR).encode()).hexdigest()[:8]
+                services.insert(0, f"Claude Code-credentials-{suffix}")
+            creds = None
+            for service in services:
+                result = subprocess.run(
+                    ["security", "find-generic-password", "-s", service, "-w"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                if result.returncode == 0:
+                    creds = json.loads(result.stdout.strip())
+                    break
+            if creds is None:
                 return None
-            creds = json.loads(result.stdout.strip())
         else:
             cred_file = CLAUDE_DIR / ".credentials.json"
             if not cred_file.exists():
@@ -270,6 +285,20 @@ def _main():
             for label, data in seven_d_items:
                 if data and data.get("utilization") is not None:
                     seven_d_parts.append(fmt_limit(label, data))
+            # Model-scoped weekly limits (e.g. Fable) only appear in `limits`
+            shown = {label for label, data in seven_d_items if data and data.get("utilization") is not None}
+            for lim in usage.get("limits") or []:
+                if lim.get("kind") != "weekly_scoped":
+                    continue
+                model = ((lim.get("scope") or {}).get("model") or {})
+                label = (model.get("display_name") or model.get("id") or "").lower()
+                if not label or label in shown or lim.get("percent") is None:
+                    continue
+                shown.add(label)
+                seven_d_parts.append(fmt_limit(label, {
+                    "utilization": lim.get("percent"),
+                    "resets_at": lim.get("resets_at"),
+                }))
             if seven_d_parts:
                 parts.append(f"7d {' / '.join(seven_d_parts)}")
         else:

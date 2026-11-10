@@ -9,7 +9,7 @@ Claude Code's terminal can display **usage rates, context remaining, and branch 
 ## What's Displayed
 
 ```
-ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | ctx:85%
+ai:main ↑2 | Opus 5.5 | 5h:32% 3h24m | 7d all:18% 2d04h / fable:25% 2d04h | ctx:85%
 ```
 
 | Section | Content |
@@ -17,7 +17,7 @@ ai:main ↑2 | Claude Opus 4.6 | 5h:32% | 7d all:18% / opus:25% / sonnet:12% | c
 | **repo:branch** | Repository name, branch name, ↑↓ shows push/pull status |
 | **Model name** | Currently used model |
 | **5h** | 5-hour rolling window usage rate (from OAuth Usage API) |
-| **7d** | 7-day usage rate (by all/opus/sonnet) |
+| **7d** | 7-day usage rate. Shows overall (all), plus any model-scoped weekly limits (opus / sonnet / fable, etc.) that have data |
 | **ctx** | Context window remaining |
 
 ### Color Coding
@@ -84,6 +84,8 @@ Restart Claude Code to apply the settings. You'll see the status line at the ter
 
 - **macOS**: Auto-retrieved from macOS Keychain (no setup needed if Claude Code is logged in)
 - **Linux/WSL**: Read from `~/.claude/.credentials.json`
+
+> If you switch config directories with the `CLAUDE_CONFIG_DIR` environment variable, the script uses that directory's credentials and cache (each account shows its own numbers).
 
 ### API Cache
 

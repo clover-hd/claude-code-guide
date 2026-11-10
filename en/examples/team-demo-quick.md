@@ -9,7 +9,7 @@ A procedure for demoing parallel agent team development right after Phase A comp
 ## Prerequisites
 
 - Phase A (/kickstart) is complete
-- At least one spec file in `docs/specs/`
+- At least one detailed design in `docs/_wip/`
 - Team feature enabled in `~/.claude/settings.json`
 
 ```json
@@ -24,9 +24,9 @@ A procedure for demoing parallel agent team development right after Phase A comp
 
 ## Pre-Demo Setup (2 minutes)
 
-### 1. Prepare one spec
+### 1. Prepare one detailed design
 
-Use an existing spec from Phase A `/consult` brainstorming in `docs/specs/`.
+If Phase B planning has already produced a detailed design in `docs/_wip/`, use it.
 
 If none exists, you can create one manually with this content:
 
@@ -59,7 +59,7 @@ Backend calls:
 - Testing: Unit tests using mocked API responses
 ```
 
-Save this as `docs/specs/feature-weather.md`.
+Save this as `docs/_wip/feature-weather.md`.
 
 ---
 
@@ -72,7 +72,7 @@ Save this as `docs/specs/feature-weather.md`.
 ### Step 2: Instruct the Team
 
 ```
-> Based on the spec in docs/specs/feature-weather.md,
+> Based on the detailed design in docs/_wip/feature-weather.md,
   develop it with the team in parallel. Must follow the spec's "technical constraints".
 
   Team:

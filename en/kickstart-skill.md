@@ -6,18 +6,19 @@
 
 ## What Is This?
 
-This skill automatically guides Claude Code through the steps of [Phase A: Project Setup](workflow-setup.md) (A0-A7) in a conversational manner.
+This skill automatically guides Claude Code through the steps of [Phase A: Project Setup](workflow-setup.md) (A0-A8) in a conversational manner.
 
 You can follow the guide manually, but with `/kickstart`, **Claude Code itself understands the guide steps and builds your project foundation with you**.
 
 ### What the Skill Does Automatically
 
-Claude Code walks through [Phase A steps](workflow-setup.md) (A0-A7) interactively. Specifically:
+Claude Code walks through [Phase A steps](workflow-setup.md) (A0-A8) interactively. Specifically:
 
-- Initialize project (`.gitignore`, directory structure, git init)
-- Articulate service overview and validate requirements
-- Decide on architecture and document it
-- Build CLAUDE.md, skills, and sub-agents
+- Initialize project (`.gitignore`, docs/ structure and documentation policy, git init)
+- Articulate requirements (principles to keep, what we won't build) and validate them
+- Decide and record the base spec and implementation policy (which way to lean when in doubt)
+- Build CLAUDE.md (an index and a few rules), four sub-agents, and skills
+- Set up a commit guard that blocks commits of secrets
 - Make initial commit
 
 For details on each step, see [workflow-setup.md](workflow-setup.md).
@@ -70,18 +71,20 @@ Claude will first auto-initialize (A0) by creating `.gitignore`, directory struc
 ```
 Claude: Created initial project files.
         ✓ .gitignore
-        ✓ docs/specs/
-        ✓ docs/architecture-decisions/
+        ✓ docs/README.md (documentation policy)
+        ✓ docs/decisions/
+        ✓ docs/_wip/
         ✓ git init
 
-        Now let's create A1: Service overview.
+        Now let's create A1: Requirements document.
         What do you want to build? Tell me in one sentence.
 
 You: A platform for managing restaurant reservations and reviews
 
 Claude: Great. Let me dig deeper.
         - Who's the target? (Restaurant owners? Users? Both?)
-        - What do you want to prioritize?
+        - What are the "principles to keep" specific to this service?
+        - Compared to similar services, what will you deliberately not build?
         ...
 ```
 
@@ -92,14 +95,14 @@ Claude asks questions at each step and creates documents and files based on your
 Claude asks for confirmation when each step is complete. **Review carefully before moving forward.**
 
 ```
-Claude: Created docs/service-overview.md.
+Claude: Created docs/requirements.md.
         Please review. Tell me if you need changes.
         If OK, we'll move to the next step (A2: /consult skill creation).
 
 You: I want to add search functionality to the MVP
 
 Claude: Got it. Added search and updated.
-        (Updated docs/service-overview.md)
+        (Updated docs/requirements.md)
         Is this OK?
 
 You: OK, let's move forward
@@ -107,40 +110,49 @@ You: OK, let's move forward
 
 ### 5. Model switching guidance
 
-At A4 (Architecture Decision), you'll be guided to switch to Opus 4.6.
+At A4 (Base spec) and A4.5 (Implementation policy), you'll be guided to switch to Opus.
 
 ```
-Claude: Next is A4: Architecture Decision.
-        Deep design decisions ahead, so I recommend switching to Opus 4.6.
+Claude: Next is A4: Deciding the base spec.
+        Deep design decisions ahead, so I recommend switching to Opus.
         Please switch with /model opus before continuing.
 ```
 
-From A5 onwards, you'll be guided back to Sonnet 4.6. Follow the guidance to save costs.
+From A5 onwards, you'll be guided back to Sonnet. Follow the guidance to save costs.
 
 ### 6. Completion
 
-After all steps (A0-A7), you'll have these files:
+After all steps (A0-A8), you'll have these files:
 
 ```
 my-new-project/
-├── CLAUDE.md                              ← Instructions for Claude (max 200 lines)
+├── CLAUDE.md                              ← Instructions: an index and a few rules
 ├── .gitignore                             ← Security basics
+├── .githooks/pre-commit                   ← Also checks human commits
+├── scripts/check-staged.sh                ← Checks for secrets and DB files
 ├── docs/
-│   ├── service-overview.md                ← Service overview
-│   ├── architecture.md                    ← Architecture & tech stack
-│   ├── specs/                             ← Specs storage (used in Phase B)
-│   └── architecture-decisions/            ← ADR (Architecture Decision Record)
+│   ├── README.md                          ← Documentation policy (what goes where)
+│   ├── requirements.md                    ← Requirements and principles to keep
+│   ├── spec.md                            ← Base spec (only the stable skeleton)
+│   ├── implementation-policy.md           ← Implementation policy (which way to lean when in doubt)
+│   ├── decisions/                         ← Why we decided it (one decision per file)
+│   └── _wip/                              ← Detailed design during implementation (promote or delete when done)
 └── .claude/
+    ├── settings.json                      ← Hook registration
+    ├── hooks/guard-bash.mjs               ← Checks the agent's commits
     ├── skills/
     │   ├── consult/SKILL.md               ← Requirements consultation skill
+    │   ├── ask-advisor/SKILL.md           ← Consult the advisor
     │   └── commit/SKILL.md                ← Commit skill
     └── agents/
-        ├── system_architect.md            ← System architect
-        ├── developer.md                   ← Full-stack implementation
-        └── qa_engineer.md                 ← QA
+        ├── advisor.md                     ← Advisor and milestone review (read-only)
+        ├── developer.md                   ← Implementation
+        ├── qa-engineer.md                 ← Testing
+        └── code-reviewer.md               ← Light review on every commit
 ```
 
-> **Note**: Start with 3 agents (architect, developer, qa) and add more as the project grows. See [Sub-agents](sub-agents.md) for details.
+> **Note**: Start with 4 agents and add more as the project grows. The advisor uses Opus by default. To switch it to Fable, see [Sub-agents](sub-agents.md#using-fable-for-the-advisor).
+> The hook is written in the language chosen in A4 (`guard-bash.mjs` for Node.js, `guard_bash.py` for Python). If you create runbook skills in A8, they are added under `.claude/skills/`.
 
 Claude displays **Phase B Transition Guide** (daily development cycle, model selection, context management tips) and completes.
 
@@ -153,39 +165,41 @@ For details and rationale on each step, see [Phase A: Project Setup](workflow-se
 | Step | Purpose | Recommended Model |
 |----------|------|-----------|
 | **A0** | Auto-initialize (.gitignore, directories, git init) | — |
-| **A1** | Service overview — articulate what you're building | Sonnet |
+| **A1** | Requirements — what to build, principles to keep, what we won't build | Sonnet |
 | **A2** | /consult skill — create a consultation partner | Sonnet |
 | **A3** | Validate requirements — finalize MVP and priorities | Sonnet |
-| **A4** | Architecture decision — tech stack and design patterns | **Opus** |
-| **A5** | CLAUDE.md — define project rules | Sonnet |
-| **A6** | Sub-agents — start with minimal setup | Sonnet |
-| **A7** | Skills, Hooks, and initial commit | Sonnet |
+| **A4** | Base spec — tech stack, branch strategy, commands | **Opus** |
+| **A4.5** | Implementation policy — which way to lean when in doubt | **Opus** |
+| **A5** | CLAUDE.md — an index and a few rules | Sonnet |
+| **A6** | Sub-agents — advisor / developer / qa-engineer / code-reviewer | Sonnet |
+| **A7** | Skills, commit guard, and initial commit | Sonnet |
+| **A8** | Runbook skills (optional) — irreversible operations | Sonnet |
 
 ## FAQ
 
 ### Can I stop in the middle?
 
-Yes. Use `claude --continue` to resume the previous session and continue from where you left off. If the session is old, `/clear` first, then say "I want to resume from A4. Please read docs/service-overview.md and docs/architecture.md" to jump to that step.
+Yes. Use `claude --continue` to resume the previous session and continue from where you left off. If the session is old, `/clear` first, then say "I want to resume from A5. Please read requirements.md, spec.md, and implementation-policy.md in docs/" to jump to that step.
 
 ### I want to skip A1-A3 and start from A4
 
-If service overview and requirements are already decided:
+If requirements are already decided:
 
 ```
 > /kickstart
-> Service overview is in docs/service-overview.md.
-  I want to start from A4: Architecture Decision.
+> Requirements are in docs/requirements.md.
+  I want to start from A4: Deciding the base spec.
 ```
 
 Claude will read the existing documents and proceed from A4.
 
 ### Do I need to do all steps in one session?
 
-No. **A1-A3 on Day 1, A4-A7 on Day 2** is recommended. Sleeping on requirements often reveals what you missed.
+No. **A1-A3 on Day 1, A4-A8 on Day 2** is recommended. Sleeping on requirements often reveals what you missed.
 
 ### The generated agents or skills aren't perfect
 
-Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude Code "Add X to the developer agent's Constraints" and it will fix it. Project settings grow as you use them.
+Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude Code "Add X to the developer agent's scope of consultation" and it will fix it. Project settings grow as you use them.
 
 ### I want to change .gitignore contents
 

@@ -17,9 +17,10 @@ Place Markdown files in the `.claude/agents/` directory:
 ```
 .claude/
 └── agents/
-    ├── system_architect.md     ← Design lead
-    ├── developer.md            ← Full-stack implementation
-    ├── qa_engineer.md          ← Quality management
+    ├── advisor.md              ← Advisor and milestone review
+    ├── developer.md            ← Implementation
+    ├── qa-engineer.md          ← Testing
+    ├── code-reviewer.md        ← Light review on every commit
     └── ...                     ← Add as needed
 ```
 
@@ -32,7 +33,7 @@ Once agents are defined, there are three ways to call them. Choose based on your
 Type `@` to bring up the typeahead. Select the agent, then **continue typing your instructions** before pressing Enter.
 
 ```
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-crud.md, implement this feature.
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-crud.md, implement this feature.
 ```
 
 > **Note**: The agent path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
@@ -45,7 +46,7 @@ Mention the agent's name in your prompt and Claude will decide whether to delega
 
 ```
 > Use the developer agent to implement this feature
-> Have the system_architect review this design
+> Have the advisor review this design
 ```
 
 Convenient, but Claude may or may not delegate based on its judgment. Use @-mention when you need certainty.
@@ -62,19 +63,93 @@ In this mode, all interactions in the session use that agent's system prompt, to
 
 ---
 
-## Start with Three — Starter Configuration
+## Start with Four — Starter Configuration
 
-More agents don't automatically mean better. **Start with three agents**, then expand as needed.
+More agents don't automatically mean better. **Start with four agents**, then expand as needed.
 
-| Agent | Role | Can Do | Can't Do |
-|-------|------|--------|----------|
-| **system_architect** | Design lead | Design, API specs, DB design | Code implementation |
-| **developer** | Implementation specialist | Coding, testing | Design decisions (defer to architect) |
-| **qa_engineer** | Quality manager | Test creation, bug reports | Edit product code |
+| Agent | Model | Role | Can't Do |
+|-------|-------|------|----------|
+| **advisor** | opus | Advisor. Consulted on choices that change principles, data shape, or user experience; does the milestone review | Edit files (read-only) |
+| **developer** | sonnet | Implementation. Commits only after tests and review pass | Decisions touching principles (consults the advisor) |
+| **qa-engineer** | sonnet | Testing. Adds tests and runs them itself | Edit app source, commit |
+| **code-reviewer** | sonnet | Light review on every commit. Looks only at the staged diff | Edit files (read-only) |
 
-These three create the "design → implement → verify" cycle. Perfect for solo work or small teams.
+These four create the "consult → implement → verify → review" cycle. Perfect for solo work or small teams.
 
-> **Key Point**: Write specific tech stack names in `developer`'s description. For example, "full-stack development with React + Express + SQLite." When you need division of labor, see "Scale Up" below.
+> **Key Point**: The trick is to separate heavy judgment (advisor) from frequent, light review (code-reviewer). By limiting the expensive, big-picture model to "consultations" and "milestones", you keep usage down while maintaining the quality of decisions.
+
+> **Key Point**: Write specific tech stack names in `developer`'s description. For example, "implements with React + Express + SQLite." Full templates for each agent are in A6 of the [kickstart skill](skills/kickstart/SKILL.md).
+
+### Using Fable for the advisor
+
+Switching the advisor's `model:` to `fable` improves the quality of consultations and milestone reviews.
+
+```markdown
+---
+name: advisor
+model: fable    # default is opus
+tools: Read, Grep, Glob, Bash
+---
+```
+
+- Depending on your plan, Fable usage may be drawn from **usage credits** rather than your plan's allowance (the `/model` picker shows "Requires usage credits")
+- **Don't use it for code-reviewer**, which runs often. It's called on every commit, so usage balloons quickly
+- Once you decide to use it, record the decision in `docs/decisions/` along with a "when to revisit" condition such as "switch back to opus if usage exceeds expectations"
+
+## Rules for Working as a Team
+
+Defining agents alone won't make them work well as a team. Write the following rules **in each agent's definition file** (not in CLAUDE.md, so that a running agent only needs to read its own file).
+
+### Scope of consultation and responsibility for records
+
+In the developer and qa-engineer definitions, write **what to consult the advisor on and what they may decide themselves**.
+
+```markdown
+## Scope of consultation
+
+Don't decide the following yourself; consult the advisor:
+- Anything touching the principles to keep or what we won't build
+- Data shape, screen flow, wording shown to users
+- Choices among multiple options that change the user experience
+
+You may decide fine-grained implementation choices (how to split functions, etc.) yourself.
+
+Record what you decided after consulting in docs/decisions/ **yourself**.
+Put the record in the same commit as the implementation that uses it.
+```
+
+The advisor only returns a decision and a "draft record"; it doesn't write files. The consulting agent does the recording. This keeps decisions and implementation in the same commit.
+
+### Pre-commit flow
+
+Write the steps up to committing in the developer definition.
+
+```
+1. Pass type check and tests locally
+2. Ask qa-engineer to test
+3. git add only the files you touched, by path; check with git diff --cached --stat
+4. Ask code-reviewer to review the staged diff
+5. Commit (don't skip hooks)
+```
+
+Sub-agents can call other sub-agents, so the developer can call qa-engineer and code-reviewer itself and carry this flow through to the end.
+
+### Attach output to "it passed"
+
+An agent's "tests passed" report is sometimes wrong. It really happens that only a partial check was run.
+
+- When the developer writes "it passed", it pastes **the tail of the output from the last type check and test run** (counts, whether there were errors)
+- qa-engineer doesn't trust the implementer's report and runs the tests **itself**
+
+With two people checking, oversights are less likely to pile up.
+
+### Only one committer per working tree
+
+If you run multiple implementation agents in parallel in the same working tree, they share the staging area, so **one agent's commit picks up the other's files**.
+
+- To run them in parallel, split working trees with `git worktree`
+- Don't use `git add -A` or `git add .`; specify paths explicitly
+- code-reviewer also checks that the list of staged files matches the requested change
 
 ## Scale Up — For Larger Projects
 
@@ -82,11 +157,11 @@ When frontend/backend split, mobile apps exist, or scale grows, expand division 
 
 | Agent | Add When |
 |-------|----------|
-| **tech_researcher** | Library selection and research grow. Read-only, so safe |
-| **frontend_developer** | Front and back use different tech stacks |
-| **mobile_developer** | Mobile app development begins |
-| **ui_ux_designer** | Design system management needed |
-| **technical_writer** | Serious documentation phase begins |
+| **tech-researcher** | Library selection and research grow. Read-only, so safe |
+| **frontend-developer** / **backend-developer** | Front and back use different tech stacks (split the developer) |
+| **mobile-developer** | Mobile app development begins |
+| **ui-ux-designer** | Design system management needed |
+| **technical-writer** | Serious documentation phase begins |
 
 Add agents when you need them. No need to have all nine from day one.
 
@@ -189,7 +264,7 @@ Claude reads your actual codebase and creates accurate agents, catching architec
 Step 1: Find and read OSS agent definitions
         → Learn "what role divisions and Constraints look like"
 
-Step 2: Decide your project architecture (Phase A4)
+Step 2: Decide your project's base spec (Phase A4)
         → Tech stack, design patterns, directories all confirmed
 
 Step 3: Instruct Claude Code to generate agents (↓ see below)
@@ -206,7 +281,7 @@ You: I want to create sub-agents.
      【Reference OSS definitions】
      (paste OSS agent definitions here)
 
-     Check docs/architecture.md for project architecture.
+     Check docs/spec.md for the project's base spec.
      Reflect CLAUDE.md rules too.
      Save to .claude/agents/developer.md.
 
@@ -250,18 +325,18 @@ description: Build APIs with Express + Prisma. Follows Clean Architecture.
 Specialist in Node.js (Express), MySQL, Prisma ORM.
 
 # Goals
-1. Implement APIs per specs in docs/specs/
+1. Implement APIs per the detailed design in docs/_wip/
 2. Maintain Clean Architecture patterns in src/domain/
 3. Create tests in tests/unit/ using Jest
 
 # Constraints
 - Never touch src/mobile/ code
-- For DB schema changes, defer to system_architect
+- If unsure about the DB schema shape, consult the advisor
 - Use .env.example for env vars, no hardcoding
 
 # References
-- docs/architecture.md — Overall architecture
-- docs/specs/api/ — API endpoint specifications
+- docs/spec.md — Base spec
+- docs/implementation-policy.md — Which way to lean when in doubt
 ```
 
 The three-line generic version becomes a detailed, project-aware agent after Claude reads your codebase.

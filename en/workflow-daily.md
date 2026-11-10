@@ -17,7 +17,7 @@ Once the foundation is in place (CLAUDE.md, agents, skills), daily development f
 │   2. Planning    Plan Mode for implementation plan │
 │       ↓          Design "how to build it"           │
 │                                                     │
-│  2.5. Persistence Save plan as spec document       │
+│  2.5. Persistence Save plan to docs/_wip/          │
 │       ↓          Make it available next session     │
 │                                                     │
 │   3. Implementation Code per plan                  │
@@ -26,8 +26,11 @@ Once the foundation is in place (CLAUDE.md, agents, skills), daily development f
 │  3.5. Testing    Unit tests, E2E tests to verify   │
 │       ↓          Claude auto-fixes failures        │
 │                                                     │
-│   4. Recording   /commit to save changes           │
-│                  Record changes in logical units    │
+│   4. Recording   Review, then /commit              │
+│       ↓          Record changes in logical units    │
+│                                                     │
+│   5. Milestone   Overall review, clean up _wip/    │
+│                  When a feature set is done         │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
@@ -141,9 +144,9 @@ Claude: I'll adjust the plan.
 
 ---
 
-## Step 2.5: Persistence — Save plan as specification document
+## Step 2.5: Persistence — Save plan as detailed design
 
-The plan from Plan Mode lives only **within that session**. It disappears when you `/clear` or start a new session. That's why **permanently saving the plan as a spec document is critical**.
+The plan from Plan Mode lives only **within that session**. It disappears when you `/clear` or start a new session. That's why **saving the plan to a file as a detailed design once it's solid is critical**.
 
 ### Why persistence matters
 
@@ -152,97 +155,81 @@ Session A: Create plan → run out of context mid-implementation
                           ↓
 Session B: /clear and restart → "What was that plan again?"
 
-↓ With specs, you have ↓
+↓ With a detailed design, you have ↓
 
-Session B: Read docs/specs/profile-image.md → continue per plan
+Session B: Read docs/_wip/profile-image.md → continue per plan
 ```
 
-Plan Mode plans are session-bound, but **documents persist across sessions**. If referenced from CLAUDE.md or skills, Claude will always base decisions on those documents.
+Plan Mode plans are session-bound, but **documents persist across sessions**.
 
 ### Practical Flow
 
 ```
 # After planning is solid in Plan Mode, give this instruction:
 
-You: Save this plan to docs/specs/profile-image-upload.md as a spec.
+You: Save this plan to docs/_wip/profile-image-upload.md as a detailed design.
      Include:
      - Feature overview
-     - Technical specs (API, DB schema, storage design)
+     - Technical design (API, DB schema, storage)
      - Affected file list
      - Implementation steps
 
-Claude: docs/specs/profile-image-upload.md created.
+Claude: docs/_wip/profile-image-upload.md created.
 ```
 
 > **Tip**: Plan Mode is read-only, but document creation happens after exiting Plan Mode. Workflow: confirm plan → Shift+Tab to exit Plan Mode → instruct "save plan to docs" → continue.
 
-### What Documents to Keep
+### Treat detailed designs as temporary
 
-| Document | Example File | Why |
-|----------|--------------|-----|
-| **Feature Specification** | `docs/specs/feature-name.md` | Anchors "what to build". Capture refined requirements from consult |
-| **API Design** | `docs/specs/api/endpoints.md` | Endpoints, request/response formats |
-| **DB Schema Design** | `docs/specs/db/schema-changes.md` | Table definitions, migration plan |
-| **Architecture Decision** | `docs/architecture-decisions/` | Record "why we chose this tech" |
-| **Implementation Plan** | Inside `docs/specs/feature-name.md` | Steps, affected files, notes |
+A detailed design in `docs/_wip/` is **cleaned up once implementation is done** ([Step 5](#step-5-milestone--overall-review-and-cleanup)).
+
+- Anything that counts as requirements, base spec, or the reason for a decision moves to the matching file in `docs/`
+- Everything else (table definitions, API details, implementation steps) is deleted. The source code already holds it
+
+> **Why not keep them?**
+> If you keep detailed designs around, every code change opens a gap between docs and code. Claude reads the stale doc and implements on stale assumptions. **Treat the source as the source of truth for details, and keep only things that rarely change in docs** — that way docs and code never disagree.
+
+### What to Keep Where
+
+| What | Location | Lifetime |
+|------|----------|----------|
+| **Requirements & principles to keep** | `docs/requirements.md` | Permanent (update when requirements change) |
+| **Base spec (skeleton)** | `docs/spec.md` | Permanent (update when the skeleton changes) |
+| **How to lean when in doubt** | `docs/implementation-policy.md` | Permanent |
+| **Why we decided** | `docs/decisions/NNNN-short-name.md` | Permanent (never rewrite; supersede with a new file) |
+| **Detailed design & implementation plan** | `docs/_wip/<topic>.md` | Until implementation is done |
 
 ### Example Docs Directory Structure
 
 ```
 docs/
-├── service-overview.md              ← Service vision (Phase A1)
-├── architecture.md                  ← Architecture (Phase A4)
-├── specs/                           ← Feature specifications
-│   ├── user-authentication.md
-│   ├── profile-image-upload.md      ← ← Persist Plan Mode planning
-│   ├── chat-messaging.md
-│   └── api/
-│       └── endpoints.md
-└── architecture-decisions/          ← Record tech decisions
-    ├── 001-why-prisma.md
-    └── 002-why-clean-architecture.md
+├── README.md                        ← Documentation policy (Phase A0)
+├── requirements.md                  ← Requirements & principles to keep (Phase A1)
+├── spec.md                          ← Base spec (Phase A4)
+├── implementation-policy.md         ← Implementation policy (Phase A4.5)
+├── decisions/                       ← Why we decided
+│   ├── 0001-orm-prisma.md
+│   └── 0002-image-storage-s3.md
+└── _wip/                            ← Detailed designs in progress
+    └── profile-image-upload.md      ← Persisted Plan Mode plan
 ```
 
 ### Coordination with CLAUDE.md
 
-If you note spec locations in CLAUDE.md, Claude automatically references them during implementation:
-
-```markdown
-# CLAUDE.md (excerpt)
-
-## Reference Documents
-- Feature specs: See docs/specs/
-- Before implementing, always read the relevant spec
-```
-
-Reference specs from the consult skill too to improve brainstorming quality:
-
-```markdown
-# .claude/skills/consult/SKILL.md (excerpt)
-
-## Prerequisites
-1. docs/service-overview.md - Service overview
-2. docs/specs/ - Existing feature specs (understand what's implemented or planned)
-```
+If CLAUDE.md links to each file in docs/, Claude references them during implementation ([How to write CLAUDE.md](project-config.md)). If the developer agent definition also says "when starting implementation, write a detailed design in `docs/_wip/<topic>.md`, and clean it up when done," the same flow applies when implementing through the agent.
 
 ### Persist requirements discussed in /consult too
 
 Consult discussions disappear if not saved. Once brainstorming solidifies:
 
 ```
-You: Save this discussion to docs/specs/chat-messaging.md.
-     Mark status as "Draft" since it's still being planned.
+You: Reflect the requirements we just settled in docs/requirements.md.
+     Record why we decided "no read receipts in the MVP" in docs/decisions/.
 
-Claude: Created.
-
-        # Chat Messaging
-        **Status: Draft**
-
-        ## Feature Overview
-        One-to-one real-time chat between users...
+Claude: Added chat to the MVP in docs/requirements.md.
+        Created docs/decisions/0003-no-read-receipt-in-mvp.md.
+        (What was decided, why, rejected options, when to revisit)
 ```
-
-Status flows: Draft → designed with Plan Mode → Approved → implemented.
 
 ---
 
@@ -277,8 +264,8 @@ You: (Press Escape to interrupt)
 
 For large tasks, Claude may automatically delegate to sub-agents:
 - Feature implementation → `developer` agent
-- Test creation → `qa_engineer` agent
-- Technical research needed → `tech_researcher` agent
+- Test creation → `qa-engineer` agent
+- Decisions that touch policy → `advisor` agent (also callable via `/ask-advisor`)
 
 ---
 
@@ -396,6 +383,22 @@ You don't need E2E for everything. **Cover core logic with unit tests, save E2E 
 
 After implementation and testing are complete, use `/commit` to follow commit rules:
 
+### When the developer agent does it
+
+When you implement through the developer agent, the agent itself goes all the way to the commit, following the "pre-commit flow" in its definition file ([Sub-agents](sub-agents.md#rules-for-working-as-a-team)).
+
+```
+developer: Pass type checks and tests
+    → Ask qa-engineer to test (it runs the tests itself and reports results)
+    → git add only the touched files, check with git diff --cached --stat
+    → Ask code-reviewer to review the staged diff
+    → Commit (the commit guard checks for secrets)
+```
+
+If the report just says "tests passed," ask it to **show the tail of the output**.
+
+### When you commit yourself
+
 ```
 You: /commit
 
@@ -417,12 +420,38 @@ Claude: Checking changes...
 
 ---
 
+## Step 5: Milestone — Overall review and cleanup
+
+When a set of features is done (or at the end of the day), review the whole. The per-commit code-reviewer only sees diffs, so this is where you check **whether the overall direction has drifted**.
+
+```
+You: /ask-advisor milestone review. The previous milestone was abc1234
+
+advisor: Must fix (most severe first)
+         1. Image URLs can be fetched without auth (violates a principle to keep in requirements)
+         To think about before the next milestone
+         - When to delete images is still undecided
+         What improved
+         - ...
+         Forgotten cleanup
+         - docs/_wip/profile-image-upload.md
+```
+
+After the review, clean up `docs/_wip/`.
+
+```
+You: Clean up docs/_wip/profile-image-upload.md.
+     Move anything that counts as requirements, base spec, or decision rationale into docs/, and delete the rest.
+```
+
+---
+
 ## Workflow Application Patterns
 
 ### Pattern A: New Feature Development (Full Course)
 
 ```
-/consult → Plan Mode → Implementation → /commit
+/consult → Plan Mode → save to docs/_wip/ → Implementation → tests & review → commit → milestone review & cleanup
 ```
 
 The most thorough flow. For building brand-new features from scratch.

@@ -38,8 +38,8 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ### Development Workflow
 | Section | Covers |
 |---------|--------|
-| [Phase A: Project Setup](en/workflow-setup.md) | Building foundations from scratch (steps A1–A7 with dependencies) |
-| [Phase B: Daily Development Cycle](en/workflow-daily.md) | consult → Plan → persist → implement → test → commit |
+| [Phase A: Project Setup](en/workflow-setup.md) | Building foundations from scratch (steps A0–A8 with dependencies) |
+| [Phase B: Daily Development Cycle](en/workflow-daily.md) | consult → Plan → persist → implement → test → commit → milestone |
 
 ### Extending Claude Code
 | Section | Covers |
@@ -61,7 +61,7 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 | Section | Covers |
 |---------|--------|
 | [Status Line](en/statusline.md) | Real-time usage rate, context remaining, and branch display |
-| [/kickstart Skill](en/kickstart-skill.md) | Interactive project scaffolding — automates Phase A (A1–A7) |
+| [/kickstart Skill](en/kickstart-skill.md) | Interactive project scaffolding — automates Phase A (A0–A8) |
 
 ### More
 | Section | Covers |
@@ -77,10 +77,11 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ```
 1. /consult        → Brainstorm requirements
 2. Shift+Tab       → Plan Mode — design the approach
-2.5. Persist       → Save spec to docs/specs/
+2.5. Persist       → Save the plan to docs/_wip/ as a detailed design
 3. Shift+Tab       → Normal Mode — implement
 3.5. Test          → Unit tests & E2E tests
-4. /commit         → Commit following conventions
+4. /commit         → Commit after review
+5. Milestone       → /ask-advisor milestone review, clean up docs/_wip/
 ```
 
 ---

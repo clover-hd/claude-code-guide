@@ -47,11 +47,11 @@ Once Claude Code starts:
 > /kickstart
 ```
 
-A0 (automatic initialization) runs, creating `.gitignore` and directories.
+A0 (automatic initialization) runs, creating `.gitignore` and `docs/` (`decisions/`, `_wip/`, and a `README.md` describing the documentation policy).
 
 ---
 
-### Step 1 (A1): Service Overview — Tell Claude
+### Step 1 (A1): Requirements — Tell Claude
 
 Claude will ask "What would you like to build?" Answer with something like:
 
@@ -65,7 +65,8 @@ Claude will dive deeper, so communicate these key points:
 | Question | Reference Answer |
 |----------|----------|
 | Who's the target? | Individuals to families |
-| What matters most? | Visual appeal and ease of use |
+| Principles to keep? | Visual appeal and ease of use. Never store location data outside the device |
+| What we won't build? | Reservations/payments, route navigation (for the MVP) |
 | Vision? | An app where you register spots in advance, then get today's recommendations based on the weather |
 | MVP features? | See below |
 
@@ -83,13 +84,13 @@ Claude will dive deeper, so communicate these key points:
 
 > **Key Point**: Keep the MVP to "the minimum that would make it fun." If there's too much, Claude will ask "Which can we defer?"
 
-Once Claude creates `docs/service-overview.md`, review it and say "OK."
+Once Claude creates `docs/requirements.md`, review it and say "OK."
 
 ---
 
 ### Step 2 (A2): Create /consult Skill
 
-Claude automatically creates the `/consult` skill. Verify that the service's vision and values are reflected.
+Claude automatically creates the `/consult` skill. Verify that the service's vision, principles to keep, and what we won't build are reflected.
 
 No special instructions needed — Claude will proceed. Review and say "OK."
 
@@ -111,13 +112,13 @@ Thinking hints:
 - "Should the recommendation logic be simple? (Sunny → outdoor, rainy → indoor)"
 ```
 
-Once brainstorming is complete, `docs/service-overview.md` is updated. Review and say "OK."
+Once brainstorming is complete, `docs/requirements.md` is updated (decisions with rejected options are also recorded in `docs/decisions/`). Review and say "OK."
 
 > **Tip**: Sleeping on this overnight helps — next day you'll realize "Oh, we need that too."
 
 ---
 
-### Step 4 (A4): Architecture Decision ← Most Important
+### Step 4 (A4): Base Spec Decision ← Most Important
 
 > **Switch to Opus here.** Claude will prompt you.
 > ```
@@ -146,9 +147,24 @@ Use SQLite for the DB and Open-Meteo for the weather API.
 Choose the tech stack and show me a comparison table."
 ```
 
-Claude creates `docs/architecture.md` and records important decisions as ADRs in `docs/architecture-decisions/`.
+Besides the tech stack, this step also settles the branch workflow (e.g., work on `develop`, keep `main` always working) and the type-check and test commands.
+
+Claude creates `docs/spec.md` (only the skeleton that rarely changes) and records each decision with rejected options as one file in `docs/decisions/`.
 
 Review and say "OK."
+
+---
+
+### Step 4.5 (A4.5): Implementation Policy
+
+Still on Opus, decide **which way to lean when in doubt** and summarize it in `docs/implementation-policy.md`. Claude presents the perspectives one at a time; decide only those that apply to this project.
+
+```
+Reference:
+- External API calls: If Open-Meteo is down, show stale cached data. If there is none, show "Couldn't fetch the weather" and keep showing the spot list
+- Logs: Never log spot latitude/longitude. Only IDs and counts
+- Tests: Replace Open-Meteo with a fake. Never call the real one
+```
 
 ---
 
@@ -162,9 +178,9 @@ Review and say "OK."
 Claude creates the project configuration file `CLAUDE.md`.
 
 Verification points:
-- Tech stack matches the A4 decision
-- Security rules are included
-- Stays under 200 lines
+- It contains only a table of contents for docs/ and the "promises" (procedures go in agent definitions)
+- Common commands (type check, tests, dev server) match the A4 decision
+- Stays under 50 lines
 
 Say "OK" and move forward.
 
@@ -172,28 +188,30 @@ Say "OK" and move forward.
 
 ### Step 6 (A6): Create Sub-agents
 
-Claude creates an agent team matching the architecture.
+Claude creates an agent team matching the base spec.
 
 For this project, you'll likely get a team like:
 
 | Agent | Role |
 |-------|------|
-| system_architect | Guardian of overall design |
-| developer | Full-stack implementation (CRUD API, weather API integration, UI, charts) |
-| qa_engineer | Testing |
+| advisor | Advisor (read-only). Decisions that touch policy, and milestone reviews of the whole |
+| developer | Full-stack implementation (CRUD API, weather API integration, UI, charts). Calls qa-engineer → code-reviewer before committing |
+| qa-engineer | Testing. Doesn't trust developer's "it passed"; runs the tests itself |
+| code-reviewer | Lightweight per-commit review (staged diff only) |
 
 Verify that each agent's description includes **specific technology stack names** (not just "developer" but "build full-stack with backend framework, SQLite, React + Recharts").
 
 ---
 
-### Step 7 (A7): Skills, Hooks, and Initial Commit
+### Step 7 (A7): Skills, Commit Guard, and Initial Commit
 
 Claude creates and executes:
 
-1. `/commit` skill
-2. Hooks configuration (formatter, optional)
-3. Test strategy confirmation
-4. Initial commit
+1. `/ask-advisor` skill (consulting the advisor, milestone reviews) and `/commit` skill
+2. Commit guard (blocks commits of `.env` files and API keys with two layers: a git hook and a Claude Code hook)
+3. Hooks configuration (formatter, optional)
+4. Test strategy confirmation
+5. Initial commit
 
 When asked about test strategy:
 ```
@@ -201,6 +219,8 @@ Reference:
 - Unit tests: CRUD operations, weather API integration mocking, recommendation logic
 - E2E: Can defer for MVP
 ```
+
+> A8 (runbook skills for irreversible operations) is optional. This project runs locally, so "not now" is fine.
 
 Once initial commit completes, **Phase B transition guide** appears.
 
@@ -215,10 +235,10 @@ Once Phase A is complete, implement features one by one using this cycle:
 ```
 1. /consult                            → Brainstorm feature requirements
 2. Shift+Tab                           → Make implementation plan in Plan Mode
-2.5. Persistence                       → Save specification to docs/specs/
-3. @.claude/agents/xxx.md for implementation → Instruct specialized agent to implement
-3.5. Testing                           → Run tests after implementation
-4. /commit                             → Commit following rules
+2.5. Persistence                       → Save detailed design to docs/_wip/
+3. Implement with @.claude/agents/developer.md → implement → qa-engineer → code-reviewer → commit
+4. Cleanup                             → Move docs/_wip/ content into docs/ or delete it
+(Once 2–3 features are done, /ask-advisor milestone review)
 ```
 
 ### Recommended Implementation Order
@@ -232,19 +252,21 @@ Implementing the 4 MVP features in this order shows progress at each stage:
 > As the first feature, I want to register, edit, and delete outing spots.
   Each spot has a name, address (or latitude/longitude), and category
   (park, cafe, museum, etc.). Also display spots on a map using Leaflet and OpenStreetMap.
-  Save the spec to docs/specs/feature-spot-crud.md.
+  Save the detailed design to docs/_wip/feature-spot-crud.md.
 ```
 
-Once spec is saved, `/clear` then implement:
+Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-spot-crud.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-spot-crud.md, implement the full-stack feature.
   Implement the CRUD API with SQLite persistence, and build the spot list display,
   registration form, edit, and delete UI. Use category-specific icons to make it visually appealing.
   Also implement a map component using Leaflet and OpenStreetMap to display all registered spots.
   Write unit tests too.
 ```
+
+When implementation is done, developer asks qa-engineer to test and code-reviewer to review the staged diff, then commits. Check that the report includes the tail of the type-check and test output. After the commit, clean up `docs/_wip/feature-spot-crud.md` (move requirements and decision rationale into docs/, delete the rest).
 
 > **Note**: The `@.claude/agents/developer.md` path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
 
@@ -267,14 +289,14 @@ Completion image: Register spot → displays as a card in the list and on the ma
 > I want to display weather forecasts for registered spots.
   Use the Open-Meteo API to fetch weather for spot latitude/longitude.
   Show weather icons, temperature, and precipitation probability in an easy-to-read card.
-  Save the spec to docs/specs/feature-weather.md.
+  Save the detailed design to docs/_wip/feature-weather.md.
 ```
 
-Once spec is saved, `/clear` then implement:
+Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather.md, implement the full-stack feature.
   Implement the module that fetches weather forecasts from Open-Meteo API with caching (about 30 minutes).
   Build the weather forecast card component displaying weather icons, temperature, and precipitation probability.
   Include unit tests with mocked API responses.
@@ -290,13 +312,14 @@ What you're building:
 Completion image: Select a spot → weather forecast card displays
 ```
 
-**Recommended: Have system_architect review once here:**
+**Recommended: Ask the advisor for a milestone review here:**
 
 ```
-> @.claude/agents/system_architect.md Review the first and second cycles of implementation.
-  Is data flow and component separation appropriate?
-  Any issues that might come up adding the remaining 2 features?
+> /ask-advisor milestone review. The previous milestone is the initial commit.
+  Also tell me about issues that might come up adding the remaining 2 features.
 ```
+
+The advisor looks at the diff since the previous milestone and returns "Must fix (most severe first)", "To think about before the next milestone", and "What improved". It also points out forgotten cleanup in `docs/_wip/` and decisions not yet recorded in `docs/decisions/`.
 
 #### Third Cycle: Weekly Weather Graph
 
@@ -304,14 +327,14 @@ Completion image: Select a spot → weather forecast card displays
 > /consult
 > I want to visualize a spot's weekly weather as a graph.
   Display temperature trends as a line graph and precipitation probability as a bar chart.
-  Save the spec to docs/specs/feature-weather-chart.md.
+  Save the detailed design to docs/_wip/feature-weather-chart.md.
 ```
 
-Once spec is saved, `/clear` then implement:
+Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather-chart.md, implement it.
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather-chart.md, implement it.
   Build the weekly weather graph components using a chart library to make visually appealing graphs
   for temperature trends and precipitation probability.
 ```
@@ -322,14 +345,14 @@ Once spec is saved, `/clear` then implement:
 > /consult
 > I want to add a feature that suggests "today's recommended spots" based on weather.
   Recommend outdoor spots like parks if it's sunny, and indoor spots like museums and cafes if it's rainy.
-  Save the spec to docs/specs/feature-recommend.md.
+  Save the detailed design to docs/_wip/feature-recommend.md.
 ```
 
-Once spec is saved, `/clear` then implement:
+Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-recommend.md, implement the full-stack feature.
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-recommend.md, implement the full-stack feature.
   Implement the recommendation logic with tests, and build the "today's recommended" spot card UI.
   Make the card background color and icons change based on the weather.
 ```
@@ -337,7 +360,7 @@ Once spec is saved, `/clear` then implement:
 **Wrapping up after MVP completion:**
 
 ```
-> @.claude/agents/qa_engineer.md Test all features end-to-end. If any areas lack coverage, add tests.
+> @.claude/agents/qa-engineer.md Test all features end-to-end. If any areas lack coverage, add tests.
 ```
 
 
@@ -365,35 +388,42 @@ When you type `@` in Claude Code's prompt, file path completion works. Specify t
 /consult (requirement brainstorming)
   ↓
 Plan Mode (implementation planning)
-  ↓ Here, ask @.claude/agents/system_architect.md for design review
+  ↓ If unsure about anything touching policy, consult /ask-advisor
   ↓
-Persistence (save to docs/specs/)
+Persistence (save detailed design to docs/_wip/)
   ↓
-Implementation ← Ask @.claude/agents/developer.md to implement full-stack
+Implementation ← @.claude/agents/developer.md implements backend and frontend
+  ↓   (developer calls these itself)
+  ├─ Testing ← qa-engineer writes tests and runs them itself
+  ├─ Review ← code-reviewer looks at the staged diff
   ↓
-Testing ← Ask @.claude/agents/qa_engineer.md to create and run tests
+Commit (done by developer; the commit guard blocks secrets)
   ↓
-/commit
+Cleanup (move docs/_wip/ content into docs/ or delete it)
+  ↓
+Once 2–3 features are done, /ask-advisor milestone review
 ```
 
 #### Information Handoff Between Agents
+
+In the normal workflow, `developer` implements both backend and frontend in one session, and when it calls qa-engineer and code-reviewer it passes "what changed, the expected behavior, and the related files." You don't need to hand information between agents yourself.
 
 Sub-agents can reference current context (conversation flow). When working with a single developer agent and other agents, this pattern works well:
 
 **Reset session, then call (using /clear)**
 
 ```
-/consult brainstorms feature → saves to docs/specs/
+/consult brainstorms feature → saves detailed design to docs/_wip/
   ↓
 /clear to reset context
   ↓
 @.claude/agents/developer.md is called
-  → Tell it to "read docs/specs/xxx.md and implement" — share info via files
+  → Tell it to "read docs/_wip/xxx.md and implement" — share info via files
   ↓
 After implementation, /clear again if needed
   ↓
-@.claude/agents/qa_engineer.md is called
-  → References spec and implementation files
+@.claude/agents/qa-engineer.md is called
+  → References detailed design and implementation files
 ```
 
 - Documentation remains for future reference
@@ -405,14 +435,14 @@ After implementation, /clear again if needed
 1. **Reusability**: Implementation results remain in files, referenced from other sessions/agents
 2. **Context Savings**: Context margin is crucial for long feature development
 3. **Best Practice**: "Always save deliverables" is fundamental to project management where knowledge persists even when sessions disappear
-4. **Clear handoff**: Developer agent reads the spec and implements based on documented requirements
+4. **Clear handoff**: Developer agent reads the detailed design and implements based on documented requirements
 
 #### Example Agent Calls
 
 **developer — Spot CRUD (full-stack)**
 
 ```
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-spot-crud.md,
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-spot-crud.md,
   implement the full-stack CRUD feature for outing spots.
   Build the API with SQLite persistence and the UI components.
   Write unit tests for both backend and frontend.
@@ -421,28 +451,27 @@ After implementation, /clear again if needed
 **developer — Weather display (full-stack)**
 
 ```
-> @.claude/agents/developer.md Following the spec in docs/specs/feature-weather.md,
+> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather.md,
   implement the full-stack weather feature.
   Build the module that fetches forecasts from Open-Meteo API with caching (about 30 minutes),
   and implement the weather forecast card component.
   Include unit tests with mocked API responses.
 ```
 
-**system_architect — Design review**
+**advisor — Consultation**
 
 ```
-> @.claude/agents/system_architect.md Review the current implementation from these perspectives:
-  - Is the architecture appropriate for adding the remaining features?
-  - Is the weather API caching strategy sound?
-  - Is the map display integration with spot CRUD well-designed?
+> /ask-advisor I can't decide whether to cache the weather API on the server or in the browser.
+  Server: shareable across spots / Browser: keeps the backend simple.
+  The related file is docs/_wip/feature-weather.md.
 ```
 
-> Getting system_architect to review after 2-3 features are done helps find design issues early.
+> The advisor returns "conclusion, reasons, rejected options, when to revisit, and a draft record." Keep the draft record in `docs/decisions/`. Once 2-3 features are done, also ask for a "milestone review" to find design issues early.
 
-**qa_engineer — Testing**
+**qa-engineer — Testing**
 
 ```
-> @.claude/agents/qa_engineer.md Enhance unit tests for spot CRUD and recommendation logic.
+> @.claude/agents/qa-engineer.md Enhance unit tests for spot CRUD and recommendation logic.
   Cover these edge cases:
   - No spots registered
   - Weather API returns an error
@@ -453,11 +482,11 @@ After implementation, /clear again if needed
 
 | Tip | Explanation |
 |------|-----------|
-| **Pass specifications** | When you say "follow the spec in docs/specs/xxx.md", agent reads spec then implements |
+| **Pass detailed designs** | When you say "follow the detailed design in docs/_wip/xxx.md", agent reads the design then implements |
 | **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
-| **Focus per agent** | developer handles full-stack implementation; system_architect handles design review; qa_engineer handles testing |
-| **Review intermediate results** | Have system_architect review once implementation hits a milestone to maintain quality |
-| **Separate testing** | Have developer write tests too, but having qa_engineer write additional edge case tests improves coverage |
+| **Focus per agent** | developer handles full-stack implementation; advisor handles consultation and milestone reviews; qa-engineer handles testing |
+| **Two levels of review** | Per commit: code-reviewer (light). Per feature set: `/ask-advisor` milestone review (heavy) |
+| **Verify "it passed" with output** | Check that developer's report includes the tail of the type-check and test output. qa-engineer also runs them itself |
 
 ---
 
@@ -465,8 +494,8 @@ After implementation, /clear again if needed
 
 ### After /consult
 
-- After Plan Mode planning, **always save specs to `docs/specs/`**
-- Be explicit: "Save the spec to docs/specs/feature-weather.md"
+- After Plan Mode planning, **always save a detailed design to `docs/_wip/`**
+- Be explicit: "Save the detailed design to docs/_wip/feature-weather.md"
 
 ### During Implementation
 
@@ -475,11 +504,17 @@ After implementation, /clear again if needed
 
 ### Committing
 
+When you asked developer to implement, developer commits after going through qa-engineer and code-reviewer. When committing changes you fixed yourself:
+
 ```
 > /commit
 ```
 
-That's it — it creates rule-following commits.
+That's it — it creates rule-following commits. If the commit guard blocks it, unstage that file (don't skip the hook).
+
+### After Committing
+
+- Clean up the detailed design in `docs/_wip/`. Move anything that counts as requirements or decision rationale into docs/, and delete the rest (the source code holds it)
 
 ### Before Next Cycle
 
@@ -499,7 +534,7 @@ Reset context before tackling the next feature.
 | Still broken after 2 fixes | `/clear` then re-instruct from scratch including what you learned |
 | Context is full | `/compact` to compress, or `/clear` to reset |
 | Want to undo | `Esc + Esc` to rewind to checkpoint |
-| Unsure about design | Switch with `/model opus` to discuss |
+| Unsure about design | Consult `/ask-advisor` (or switch with `/model opus` to discuss) |
 | Weather API is erroring | Check Open-Meteo status page. If you have cached data, the app works with older data |
 
 ---
@@ -522,7 +557,7 @@ Human teamwork                    AI agent team
 PM assigns tasks via Slack        → Leader assigns via task list
 Backend developer implements      → backend session implements
 Frontend developer implements in parallel → frontend session implements in parallel
-Code review when done              → architect reviews and points out issues
+Code review when done              → reviewer reviews and points out issues
 QA tests                           → qa writes and runs tests
 Slack: "Ready to merge?"           → Message: "Implemented, review please"
 Everyone works on same git repo    → Everyone works on same git repo
@@ -550,7 +585,7 @@ Example of doing the second cycle (weather display) with the team, starting from
 
 ```
 > I want to parallelize the second cycle's "weather display" with the team.
-  Based on the spec in docs/specs/feature-weather.md,
+  Based on the detailed design in docs/_wip/feature-weather.md,
   form these teams and proceed in parallel:
 
   - backend: Open-Meteo API integration + caching
@@ -638,7 +673,7 @@ Use `Shift + ↓` to switch between team members and see **in real-time what eac
 Once comfortable, you can let the team handle the entire MVP:
 
 ```
-> Based on the 4 spec files in docs/specs/,
+> Based on the 4 detailed designs in docs/_wip/,
   parallelize development of all MVP features.
 
   Team composition:
@@ -660,7 +695,7 @@ Once comfortable, you can let the team handle the entire MVP:
 |------|---------|
 | **Token consumption** | Uses context per member. 3-person team ≈ 3 session costs |
 | **Experimental** | Unexpected errors or member stalling can happen |
-| **Specs are essential** | Team members read `docs/specs/`. Ambiguous specs → scattered implementations |
+| **Detailed designs are essential** | Team members read the detailed designs in `docs/_wip/`. Ambiguous designs → scattered implementations |
 | **Conflicts** | Multiple members touching same file → git conflicts. Keep responsibilities clear |
 | **Start small** | Don't jump to all features. Try 2-3 people on 1 feature first |
 

@@ -9,7 +9,7 @@ Phase Aが完了した直後に、エージェントチームの並列開発を�
 ## 前提
 
 - Phase A（/kickstart）が完了している
-- `docs/specs/` に最低1つの仕様書がある
+- `docs/_wip/` に最低1つの詳細設計がある
 - `~/.claude/settings.json` にチーム機能が有効化されている
 
 ```json
@@ -24,9 +24,9 @@ Phase Aが完了した直後に、エージェントチームの並列開発を�
 
 ## デモ前の準備（2分）
 
-### 1. 仕様書を1つ用意する
+### 1. 詳細設計を1つ用意する
 
-Phase Aの `/consult` 壁打ちで既に `docs/specs/` に仕様書があればそれを使います。
+Phase B の計画で既に `docs/_wip/` に詳細設計があればそれを使います。
 
 なければ、以下の内容で手動で作成してもOKです：
 
@@ -59,7 +59,7 @@ Phase Aの `/consult` 壁打ちで既に `docs/specs/` に仕様書があれば�
 - テスト：APIレスポンスのモックを使ったユニットテスト
 ```
 
-これを `docs/specs/feature-weather.md` として保存します。
+これを `docs/_wip/feature-weather.md` として保存します。
 
 ---
 
@@ -72,7 +72,7 @@ Phase Aの `/consult` 壁打ちで既に `docs/specs/` に仕様書があれば�
 ### ステップ2：チームに指示する
 
 ```
-> docs/specs/feature-weather.md の仕様に基づいて、
+> docs/_wip/feature-weather.md の詳細設計に基づいて、
   チームで並列開発して。仕様の「技術的な制約」を必ず守ること。
 
   チーム構成：

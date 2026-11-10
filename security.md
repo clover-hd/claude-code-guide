@@ -26,6 +26,8 @@
 - 認証情報は環境変数経由で取得する
 ```
 
+> ただし CLAUDE.md のルールは「お願い」です。確実に止めたい場合は、後述の[コミットガード](#コミットガード--秘密の値を機械的に止める)を置きましょう。
+
 ## Claudeに渡してはいけない情報
 
 Claude Codeはクラウド上のAIと通信しています。以下は入力しないでください：
@@ -63,3 +65,48 @@ build/
 .DS_Store
 .vscode/settings.json
 ```
+
+## コミットガード — 秘密の値を機械的に止める
+
+`.gitignore` と CLAUDE.md のルールだけでは、`git add -f` や、エージェントの見落としで秘密の値がコミットされることがあります。一度コミットしたものは**履歴から完全に消すのが難しい**ため、コミットの前に**機械的に**検査して止める仕組みを置きましょう。
+
+### 二層で止める
+
+同じ検査スクリプト `scripts/check-staged.sh` を、二つの入口から呼びます。
+
+| 層 | 止めるもの | これだけでは足りない理由 |
+|---|---|---|
+| git の pre-commit フック（`.githooks/pre-commit`） | 人間のコミットも含めて止める | clone しただけでは有効にならない。`--no-verify` で飛ばせる |
+| Claude Code の PreToolUse フック（`.claude/settings.json`） | エージェントの `git commit`。`--no-verify` によるフックの迂回も止める | 人間のコミットは止められない |
+
+どちらか片方では穴が残るので、二層にします。
+
+### 検査スクリプトが見るもの
+
+- `.env`、`*.pem`、`*.key`、`credentials.json` などの秘密の値・認証情報のファイル
+- `*.sqlite`、`*.db` などのデータベースのファイル
+- 追加した行の中の、APIキーらしき文字列（`sk-ant-...`、`AKIA...`、`-----BEGIN ... PRIVATE KEY-----` など）
+
+```bash
+# 抜粋：ステージされたファイルを1つずつ見る
+while IFS= read -r -d '' f; do
+  base=$(basename "$f" | tr '[:upper:]' '[:lower:]')
+  case "$base" in
+    .env.example) ;;
+    .env | .env.*) report "$f — 秘密の値のファイル（.env）" ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+```
+
+### PreToolUse フックが行うこと
+
+- `git commit --no-verify` / `-n`（git のフックを飛ばす指定）を**止める**
+- git のフック（`core.hooksPath`）が有効になっていなければ**止めて**、有効にするよう伝える
+- 検査スクリプトを走らせ、引っかかったら**止める**（理由はClaudeに伝わり、Claudeがそのファイルをステージから外す）
+- 本番を壊しうるコマンド（本番DBへのマイグレーションなど）は、**人間に確認を求める**
+
+フックの書き方は[CLAUDE.md・Hooks](project-config.md#hooks自動化)、スクリプトとフックの全文は [kickstart スキル](skills/kickstart/SKILL.md) の A7 にあります。`/kickstart` を使えば、プロジェクトの立ち上げ時に自動で設定されます。
+
+> **誤検知で止められたとき**も、フックを飛ばさないでください。例外を足す前に、そのファイルの置き場所を変えられないかを先に考えましょう。
+
+> **チームで使う場合**: `core.hooksPath` は clone しただけでは有効にならないので、README の環境構築手順に `git config core.hooksPath .githooks` を書いておきましょう。

@@ -33,8 +33,8 @@
 
 | セクション | 内容 |
 |-----------|------|
-| [Phase A：プロジェクトの立ち上げ](workflow-setup.md) | ゼロからの土台作り（A1〜A7の依存関係付き手順） |
-| [Phase B：日常の開発サイクル](workflow-daily.md) | consult→Plan→永続化→実装→テスト→commitの流れ |
+| [Phase A：プロジェクトの立ち上げ](workflow-setup.md) | ゼロからの土台作り（A0〜A8の依存関係付き手順） |
+| [Phase B：日常の開発サイクル](workflow-daily.md) | consult→Plan→永続化→実装→テスト→commit→区切りの流れ |
 
 ### Claude Codeの拡張機能
 
@@ -59,7 +59,7 @@
 | セクション | 内容 |
 |-----------|------|
 | [ステータスライン](statusline.md) | リアルタイムで使用率・コンテキスト残量・ブランチを表示するカスタムステータスバー |
-| [/kickstart スキル](kickstart-skill.md) | 新プロジェクトの立ち上げをClaudeが対話で案内。Phase A（A1〜A7）を自動化 |
+| [/kickstart スキル](kickstart-skill.md) | 新プロジェクトの立ち上げをClaudeが対話で案内。Phase A（A0〜A8）を自動化 |
 
 > `/kickstart` のスキル定義ファイルは [skills/kickstart/SKILL.md](skills/kickstart/SKILL.md) にあります。
 
@@ -93,10 +93,11 @@
 ```
 1. /consult     → 何を作るか壁打ち
 2. Shift+Tab    → Plan Modeで設計
-2.5. 永続化     → 仕様書をdocs/specs/に保存
+2.5. 永続化     → 計画を docs/_wip/ に詳細設計として保存
 3. Shift+Tab    → 通常モードで実装
 3.5. テスト     → ユニットテスト & E2Eテスト
-4. /commit      → ルールに従ってコミット
+4. /commit      → レビューを通してコミット
+5. 区切り       → /ask-advisor で全体レビュー、docs/_wip/ を片付け
 ```
 
 ### モデル使い分けの目安

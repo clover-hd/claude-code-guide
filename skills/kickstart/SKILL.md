@@ -1,6 +1,6 @@
 ---
 name: kickstart
-description: 新しいプロジェクトをゼロから立ち上げる。Phase Aの手順に従い、サービス概要からCLAUDE.md、エージェント、スキルまでの土台を順番に構築する。
+description: 新しいプロジェクトをゼロから立ち上げる。Phase Aの手順に従い、要件・基本仕様・実装の方針からCLAUDE.md、エージェント、スキル、コミットガードまでの土台を順番に構築する。
 disable-model-invocation: true
 ---
 
@@ -16,12 +16,13 @@ disable-model-invocation: true
 - 各ステップの**完了条件**を全て満たしてから次へ進む
 - ユーザーが「OK」「次へ」等と言うまで次のステップに進まない
 - 迷ったら**選択肢を提示**してユーザーに選ばせる（勝手に決めない）
+- ステップの中で決めたことのうち、**退けた案があるもの**は `docs/decisions/` に記録する（書き方は A0 の `docs/README.md`）
 
 ## モデルの使い分け
 
-- A1〜A3（構想・要件の壁打ち）: Sonnet 4.6 で十分
-- A4（アーキテクチャ決定）: **Opus 4.6 推奨**（深い設計判断が必要）
-- A5〜A7（ファイル作成）: Sonnet 4.6 で十分
+- A1〜A3（構想・要件の壁打ち）: Sonnet で十分
+- A4〜A4.5（基本仕様・実装の方針）: **Opus 推奨**（深い設計判断が必要）
+- A5〜A8（ファイル作成）: Sonnet で十分
 
 ステップ開始時に、推奨モデルが現在と異なる場合はユーザーに `/model` での切り替えを案内する。
 
@@ -35,9 +36,57 @@ disable-model-invocation: true
 
 ```
 docs/
-├── specs/                ← 機能仕様書の保存先（Phase Bで使用）
-└── architecture-decisions/ ← 技術判断の記録
+├── README.md     ← ドキュメントの方針（どこに何を書くか）
+├── decisions/    ← なぜそう決めたか（1判断1ファイル）
+└── _wip/         ← 実装中の詳細設計（終わったら移すか削除する）
 ```
+
+`docs/_wip/` と `docs/decisions/` には `.gitkeep` を置く。
+
+### docs/README.md の作成
+
+以下の内容で作成する。
+
+````markdown
+# ドキュメントの方針
+
+## 残すもの（docs/ 直下）
+
+| 種類 | 置き場所 | 中身 |
+|---|---|---|
+| 要件 | requirements.md | 目的、守る方針、作らないもの、満たすべきこと |
+| 基本仕様 | spec.md | 技術構成、データの大きな流れ、ディレクトリ構成、ブランチとデプロイ。変わりにくい骨格だけ |
+| 実装の方針 | implementation-policy.md | 迷ったときにどちらに倒すか。ソースを読めば分かることは書かない |
+| なぜそう決めたか | decisions/ | 決めたこと、退けた案、根拠、見直す条件 |
+
+## 詳細設計（docs/_wip/）
+
+- 実装を始めるときに `docs/_wip/<テーマ>.md` に書く。テーブル定義、APIの形、画面の細部などがここに入る
+- 実装が終わったら片付ける
+  - 要件・基本仕様・判断の理由にあたるものは docs/ に移す
+  - それ以外は削除する（その内容はソースが持っている）
+- 詳細設計はソースを正とする。docs/ の記述とソースが食い違ったら、ソースを信じる
+
+## 「なぜそう決めたか」の書き方
+
+`decisions/NNNN-短い名前.md` に、一つの判断を一つのファイルに書く。番号は連番にする。
+
+```markdown
+# NNNN 題名
+
+- 日付: YYYY-MM-DD
+- 状態: 採用 / 置き換え済み（→ NNNN）
+- 決めた人: 人間 / advisor に相談（相談したエージェント名）
+
+## 決めたこと
+## 理由
+## 退けた案とその理由
+## 根拠にしたもの（ドキュメントのURL、計測値、コミットなど）
+## 見直す条件（どうなったら考え直すか）
+```
+
+判断が変わったときは古いファイルを書き換えない。新しいファイルを作り、古いファイルの状態を「置き換え済み」にする。
+````
 
 ### .gitignore の作成
 
@@ -47,12 +96,16 @@ docs/
 # 環境変数・シークレット
 .env
 .env.*
+!.env.example
 
 # 認証情報
 credentials.json
 *.pem
 *.key
 service-account.json
+
+# Claude Code の個人設定
+.claude/settings.local.json
 
 # OS・エディタ
 .DS_Store
@@ -62,25 +115,26 @@ Thumbs.db
 .idea/
 ```
 
-> **注**: 技術スタック固有の項目（`node_modules/`, `__pycache__/`, `vendor/` 等）はA4のアーキテクチャ決定後に追記する。
+> **注**: 技術スタック固有の項目（`node_modules/`, `__pycache__/`, `vendor/` 等）はA4の基本仕様の決定後に追記する。
 
 ### git初期化確認
 
 `.git/` が存在しない場合は `git init` を実行する。
 
-**完了条件**: ディレクトリ構成と.gitignoreが作成された。
+**完了条件**: ディレクトリ構成、`docs/README.md`、`.gitignore` が作成された。
 
 ---
 
-## A1：サービス概要ドキュメント作成
+## A1：要件ドキュメント作成
 
-ユーザーに以下を質問して、`docs/service-overview.md` を作成する。
+ユーザーに以下を質問して、`docs/requirements.md` を作成する。
 
 ### 聞くべきこと
 
 - **何を作るのか**（一言で）
 - **誰のために作るのか**（ターゲットユーザー）
-- **大切にしたいこと**（優先事項、譲れないポイント）
+- **守る方針**（譲れないこと。迷ったときの判断の物差しになる）
+- **作らないもの**（似ているが目指さないもの、やらないこと）
 - **最終的な目標（ビジョン）**
 - **MVP（最低限必要な機能）** — 各機能は1行で具体的に
 - **将来的に追加したい機能**
@@ -89,13 +143,15 @@ Thumbs.db
 
 - 一度にまとめて聞かず、会話の中で自然に深掘りする
 - 曖昧な回答には「具体的にはどういうイメージですか？」と掘り下げる
+- 「守る方針」は、あとでエージェントがレビューの物差しに使う。「使いやすく」のような誰でも言えることではなく、**このサービスだから守ること**を引き出す（例：「個人情報はログに出さない」「ユーザーに判断を押し付けない」）
+- 「作らないもの」が出てこなければ、「似たサービスと比べて、あえてやらないことは？」と聞く
 - MVPが5機能を超える場合は「本当にMVPに全部必要ですか？後回しにできるものは？」と確認する
 - ユーザーが迷っている場合は具体的な選択肢を提示する
 
 ### ドキュメントのテンプレート
 
 ```markdown
-# サービス概要
+# 要件
 
 ## サービス名
 （仮でOK）
@@ -106,8 +162,11 @@ Thumbs.db
 ## ターゲットユーザー
 （誰のために）
 
-## 大切にしたいこと
+## 守る方針
 - ...
+- ...
+
+## 作らないもの
 - ...
 
 ## ビジョン（最終目標）
@@ -119,10 +178,9 @@ Thumbs.db
 
 ## 将来的に追加したい機能
 - ...
-- ...
 ```
 
-**完了条件**: `docs/service-overview.md` が作成され、ユーザーが内容を確認してOKと言った。
+**完了条件**: `docs/requirements.md` が作成され、ユーザーが内容を確認してOKと言った。
 
 ---
 
@@ -144,8 +202,9 @@ description: サービスの要件・企画レベルの相談を行う
 
 以下のドキュメントを必ず読み込んでから回答してください。
 
-1. `docs/service-overview.md` - サービス概要
-2. `docs/specs/` - 既存の機能仕様（あれば）
+1. `docs/requirements.md` - 要件と守る方針
+2. `docs/spec.md` - 基本仕様（あれば）
+3. `docs/decisions/` - 相談に関わる過去の判断（あれば）
 
 ## 相談相手としての振る舞い
 
@@ -163,10 +222,10 @@ description: サービスの要件・企画レベルの相談を行う
 
 ## サービスの核心（常に意識する）
 
-> （A1のドキュメントからビジョンと大切にしたいことを転記する）
+> （A1のドキュメントからビジョン、守る方針、作らないものを転記する）
 ```
 
-ビジョンと大切にしたいことは、A1で作成した `docs/service-overview.md` から**実際の内容を転記**すること。テンプレートのままにしない。
+ビジョン・守る方針・作らないものは、A1で作成した `docs/requirements.md` から**実際の内容を転記**すること。テンプレートのままにしない。
 
 **完了条件**: `.claude/skills/consult/SKILL.md` が作成され、サービス固有の内容が反映されている。
 
@@ -184,8 +243,9 @@ consultスキルができました。
 - 優先順位は適切か
 - 見落としている機能はないか（認証、通知、エラーハンドリング、検索等）
 - ユーザー体験の流れ（主要な操作フロー）
+- 守る方針と作らないものは十分か
 
-壁打ちの結果は docs/service-overview.md に反映していきます。
+壁打ちの結果は docs/requirements.md に反映していきます。
 では、まずMVPの機能一覧から見直しましょう。
 ```
 
@@ -196,20 +256,21 @@ consultスキルができました。
 - **通知**: メール、プッシュ通知は必要か
 - **検索・フィルター**: データが増えたときの検索手段
 - **エラーケース**: 主要な操作が失敗したときの挙動
-- **データのライフサイクル**: 削除は論理削除か物理削除か
+- **データのライフサイクル**: 削除は論理削除か物理削除か。ユーザーから消してと言われたらどうするか
 
 ### 重要：壁打ちの結果を永続化する
 
-議論がまとまったら、必ず `docs/service-overview.md` を更新する。
+議論がまとまったら、必ず `docs/requirements.md` を更新する。
+退けた案があった判断（例：「決済はMVPに入れない」）は `docs/decisions/` にも記録する。
 会話はセッション終了で消えるが、ドキュメントは残る。
 
-**完了条件**: ユーザーがMVPの要件に納得し、`docs/service-overview.md` が更新された。
+**完了条件**: ユーザーがMVPの要件に納得し、`docs/requirements.md` が更新された。
 
 ---
 
-## A4：アーキテクチャ決定 ← ここが分岐点
+## A4：基本仕様の決定 ← ここが分岐点
 
-> **このステップはOpus 4.6での実行を推奨します。** `/model opus` で切り替えてください。
+> **このステップはOpusでの実行を推奨します。** `/model opus` で切り替えてください。
 
 **ここが決まらないとA6のエージェントが作れません。**
 
@@ -222,10 +283,12 @@ consultスキルができました。
 3. **フロントエンド**: React, Next.js, Vue, Svelte, Flutter 等（該当する場合）
 4. **バックエンド**: Express, Hono, Django, FastAPI, Rails, Gin, Echo 等
 5. **データベース**: PostgreSQL, MySQL, SQLite, MongoDB 等
-6. **ORM/データアクセス**: Prisma, SQLAlchemy, GORM, ActiveRecord 等
+6. **ORM/データアクセス**: Prisma, Drizzle, SQLAlchemy, GORM, ActiveRecord 等
 7. **インフラ**: AWS, GCP, Vercel, Cloudflare, セルフホスト 等
 8. **設計パターン**: モノリス, マイクロサービス, Clean Architecture 等
 9. **ディレクトリ構成**: 決定した技術スタックに適した構成を提案
+10. **ブランチとデプロイ**: 作業ブランチ（例：`develop` で作業し `main` は常に動く状態）、Pull Requestを使うか、環境（手元 / ステージング / 本番）
+11. **よく使うコマンド**: テスト、型検査（静的解析）、開発サーバー、ビルド。**型検査とテストは入口を一つに決める**（例：`npm run typecheck`、`npm test`）
 
 ### 判断基準（ユーザーに説明する）
 
@@ -233,6 +296,7 @@ consultスキルができました。
 - **MVPの速度**: 早く作れるものを優先
 - **学習目的**: 新しい技術を試したい場合はそれも考慮
 - **スケーラビリティ**: 将来の拡張性
+- **乗り換えやすさ**: 特定のサービスに強く依存する部分は、差し替えられる層の背後に置けるか
 
 ### 提案の形式（例）
 
@@ -246,46 +310,61 @@ consultスキルができました。
 
 ### 決定内容の記録
 
-`docs/architecture.md` に以下の構成で記録する。
+`docs/spec.md` に以下の構成で記録する。**変わりにくい骨格だけ**を書く（テーブル定義やAPIの細部は書かない。それは実装時に `docs/_wip/` に書く）。
 
 ```markdown
-# アーキテクチャ
+# 基本仕様
 
-## 技術スタック
+## 技術構成
 - Frontend: ...
 - Backend: ...
-- DB: ...
-- ORM: ...
+- DB / ORM: ...
 - Infra: ...
 - 設計パターン: ...
 
-## 選定理由
-（なぜこの技術を選んだかを簡潔に）
+## データの大きな流れ
+（主要なデータがどこから入り、どこに保存され、どこに出るか）
 
 ## ディレクトリ構成
 （ツリー形式で）
+
+## ブランチとデプロイ
+- 作業ブランチ: ...
+- 環境: 手元 / ステージング / 本番
+- デプロイ方法: ...
+
+## よく使うコマンド
+- 型検査: ...
+- テスト: ...
+- 開発サーバー: ...
 ```
 
-### 技術判断の記録
+### 判断の記録
 
-重要な選択については `docs/architecture-decisions/` に個別ファイルで記録する。
+技術選定のうち**退けた案がある選択**は、A0の `docs/README.md` の書式で `docs/decisions/` に1判断1ファイルで記録する。
 
 ```markdown
-# ADR-001: なぜPrismaを選んだか
+# 0001 ORMにPrismaを選ぶ
 
-## 状況
-ORMの選定が必要
+- 日付: YYYY-MM-DD
+- 状態: 採用
+- 決めた人: 人間
 
-## 選択肢
-- Prisma: 型安全、マイグレーション管理が楽
-- Drizzle: 軽量、SQLに近い
-- TypeORM: 実績あり、だがメンテ停滞
-
-## 決定
-Prisma
+## 決めたこと
+ORMはPrismaを使う。
 
 ## 理由
-型安全性とマイグレーション管理の利便性を優先。
+型安全性とマイグレーション管理の利便性を優先した。
+
+## 退けた案とその理由
+- Drizzle: 軽量でSQLに近いが、チームに経験者がいない
+- TypeORM: 実績はあるが、メンテナンスが停滞している
+
+## 根拠にしたもの
+- （公式ドキュメントのURLなど）
+
+## 見直す条件
+- Edge環境で動かす必要が出たとき
 ```
 
 ### .gitignore の追記
@@ -297,103 +376,376 @@ Prisma
 - Python: `__pycache__/`, `.venv/`, `*.pyc`
 - Go: 基本的に追加不要（バイナリ名を指定）
 - Ruby: `vendor/bundle/`, `.bundle/`
+- 手元のDBファイル（SQLite等）を使う場合: そのファイル
 
-**完了条件**: `docs/architecture.md` が作成され、技術スタックとディレクトリ構成が確定し、`.gitignore` が技術スタックに合わせて更新された。
+**完了条件**: `docs/spec.md` が作成され、技術構成・ディレクトリ構成・ブランチ運用・コマンドが確定し、`.gitignore` が技術スタックに合わせて更新された。
+
+---
+
+## A4.5：実装の方針を決める
+
+> 引き続きOpus推奨。
+
+`docs/implementation-policy.md` を作成する。これは細かいコーディング規約ではなく、**迷ったときにどちらに倒すか**だけを書いた資料。エージェントが実装やレビューで判断に迷ったとき、まずここに照らす。
+
+### 進め方
+
+以下の観点を1つずつ提示し、このサービスでの倒し方をユーザーと決める。**該当しない観点は省く**。各観点で、まず要件の「守る方針」から導ける倒し方を提案する。
+
+| 観点 | 決めること（例） |
+|---|---|
+| ログ | 出してよいもの（ID、件数、所要時間、エラーの種類）と出さないもの（個人情報、本文、トークン、秘密の値）。**迷ったら出さない** |
+| 外部APIの呼び出し | タイムアウト、再試行する条件としない条件、失敗したときにユーザーに何を見せるか |
+| 失敗したとき | 処理全体を止めるか、失敗したものだけ飛ばして続けるか。二度実行しても結果が同じになるか（冪等） |
+| 入力と認証 | 認証の確認を一か所にまとめ、既定で閉じる（確認しない入口を列挙する） |
+| データ | ユーザーが入れたものと、システムが推測・生成したものを混ぜないか |
+| テスト | 外部サービスは偽物に差し替えて動かすか。本物を呼ぶのはいつか |
+| 画面（該当する場合） | 文字の大きさ、押せる場所の大きさ、コントラスト比などの最低ライン |
+| LLMを呼ぶ場合 | 構造化出力で受けて中身を検査する、用途ごとのモデルを一か所の対応表で持つ、プロンプトを変えたら変更前と変更後の出力を並べて比べる |
+
+### テンプレート
+
+```markdown
+# 実装の方針（迷ったときの倒し方）
+
+細かい規約ではなく、迷ったときにどちらに倒すかだけを書く。どう実装したかはソースを正とする。
+
+## ログ
+- 出してよい: ...
+- 出さない: ...
+- 迷ったら出さない
+
+## 外部APIの呼び出し
+- ...
+
+## 失敗したとき
+- ...
+
+（以下、決めた観点だけ）
+```
+
+倒し方を決めた理由のうち、退けた案があるものは `docs/decisions/` に記録する。
+
+**完了条件**: `docs/implementation-policy.md` が作成され、ユーザーがOKと言った。
 
 ---
 
 ## A5：CLAUDE.md 作成
 
-A1〜A4の成果物を**実際に読み込んだ上で**、プロジェクトルートに `CLAUDE.md` を作成する。
+> **Sonnetに戻してOKです。** `/model sonnet` で切り替えてください。
 
-### 含めるべき内容
+A1〜A4.5の成果物を**実際に読み込んだ上で**、プロジェクトルートに `CLAUDE.md` を作成する。
 
-1. **プロジェクト概要**（1〜2行）
-2. **技術スタック**（A4から転記）
-3. **重要なルール**
-   - コマンド実行環境（Docker内？ローカル？）
-   - テストポリシー（テストを通してからコミット）
-   - コーディング規約（命名規則、フォーマッター）
-4. **ディレクトリ構成**（A4から転記）
-5. **参照ドキュメント**
-   - `docs/service-overview.md`
-   - `docs/architecture.md`
-   - `docs/specs/` — 機能仕様書
-6. **セキュリティルール**
-   - `.env` ファイルは絶対にコミットしない
-   - APIキーやパスワードをコードにハードコードしない
-   - 認証情報は環境変数経由で取得する
+CLAUDE.md は**目次と約束だけ**にする。中身はdocs/に、各エージェントの進め方は `.claude/agents/` の各定義ファイルに書く。CLAUDE.mdに手順を書き込むと、すべての会話とエージェントがそれを読み込み、長くなるほど無視されやすくなるため。
+
+### テンプレート
+
+```markdown
+# <サービス名>
+
+<何を作るのか（一言で）>
+
+- 要件と守る方針: [docs/requirements.md](docs/requirements.md)（作業の前に必ず読む）
+- 基本仕様: [docs/spec.md](docs/spec.md)
+- 実装の方針（迷ったときの倒し方）: [docs/implementation-policy.md](docs/implementation-policy.md)
+- なぜそう決めたか: [docs/decisions/](docs/decisions/)
+- ドキュメントの方針（どこに何を書くか）: [docs/README.md](docs/README.md)
+
+## よく使うコマンド
+
+- 型検査: `...`
+- テスト: `...`
+- 開発サーバー: `...`
+
+## 約束
+
+- 詳細設計はソースを正とする。ドキュメントの記述とソースが食い違ったら、ソースを信じる
+- 秘密の値（.env、APIキー、認証情報）はコミットしない（コミット前のフックで止まる。フックを飛ばさない）
+- 作業は `<作業ブランチ>` で行う。（A4で決めたブランチ運用を1行で）
+- 各エージェントの役割と進め方は `.claude/agents/` の各定義ファイルに書いてある
+```
 
 ### 厳守事項
 
-- **200行以下**に収めること（長いとClaudeが無視し始める）
+- **50行以下**を目安にする（長いとClaudeが無視し始める）
 - コードを読めばわかることは書かない
 - 「きれいなコードを書け」等の自明な指示は書かない
+- 手順（コミット前の流れ等）はエージェント定義に書き、CLAUDE.mdには書かない
 
-**完了条件**: `CLAUDE.md` が作成され、200行以下で、プロジェクト固有の情報が反映されている。
+**完了条件**: `CLAUDE.md` が作成され、プロジェクト固有の情報が反映され、手順が書き込まれていない。
 
 ---
 
 ## A6：サブエージェント作成
 
-> **Sonnet 4.6に戻してOKです。** `/model sonnet` で切り替えてください。
+A1〜A4.5の成果物に基づいて `.claude/agents/` にエージェントを作成する。
 
-A4のアーキテクチャに基づいて `.claude/agents/` にエージェントを作成する。
+### まず4エージェントから始める
 
-### まず3エージェントから始める
+| エージェント | モデル | 役割 |
+|---|---|---|
+| **advisor** | opus | 読み取り専用の相談役。方針・データの形・画面の流れ・使い心地が変わる選択の相談と、区切り（機能のまとまりが一つできたとき）の全体レビュー。コードは書かない |
+| **developer** | sonnet | 実装担当。コミット前に qa-engineer と code-reviewer を通してからコミットする |
+| **qa-engineer** | sonnet | テスト担当。実装者の「通った」を信用せず自分でテストを走らせる。アプリのソースは直さない |
+| **code-reviewer** | sonnet | コミットごとの軽いレビュー。ステージした差分だけを見る。読み取り専用 |
 
-| 順序 | エージェント | 理由 |
-|------|-------------|------|
-| 1 | **system_architect** | 全体設計の番人。他エージェントが参照するルールの源泉 |
-| 2 | **developer** | アーキテクチャに合わせたフルスタック実装担当 |
-| 3 | **qa_engineer** | テスト作成・品質管理 |
+> **ポイント**: 重い判断（advisor）と、回数の多い軽いレビュー（code-reviewer）を分けることで、高いモデルの利用量を抑えつつ判断の質を保つ。プロジェクトが成長して分業が必要になったら、developer を frontend-developer / backend-developer に分ける等で増やせばよい。
 
-> **ポイント**: プロジェクトが成長して分業が必要になったら、tech_researcher、frontend_developer、ui_ux_designer等を追加すればよい。最初から大量に作る必要はない。
+> **Fableを使う場合**: advisor の `model:` を `fable` に替えると、相談と区切りのレビューの質が上がる。ただしプランによっては usage credits から引かれる（`/model` の選択画面に "Requires usage credits" と表示される）ため、利用量に注意する。回数の多い code-reviewer には使わない。ユーザーに「advisorにFableを使いますか？」と確認し、使う場合はその判断を `docs/decisions/` に記録する。
 
-### 各エージェントに必ず含める項目
+### 各エージェントのテンプレート
 
-```markdown
+`<...>` はA1〜A4.5の内容で**実際に埋める**こと。テンプレートのままにしない。
+
+#### advisor.md
+
+````markdown
 ---
-name: （エージェント名）
-description: （1行で何をする専門家かを具体的に。技術スタック名を含める）
+name: advisor
+description: <サービス名>全体のアドバイザー。方針（守る方針・作らないものとの距離）、データの形、画面の流れ、使い心地が変わる選択の相談に使う。区切り（機能のまとまりが一つできたとき）の全体レビューにも使う。コミットごとのレビューには使わない（それは code-reviewer）。
+model: opus
+tools: Read, Grep, Glob, Bash
 ---
 
-# Role（役割）
-（このプロジェクトにおける具体的な専門領域）
+あなたは「<サービス名>」のアドバイザーです。コードは書きません。判断と、その理由を返します。
 
-# Goals（目標）
-1. （参照すべき仕様書のパスを含めて）
-2. （維持すべき設計パターンを含めて）
-3. （テストに関するルール）
+## 最初に読むもの
 
-# Constraints（制約）
-- （触ってはいけないディレクトリ/ファイル）
-- （やってはいけないこと）
-- （判断を差し戻すべき状況）
+- `docs/requirements.md`（守る方針。判断の物差しはここ）
+- `docs/spec.md`
+- `docs/decisions/` のうち、相談に関わるもの
+- 詳細はソースを正とします。ドキュメントとソースが食い違ったら、ソースを信じ、食い違いを指摘してください
 
-# References（参照ドキュメント）
-- docs/architecture.md
-- docs/specs/ 配下の該当仕様書
-- （その他エージェント固有の参照先）
+## 仕事 1: 相談に答える
+
+1. **結論**: どれを選ぶか。一つに絞る
+2. **理由**: requirements.md のどの方針に照らしたか
+3. **退けた案とその理由**
+4. **見直す条件**
+5. **記録の下書き**: 相談したエージェントが `docs/decisions/` にそのまま写せる短い文
+
+記録のファイルを書くのは、相談したエージェントです。あなたは書きません。
+
+### 特に気をつけて見ること
+
+- <requirements.md の「守る方針」「作らないもの」から、判断で見落としやすいものを箇条書き>
+
+### 判断できないとき
+
+人間でなければ決められないこと（サービスの考え方そのものの変更、費用のかかる選択、本番のデータに関わる操作）は、そう言ってください。そのときは、人間に聞くべき問いを一つの文にして返します。
+
+## 仕事 2: 区切りの全体レビュー
+
+頼まれたときだけ行います（機能のまとまりが一つできたとき、一日の終わりなど）。
+
+- `git log` と `git diff <前回の区切り>..HEAD` で、前回からの変化をつかむ。前回の区切りが分からなければ、依頼した人に聞く
+- 見ること
+  - 要件と守る方針から外れていないか
+  - `docs/implementation-policy.md` の倒し方から外れていないか
+  - `docs/_wip/` に、片付け忘れ（移すか削除）がないか
+  - `docs/decisions/` に、記録されていない判断がないか
+  - main に取り込んで動かせる状態か
+- 返す形: 「直すべきこと（重い順）」「次の区切りまでに考えること」「良くなったこと」。それぞれ短く書く
+
+## してはいけないこと
+
+- ファイルを書き換えない
+- 細かな実装の選択（関数の分け方、ライブラリの細かな使い方）には口を出さない。聞かれたら「実装の側で決めてよい」と返す
+````
+
+#### developer.md
+
+````markdown
+---
+name: developer
+description: <サービス名>を<技術スタック名を具体的に（例: React + Hono + Drizzle）>で実装する。機能の実装や修正を頼むときに使う。
+model: sonnet
+---
+
+あなたは「<サービス名>」の実装を担当します。
+
+## 最初に読むもの
+
+- `docs/requirements.md`（守る方針。必ず読む）
+- `docs/spec.md`
+- `docs/implementation-policy.md`（迷ったときの倒し方。実装の判断はまずここに照らす）
+- `docs/decisions/` のうち、作業に関わるもの
+- 詳細はソースを正とします。ドキュメントは信用せず、都度ソースを読んでください
+
+## 技術構成と制約
+
+- <spec.md の技術構成>
+- <このスタックで踏みやすい制約（実行環境の制限、使えないAPIなど）>
+
+## 相談の範囲
+
+次のような判断は、自分で決めずに advisor に相談してください（Agent ツールで `advisor` を呼ぶ）。
+
+- 守る方針・作らないものに関わること
+- データの形、画面の流れ、ユーザーに見せる言葉に関わること
+- 複数の案があり、どれを選ぶかで使い心地やサービスの考え方が変わること
+
+実装の細かな選択（関数の分け方、ライブラリの細かな使い方など）は、自分で決めてかまいません。
+
+相談するときは、次のことを伝えます: 何を決めたいか、考えた案（2つ以上）、それぞれの良い点と悪い点、関係するファイル。
+
+### 相談して決めたことの記録
+
+相談して決めたことは、**あなた自身が** `docs/decisions/NNNN-短い名前.md` に記録します。書き方は `docs/README.md` に従います。決めた人の欄には「advisor に相談（developer）」と書きます。記録は、その判断を使う実装と同じコミットに入れます。
+
+## 詳細設計
+
+- 実装を始めるときに、`docs/_wip/<テーマ>.md` に詳細設計（テーブル、APIの形、画面の部品など）を書く
+- 実装が終わったら片付ける。要件・基本仕様・判断の理由は `docs/` に移し、残りは削除する
+
+## 並行して作業しない
+
+- 同じ作業ツリーでコミットする実装エージェントは、一度に一人だけ。並行して作業するように頼まれたら、`git worktree` で別の作業ツリーを作ってそこで作業する（ステージを共有すると、他の作業のファイルがコミットに混ざるため）
+
+## コミット前の流れ
+
+1. 実装して、手元で `<型検査のコマンド>` と `<テストのコマンド>` を通す。部分的な検査で済ませない
+2. **qa-engineer** を呼んでテストを頼む。変えたこと、期待する振る舞い、関係するファイルを伝える。失敗したら直して、もう一度頼む
+3. 触ったファイルだけを、パスを明示して `git add` する。`git add -A` や `git add .` は使わない。`git diff --cached --stat` を見て、自分の触ったファイルの一覧と合っているかを確かめる
+4. **code-reviewer** を呼んで、ステージした差分のレビューを頼む。「直すべき」の指摘を直す。直したら、もう一度レビューを頼む
+5. コミットする（作業ブランチは `<作業ブランチ>`）
+   - コミットのフックが秘密の値などを検査する。止められたら、そのファイルをステージから外す。フックを飛ばさない（`--no-verify` は使わない）
+
+## 返すもの
+
+最後に、次のことを短く報告します: やったこと、テストとレビューの結果、コミットのハッシュ、相談して記録した判断、残っていること。
+
+- 「通った」と書くときは、最後に走らせた型検査とテストの出力の末尾（件数、エラーの有無）を貼る。言葉だけで「通った」と書かない
+````
+
+#### qa-engineer.md
+
+````markdown
+---
+name: qa-engineer
+description: <サービス名>のテストを担当する。developer からコミット前のテストを頼まれたときに使う。<テストフレームワーク名>でユニットテストを書き、走らせる。
+model: sonnet
+---
+
+あなたは「<サービス名>」のテストを担当します。
+
+## 最初に読むもの
+
+- `docs/requirements.md`（守る方針。テストで確かめるべきことの元になる）
+- `docs/spec.md`
+- `docs/implementation-policy.md`
+- 詳細はソースを正とします。ドキュメントは信用せず、都度ソースを読んでください
+
+## コミット前のテスト
+
+1. 頼まれた変更と、関係するソースを読む
+2. 足りないテストを書き足す。すでにあるテストを走らせる
+3. **自分で** `<型検査のコマンド>` と `<テストのコマンド>` を走らせる。実装者の「通った」という報告を信用しない
+4. 結果を返す: 通ったか（走らせたコマンドと出力の末尾を貼る）、落ちたもの（どのテストが、なぜ落ちたか）、テストで確かめられなかったこと
+
+### 必ず確かめること（関係する変更のとき）
+
+- <requirements.md の守る方針・implementation-policy.md から、テストで確かめられるものを箇条書き（例: 認証なしで取れないか、ログに個人情報が出ないか）>
+
+### テストのデータ
+
+- 架空のデータだけを使う。実際のユーザーのデータは使わない
+- 外部サービスは偽物に差し替える（implementation-policy.md の「テスト」に従う）
+
+## 相談の範囲
+
+テストの観点で、守る方針に関わる判断に迷ったら advisor に相談する。相談して決めたことは、**あなた自身が** `docs/decisions/` に記録する（決めた人の欄は「advisor に相談（qa-engineer）」）。
+
+## してはいけないこと
+
+- テストを通すために、アプリのソースを書き換えない。直すべき所を見つけたら、頼んだ実装者に返す
+- コミットしない。コミットするのは、頼んだ実装者
+````
+
+#### code-reviewer.md
+
+````markdown
+---
+name: code-reviewer
+description: コミットのたびに行う軽いレビュー。ステージした差分（git diff --staged）だけを見る。実装者がコミットする前に呼ぶ。全体を見る重いレビューには使わない（それは advisor）。
+model: sonnet
+tools: Read, Grep, Glob, Bash
+---
+
+あなたは「<サービス名>」の、コミットごとのレビューを担当します。軽く、速く行います。
+
+## やること
+
+1. `git diff --staged` で差分を見る。差分がなければ、そう言って終わる
+2. `git diff --staged --stat` のファイルの一覧が、頼まれた変更と合っているかを見る。ほかの作業のファイルが混ざっていたら「直してから」にする
+3. 差分を理解するのに必要な範囲だけ、まわりのソースを読む。リポジトリ全体は見ない
+4. `docs/requirements.md` の「守る方針」と `docs/implementation-policy.md` の倒し方に照らして、差分に問題がないかを見る
+
+## 見ること
+
+- **バグ**: 動かない、境界の値で壊れる、エラーを握りつぶしている
+- **方針から外れていないか**: <守る方針のうち、差分で見つけやすいものを箇条書き>
+- **セキュリティ**: 認証の確認の抜け、ログに個人情報や秘密の値が出ていないか、キーの直書き
+- **ドキュメント**: 判断を含む変更なのに、`docs/decisions/` に記録がない
+
+## 返す形
+
 ```
+判定: 通してよい / 直してから
+直すべき:
+- ファイル:行 — 何が問題か — どう直すか
+気になる（直さなくてもよい）:
+- …
+```
+
+- 指摘は差分の中に限る。差分の外で見つけた問題は「気になる」に一行で書くだけにする
+- 好みの問題（書き方の細部）は指摘しない
+- 方針について判断がつかないときは、「advisor に相談を」と書く。自分で決めない
+
+## してはいけないこと
+
+- ファイルを書き換えない。コミットしない
+````
 
 ### 重要
 
 - description には**このプロジェクトの技術スタック名を具体的に書く**（「バックエンド担当」ではなく「Express + Prisma でAPIを構築する」）
-- Constraints には**他のエージェントとの境界線を明記**する
-- OSSのエージェント定義を参考にしつつ、プロジェクト固有の情報で上書きする
+- `<...>` の箇条書きは、requirements.md と implementation-policy.md から**このサービスならではのもの**を選んで書く。一般論で埋めない
+- エージェント名は kebab-case（`code-reviewer`）にする
 
-**完了条件**: 必要なエージェントが全て `.claude/agents/` に作成され、各エージェントにプロジェクト固有の技術スタック・ルールが反映されている。
+**完了条件**: 4つのエージェントが `.claude/agents/` に作成され、各エージェントにプロジェクト固有の技術スタック・コマンド・方針が反映されている。
 
 ---
 
-## A7：スキル・Hooks・初期コミット
+## A7：スキル・コミットガード・初期コミット
+
+### /ask-advisor スキルの作成
+
+`.claude/skills/ask-advisor/SKILL.md` を以下の内容で作成する。`context: fork` と `agent: advisor` により、メインの会話を汚さずに advisor に相談を投げられる。
+
+```markdown
+---
+name: ask-advisor
+description: advisor に相談する。方針、データの形、画面の流れ、使い心地が変わる選択で迷ったとき。区切りの全体レビューを頼むときにも使う。
+argument-hint: <相談したいこと、または「区切りのレビュー」>
+context: fork
+agent: advisor
+---
+
+次の相談に答えてください。
+
+$ARGUMENTS
+
+- 相談の場合は、あなたの定義にある「仕事 1」の形（結論、理由、退けた案、見直す条件、記録の下書き）で答えてください
+- 「区切りのレビュー」と書かれている場合は、「仕事 2」を行ってください
+- 相談の内容が短すぎて判断できない場合は、決めるのに足りない情報を挙げて返してください
+```
 
 ### /commit スキルの作成
 
-`.claude/skills/commit/SKILL.md` を以下の内容で作成する。
+`.claude/skills/commit/SKILL.md` を以下の内容で作成する。人間が直接コミットを頼むときに使う（developer エージェント経由の場合は、エージェント定義の「コミット前の流れ」に従う）。
 
-```markdown
+````markdown
 ---
 name: commit
 description: プロジェクトルールに従ったgitコミットを実行する
@@ -431,7 +783,8 @@ git log --oneline -5
 
 ### 3. グループごとにコミット
 ```bash
-git add <関連ファイル>
+git add <関連ファイルをパスで明示>
+git diff --cached --stat   # 意図したファイルだけか確かめる
 git commit -m "$(cat <<'EOF'
 <type>: <簡潔な説明>
 
@@ -443,15 +796,204 @@ EOF
 ```
 
 ## 注意事項
-- `git add -A` や `git add .` は避け、ファイルを明示的に指定する
-- `.env` や認証情報を含むファイルはコミットしない
+- `git add -A` や `git add .` は使わず、ファイルを明示的に指定する
+- コミットのフックに止められたら、そのファイルをステージから外す。`--no-verify` は使わない
 - pushはユーザーの明示的な指示がある場合のみ実行
+````
+
+### コミットガードの設定（標準）
+
+秘密の値やDBファイルのコミットを**機械的に止める**仕組みを二層で置く。どちらも同じ検査スクリプトを呼ぶ。
+
+| 層 | 止めるもの | 理由 |
+|---|---|---|
+| git の pre-commit フック（`.githooks/`） | 人間のコミットも含めて止める | Claude Code のフックだけでは人間のコミットを止められない |
+| Claude Code の PreToolUse フック | エージェントの `git commit`、`--no-verify` によるフックの迂回、git フックが無効な環境 | git のフックは clone しただけでは有効にならず、`--no-verify` で飛ばせる |
+
+#### 1. 検査スクリプト `scripts/check-staged.sh`
+
+技術スタックに関係なく bash で作る。A4で決めたスタックに応じて、DBファイルの拡張子などを調整する。リポジトリに入れてはいけないファイル（ユーザーの写真や音声など）がサービスにある場合は、その拡張子もユーザーと相談して足す。
+
+```bash
+#!/usr/bin/env bash
+# ステージされた変更に、秘密の値・認証情報・データベースのファイルが含まれていないかを検査する。
+# git の pre-commit フック（.githooks/pre-commit）と、Claude Code のフック（.claude/hooks/）の両方から呼ばれる。
+# 見つかったら 1 を返す。
+set -uo pipefail
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+fail=0
+report() { echo "  ✗ $1" >&2; fail=1; }
+
+db_ext='sqlite|sqlite3|db|db3|db-wal|db-shm|db-journal'
+
+while IFS= read -r -d '' f; do
+  lower=$(printf '%s' "$f" | tr '[:upper:]' '[:lower:]')
+  base=${lower##*/}
+
+  case "$base" in
+    .env.example | .env.sample) ;;
+    .env | .env.*) report "$f — 秘密の値のファイル（.env）"; continue ;;
+    *.pem | *.key | credentials.json | service-account*.json) report "$f — 認証情報のファイル"; continue ;;
+  esac
+
+  if [[ "$base" =~ \.(${db_ext})$ ]]; then
+    report "$f — データベースのファイル"; continue
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+# 追加した行に、API キーらしき文字列がないか
+secret_patterns=(
+  'sk-ant-[A-Za-z0-9_-]{20,}'                     # Anthropic
+  'sk-(proj-|svcacct-|admin-)?[A-Za-z0-9_-]{32,}' # OpenAI
+  'AKIA[0-9A-Z]{16}'                              # AWS アクセスキー
+  'gh[pousr]_[A-Za-z0-9]{36,}'                    # GitHub トークン
+  '-----BEGIN [A-Z ]*PRIVATE KEY-----'            # 秘密鍵
+  '(api[_-]?key|secret|token|password|access[_-]?key)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_/+=-]{20,}'
+)
+pattern=$(IFS='|'; echo "${secret_patterns[*]}")
+
+while IFS= read -r -d '' f; do
+  [[ "$f" == "scripts/check-staged.sh" ]] && continue
+  hits=$(git diff --cached -U0 --no-color -- "$f" | grep -E '^\+' | grep -vE '^\+\+\+' | grep -ainE -e "$pattern" | head -n 3)
+  if [[ -n "$hits" ]]; then
+    report "$f — API キーらしき文字列"
+    while IFS= read -r line; do echo "      ${line:0:120}" >&2; done <<<"$hits"
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ $fail -ne 0 ]]; then
+  cat >&2 <<'EOF'
+
+コミットを止めました。上のファイルを `git restore --staged <ファイル>`（最初のコミットの前は `git rm --cached <ファイル>`）でステージから外してください。
+誤検知のときも、フックを飛ばさず人間に相談してください。
+EOF
+  exit 1
+fi
+exit 0
 ```
 
-### Hooksの設定（任意）
+#### 2. git の pre-commit フック `.githooks/pre-commit`
+
+```bash
+#!/usr/bin/env bash
+# 有効にする: git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/scripts/check-staged.sh"
+```
+
+作成後に以下を実行する。
+
+```bash
+chmod +x scripts/check-staged.sh .githooks/pre-commit
+git config core.hooksPath .githooks
+```
+
+> `core.hooksPath` は clone しただけでは有効にならない。チームで使う場合は、README の環境構築手順に `git config core.hooksPath .githooks` を書くようユーザーに案内する。
+
+#### 3. Claude Code の PreToolUse フック
+
+フック本体は**A4で決めた言語**で書く（Node.js なら `.claude/hooks/guard-bash.mjs`、Python なら `.claude/hooks/guard_bash.py`）。フックへの入力は**標準入力のJSON**で渡される（`tool_input.command` に実行しようとしているコマンドが入る）。
+
+- 止める（deny）: 終了コード 2 で終わり、理由を標準エラーに書く
+- 人間に確認を求める（ask）: 標準出力に `permissionDecision: "ask"` のJSONを書いて、終了コード 0 で終わる
+
+Node.js の例：
+
+```js
+// Claude Code の PreToolUse フック（Bash）。
+// - git commit: フックを飛ばす指定を止め、ステージした変更を scripts/check-staged.sh で検査する
+// - 本番を壊しうるコマンド: 人間に確認を求める（ASK_RULES に足す）
+import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const input = JSON.parse(readFileSync(0, "utf8"));
+const cmd = String(input?.tool_input?.command ?? "");
+const projectDir = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+
+function deny(reason) {
+  process.stderr.write(reason + "\n");
+  process.exit(2);
+}
+
+function ask(reason) {
+  process.stdout.write(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "ask",
+        permissionDecisionReason: reason,
+      },
+    }),
+  );
+  process.exit(0);
+}
+
+// ---- git commit ----
+const isCommit = /\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*commit\b/.test(cmd);
+if (isCommit) {
+  if (/--no-verify\b/.test(cmd) || /\bcommit\b[^;&|\n]*\s-[A-Za-z]*n[A-Za-z]*(\s|$)/.test(cmd)) {
+    deny("コミットのフックを飛ばす指定（--no-verify / -n）は使えません。");
+  }
+  if (/core\.hooksPath/.test(cmd)) {
+    deny("コミットのときに core.hooksPath を変えることはできません。");
+  }
+
+  let hooksPath = "";
+  try {
+    hooksPath = execFileSync("git", ["config", "--get", "core.hooksPath"], { cwd: projectDir, encoding: "utf8" }).trim();
+  } catch {}
+  if (hooksPath !== ".githooks") {
+    deny("git のコミット前フックが有効になっていません。先に `git config core.hooksPath .githooks` を実行してください。");
+  }
+
+  const r = spawnSync("bash", [join(projectDir, "scripts/check-staged.sh")], { cwd: projectDir, encoding: "utf8" });
+  if (r.status !== 0) {
+    deny((r.stderr || "") + (r.stdout || "") || "scripts/check-staged.sh が失敗しました。");
+  }
+}
+
+// ---- 本番を壊しうるコマンド: 人間に確認を求める ----
+// A4 で決めたインフラに合わせて足す。例:
+//   [/\bprisma\s+migrate\s+deploy\b/, "本番のDBにマイグレーションを適用するコマンドです。"],
+//   [/\bterraform\s+(apply|destroy)\b/, "インフラを変更するコマンドです。"],
+const ASK_RULES = [];
+for (const [re, reason] of ASK_RULES) {
+  if (re.test(cmd)) ask(reason + " 影響を確かめてから許可してください。");
+}
+
+process.exit(0);
+```
+
+`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。
+
+`.claude/settings.json`：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.mjs\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+作成後、`.env` をステージして `git commit` を試み、止まることを確かめる（初期コミットの前なので、確かめた後は `git rm --cached .env` でステージから外す）。
+
+### 自動フォーマットのフック（任意）
 
 ユーザーに「コード自動フォーマットを設定しますか？」と確認する。
-YESの場合、A4で決定した技術スタックに合ったフォーマッターで `.claude/settings.json` を作成する。
+YESの場合、A4で決定した技術スタックに合ったフォーマッターを `.claude/settings.json` の `PostToolUse` に追加する。編集したファイルのパスは標準入力のJSONの `tool_input.file_path` に入っている（`jq` が必要）。
 
 フォーマッターの例：
 - JavaScript/TypeScript: `npx prettier --write`
@@ -464,11 +1006,11 @@ YESの場合、A4で決定した技術スタックに合ったフォーマッタ
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "<技術スタックに合ったフォーマットコマンド> \"$CLAUDE_TOOL_INPUT_FILE_PATH\""
+            "command": "jq -r '.tool_input.file_path' | xargs <技術スタックに合ったフォーマットコマンド>"
           }
         ]
       }
@@ -481,11 +1023,11 @@ YESの場合、A4で決定した技術スタックに合ったフォーマッタ
 
 ユーザーに以下を確認する：
 
-- テストフレームワークの選択（Jest / Vitest / 等）
+- テストフレームワークの選択（Jest / Vitest / pytest 等）
 - E2Eテストの必要性（Playwright等）
 - テストのディレクトリ構成
 
-確認結果を `CLAUDE.md` のテストポリシーセクションに追記する。
+確認結果を `docs/implementation-policy.md` の「テスト」と、`CLAUDE.md` の「よく使うコマンド」、qa-engineer の定義に反映する。
 
 ### 初期コミット
 
@@ -494,18 +1036,64 @@ YESの場合、A4で決定した技術スタックに合ったフォーマッタ
 ```
 docs: プロジェクトの初期ドキュメントを作成
 
-- docs/service-overview.md（サービス概要）
-- docs/architecture.md（アーキテクチャ）
+- docs/requirements.md（要件と守る方針）
+- docs/spec.md（基本仕様）
+- docs/implementation-policy.md（実装の方針）
+- docs/decisions/（なぜそう決めたか）
+- docs/README.md（ドキュメントの方針）
 
 chore: プロジェクトの開発基盤を構築
 
-- CLAUDE.md（プロジェクト設定）
-- .claude/agents/（サブエージェント）
-- .claude/skills/（consult, commit スキル）
+- CLAUDE.md（目次と約束）
+- .claude/agents/（advisor, developer, qa-engineer, code-reviewer）
+- .claude/skills/（consult, ask-advisor, commit）
+- .claude/settings.json, .claude/hooks/, .githooks/, scripts/check-staged.sh（コミットガード）
 - .gitignore
 ```
 
-**完了条件**: `/commit` スキルが作成され、初期コミットが完了した。
+**完了条件**: スキルとコミットガードが作成され、ガードが `.env` のコミットを止めることを確かめ、初期コミットが完了した。
+
+---
+
+## A8：取り返しのつかない操作の手順書スキル（任意）
+
+ユーザーに「本番へのデプロイ、DBのマイグレーション、秘密の値の登録など、間違えると取り返しのつかない操作の手順をスキルにしますか？」と確認する。今決まっていなければ、必要になったときに作ればよいと伝えて飛ばす。
+
+作る場合は、操作ごとに `.claude/skills/<操作名>/SKILL.md` を以下の型で作る。
+
+```markdown
+---
+name: <操作名（例: db-migrate）>
+description: <何を、どの順で行うか>。<いつ使うか>。本番に適用する前には、必ず人間の確認を取る。
+argument-hint: "[local|staging|production]"
+---
+
+# <操作名>
+
+<なぜ慎重に行うのか（1〜2行）>。順番を飛ばさないでください。
+
+## 前提
+
+- 環境の名前や設定は <設定ファイル> を正とする
+- <ステージングと本番が同じリソースを指していないか、最初に確かめる、など>
+
+## 1. 手元で行う
+## 2. ステージングで行い、確かめる
+## 3. 本番で行う（必ず人間の確認を取る）
+
+**ここから先は、人間の確認なしに進めてはいけません。**
+
+1. 次のことを人間に示して、進めてよいかを聞く: 何を適用するか、データが消える変更があるか、ステージングで確かめた結果
+2. 了解を得てから実行する
+
+## うまくいかなかったとき
+
+- <戻し方。戻せないなら、そう書く>
+```
+
+手順書スキルで扱うコマンドは、A7の `ASK_RULES` にも入れて、フックでも人間の確認が挟まるようにする。
+
+**完了条件**: ユーザーが作ると決めた手順書スキルが作成された（作らない場合はスキップ）。
 
 ---
 
@@ -517,26 +1105,28 @@ chore: プロジェクトの開発基盤を構築
 プロジェクトの土台が完成しました！
 
 ■ 作成されたもの
-  docs/service-overview.md       — サービス概要
-  docs/architecture.md           — アーキテクチャ
-  docs/specs/                    — 機能仕様書の保存先（Phase Bで使用）
-  docs/architecture-decisions/   — 技術判断の記録
-  CLAUDE.md                      — プロジェクト設定
-  .claude/skills/consult/        — 要件相談スキル
-  .claude/skills/commit/         — コミットスキル
-  .claude/agents/                — サブエージェント（最小3人から）
-  .gitignore                     — セキュリティ基本設定
+  docs/requirements.md            — 要件と守る方針
+  docs/spec.md                    — 基本仕様
+  docs/implementation-policy.md   — 実装の方針（迷ったときの倒し方）
+  docs/decisions/                 — なぜそう決めたか
+  docs/_wip/                      — 実装中の詳細設計（終わったら移すか削除）
+  docs/README.md                  — ドキュメントの方針
+  CLAUDE.md                       — 目次と約束
+  .claude/agents/                 — advisor, developer, qa-engineer, code-reviewer
+  .claude/skills/                 — consult, ask-advisor, commit
+  .claude/settings.json ほか       — コミットガード
+  .gitignore                      — セキュリティ基本設定
 
 ■ これからの開発の進め方（Phase B）
 
-  1. /consult     → 作りたい機能をClaudeと壁打ち
-  2. Shift+Tab    → Plan Mode で実装計画を立てる
-  2.5. 永続化     → 計画を docs/specs/ に仕様書として保存
-  3. Shift+Tab    → 通常モードに戻して実装
-  3.5. テスト     → ユニットテスト & E2Eテストで検証
-  4. /commit      → ルールに従ってコミット
+  1. /consult           → 作りたい機能をClaudeと壁打ち（要件は requirements.md へ）
+  2. Shift+Tab          → Plan Mode で実装計画を立てる
+  2.5. 永続化           → 計画を docs/_wip/<テーマ>.md に詳細設計として保存
+  3. developer に依頼   → 実装 → qa-engineer → code-reviewer → コミット
+  4. /ask-advisor 区切りのレビュー → 機能のまとまりが一つできたら全体を見てもらう
+  5. 片付け             → docs/_wip/ の内容を docs/ に移すか削除する
 
-  ※ 計画や壁打ちの結果は必ずドキュメントに保存してください。
+  ※ 迷った判断は /ask-advisor に相談し、docs/decisions/ に残してください。
     セッションは消えますが、ドキュメントは残ります。
 
 ■ モデルの使い分け

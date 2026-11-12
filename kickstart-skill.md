@@ -146,7 +146,8 @@ my-new-project/
     │   ├── consult/SKILL.md               ← 要件相談スキル
     │   ├── ask-advisor/SKILL.md           ← advisor への相談
     │   ├── commit/SKILL.md                ← コミットスキル
-    │   └── task/SKILL.md                  ← タスクを見る・増やす・閉じる
+    │   ├── task/SKILL.md                  ← タスクを見る・増やす・閉じる
+    │   └── overnight/SKILL.md             ← 寝ている間にタスクを進める
     └── agents/
         ├── advisor.md                     ← 相談役・区切りの全体レビュー（読み取り専用）
         ├── developer.md                   ← 実装担当
@@ -208,6 +209,10 @@ Claudeが既存ドキュメントを読み込んでA4から進めてくれます
 ### タスクの置き場所はどちらを選べばいい？
 
 一人で開発するなら `docs/tasks.md`、チームで Pull Request を使うなら GitHub Issues がおすすめです。どちらを選んでも、日々の操作は `/task` スキルにまとまっているので使い方は変わりません。後から変える場合は、`/task` スキルの手順と developer・advisor の定義のタスクの節を書き換え、`docs/decisions/` に新しい判断として記録してください。
+
+### 寝ている間に実装を進めてもらえる？
+
+`/overnight` を打ってから寝ると、任せたタスクを朝まで順に実装します。始める前に任せるタスクと上限を確認したあとは質問せず、判断が要る点は「人間の判断待ち」に残して先へ進みます。作業は `overnight/<日付>` ブランチで行い、push はしません。普段（`/overnight` を使っていないとき）は、判断が要ればその場で聞いてきます。詳しくは[Phase B](workflow-daily.md#寝ている間に進める--overnight)を参照してください。
 
 ### .gitignore の内容を変更したい
 

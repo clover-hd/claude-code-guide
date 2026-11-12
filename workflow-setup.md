@@ -42,7 +42,7 @@ Phase A：プロジェクトの立ち上げ
       │  advisor / developer / qa-engineer / code-reviewer
       ▼
   A7. スキル・コミットガード・初期コミット
-      │  /ask-advisor, /commit, /task, 秘密の値を止めるフック、
+      │  /ask-advisor, /commit, /task, /overnight, 秘密の値を止めるフック、
       │  MVPから最初のタスク
       ▼
   A8. 手順書スキル（任意）
@@ -389,7 +389,8 @@ model: sonnet
 │   ├── consult/SKILL.md      ← A2で作成済み
 │   ├── ask-advisor/SKILL.md  ← advisor への相談
 │   ├── commit/SKILL.md       ← コミットルール
-│   └── task/SKILL.md         ← タスクを見る・増やす・閉じる
+│   ├── task/SKILL.md         ← タスクを見る・増やす・閉じる
+│   └── overnight/SKILL.md    ← 寝ている間にタスクを進める
 ├── agents/
 │   ├── advisor.md
 │   ├── developer.md
@@ -404,6 +405,7 @@ scripts/check-staged.sh       ← 両方から呼ばれる検査スクリプト
 
 - **/ask-advisor**: `context: fork` で advisor に相談を投げるスキルです。メインの会話を汚さずに判断をもらえます（[スキル](skills.md)参照）
 - **/task**: タスクの一覧を見て次にやることを選ぶ（引数なし）、増やす（`add`）、閉じる（`done`）の入口です。A4で選んだ置き場所に合わせた手順だけが書かれます
+- **/overnight**: 寝る前に打つと、任せたタスクを朝まで順に実装します。判断が要る点は人間に聞かずに一覧に残し、後の実装の妨げにならなければ先へ進みます。寝ている間だけの決まりはこのスキルに閉じ込め、普段はその場で人間に聞く動きのままにします
 - **最初のタスク**: `docs/requirements.md` のMVPから、1機能を1タスクにして作ります。一覧を確認してから書き込みます
 - **コミットガード**: 秘密の値やDBファイルのコミットを機械的に止めます。git のフックと Claude Code のフックの二層で置く理由は[セキュリティの基本](security.md#コミットガード--秘密の値を機械的に止める)を参照してください
 

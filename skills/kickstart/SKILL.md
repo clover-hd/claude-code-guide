@@ -1131,14 +1131,29 @@ Node.js の例：
 ```js
 // Claude Code の PreToolUse フック（Bash）。
 // - git commit: フックを飛ばす指定を止め、ステージした変更を scripts/check-staged.sh で検査する
-// - push・PR の作成と、本番を壊しうるコマンド: 人間に確認を求める（ASK_RULES）
+// - push・PR・Issue の作成と、本番を壊しうるコマンド: 人間に確認を求める（REMOTE_RULES / ASK_RULES）
+// - /overnight の作業中（overnight/ ブランチ）は、確認の代わりに拒否する
 import { execFileSync, spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const input = JSON.parse(readFileSync(0, "utf8"));
-const cmd = String(input?.tool_input?.command ?? "");
+let input = {};
+try { input = JSON.parse(readFileSync(0, "utf8")) ?? {}; } catch {}
+const cmd = String(input?.tool_input?.command ?? "").replace(/\\\r?\n/g, "");
 const projectDir = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+const workDir = input.cwd && existsSync(input.cwd) ? input.cwd : projectDir; // worktree / cd 先を見る
+// 判定には、引用符の中身とヒアドキュメントの中身を除いたコマンドを使う（コミットメッセージや
+// grep の引数に「git push」「-n」と書いてあるだけで止まらないようにする）。
+const QUOTED = String.raw`\$'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|'[^']*'`;
+function strip(s) {
+  return s
+    .replace(/<<-?\s*(['"]?)(\w+)\1([^\n]*)\n(?:[\s\S]*?\n)??[ \t]*\2(?=\s|\)|$)/g, "$3")
+    .replace(new RegExp(QUOTED, "g"), '""');
+}
+// bash -c "..." / sh -c '...' / eval "..." の中身は、コマンドとして見る
+const inner = [...cmd.matchAll(new RegExp(String.raw`\b(?:(?:ba|z|da)?sh\s+(?:-\w+\s+)*-\w*c|eval)\s+(` + QUOTED + ")", "g"))]
+  .map((m) => m[1].replace(/^\$?['"]|['"]$/g, ""));
+const bare = [cmd, ...inner].map(strip).join("\n");
 
 function deny(reason) {
   process.stderr.write(reason + "\n");
@@ -1159,50 +1174,50 @@ function ask(reason) {
 }
 
 // ---- git commit ----
-const isCommit = /\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*commit\b/.test(cmd);
+const isCommit = /\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*commit\b/.test(bare);
 if (isCommit) {
-  if (/--no-verify\b/.test(cmd) || /\bcommit\b[^;&|\n]*\s-[A-Za-z]*n[A-Za-z]*(\s|$)/.test(cmd)) {
+  if (/--no-veri\w*/.test(bare) || /\bcommit\b[^;&|\n]*\s-[aeiopqsvz]*n/.test(bare)) {
     deny("コミットのフックを飛ばす指定（--no-verify / -n）は使えません。");
   }
-  if (/core\.hooksPath/.test(cmd)) {
+  if (/core\.hookspath|GIT_CONFIG_/i.test(bare) || /(?:-c\s*|--config-env[=\s])["']?core\.hookspath/i.test(cmd)) {
     deny("コミットのときに core.hooksPath を変えることはできません。");
   }
 
   let hooksPath = "";
   try {
-    hooksPath = execFileSync("git", ["config", "--get", "core.hooksPath"], { cwd: projectDir, encoding: "utf8" }).trim();
+    hooksPath = execFileSync("git", ["config", "--get", "core.hooksPath"], { cwd: workDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch {}
   if (hooksPath !== ".githooks") {
     deny("git のコミット前フックが有効になっていません。先に `git config core.hooksPath .githooks` を実行してください。");
   }
 
-  const r = spawnSync("bash", [join(projectDir, "scripts/check-staged.sh")], { cwd: projectDir, encoding: "utf8" });
+  const r = spawnSync("bash", [join(projectDir, "scripts/check-staged.sh")], { cwd: workDir, encoding: "utf8" });
   if (r.status !== 0) {
     deny((r.stderr || "") + (r.stdout || "") || "scripts/check-staged.sh が失敗しました。");
   }
 }
 
-// ---- push・PR の作成と、本番を壊しうるコマンド: 人間に確認を求める ----
-// 引用符の中身とヒアドキュメントの中身は見ない（コミットメッセージや grep の引数に
-// 「git push」と書いてあるだけで確認が出ないようにする）。
-const bare = cmd
-  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?\n\s*\2\b/g, "")
-  .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
-
+// ---- push・PR・Issue の作成と、本番を壊しうるコマンド: 人間に確認を求める ----
 // /overnight の作業中（overnight/ ブランチ）は、確認を出すと朝まで止まってしまうので、
 // push・PR・Issue の作成と ASK_RULES のコマンドは、確認ではなく拒否する。Claude は理由を受け取って先へ進む。
-let branch = "";
-try {
-  branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-    cwd: projectDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
-  }).trim();
-} catch {}
-const overnight = branch.startsWith("overnight/");
+function branchOf(dir) {
+  const git = (...a) => {
+    try { return execFileSync("git", a, { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return ""; }
+  };
+  const b = git("symbolic-ref", "--short", "-q", "HEAD"); // コミット前のブランチでも取れる
+  if (b) return b;
+  for (const p of ["rebase-merge/head-name", "rebase-apply/head-name"]) { // rebase 中（detached HEAD）
+    try { return readFileSync(git("rev-parse", "--path-format=absolute", "--git-path", p), "utf8").trim().replace(/^refs\/heads\//, ""); } catch {}
+  }
+  return "";
+}
+// worktree で作業しているときのために、作業中のディレクトリとプロジェクトの両方を見る
+const overnight = [workDir, projectDir].some((d) => branchOf(d).startsWith("overnight/"));
 
 // push・PR・Issue の作成は既定で入れておく（auto モードでは確認なしで通るため）。
 const GH = String.raw`\bgh\s+(?:(?:-R|--repo)[=\s]\S+\s+)?`;
 const REMOTE_RULES = [
-  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*push\b/, "リモートへの push です。"],
+  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*(?:(?:subtree|lfs)\s+)?push(?![\w-])(?![^;&|\n]*\s(?:--dry-run|--help|-h)\b)/, "リモートへの push です。"],
   [new RegExp(GH + String.raw`pr\s+(create|merge)\b`), "Pull Request の作成・マージです。"],
   [new RegExp(GH + String.raw`issue\s+create\b`), "Issue の作成です。"],
 ];
@@ -1223,6 +1238,7 @@ for (const [re, reason] of ASK_RULES) {
 }
 
 process.exit(0);
+
 ```
 
 `REMOTE_RULES`（push・PR・Issue の作成）は既定のまま入れる。`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。どちらも、`overnight/` ブランチでは確認ではなく拒否になる。
@@ -1257,12 +1273,18 @@ process.exit(0);
 
 作成後、次の2つを確かめる。
 
-- `.env` をステージして `git commit` を試み、止まること（初期コミットの前なので、確かめた後は `git rm --cached .env` でステージから外す）
+- `.env` を `git add -f .env` でステージして `git commit` を試み、止まること（`.gitignore` に入っているので `-f` が要る。初期コミットの前なので、確かめた後は `git rm --cached .env` でステージから外す）
 - push を見分けられること。`{"tool_input":{"command":"git -C . push"}}` と書いたファイル（例: `/tmp/push-test.json`）を Write ツールで作り、`node .claude/hooks/guard-bash.mjs < /tmp/push-test.json` を実行して、`permissionDecision: "ask"` が返ることを確かめる（コマンドに直接 push の文字を書くと、確かめるコマンド自体にフックが反応するため、ファイル経由で渡す。リモートがまだなくても確かめられる）
 
-Python などで書く場合も、`REMOTE_RULES`（push・PR・Issue の作成と、overnight/ ブランチでの拒否）と、引用符・ヒアドキュメントの中身を見ないことは同じように入れる。
+Python などで書く場合も、次のことは同じように入れる。
 
-> このフックと `permissions.ask` で、普通の書き方の push・PR・Issue の作成には確認が出る。ただし、`gh api` で直接作るなど、書き方によっては拾えないものもある。確認を確実な防御とは考えず、作業の区切りで人間が確かめることと組み合わせる。
+- `REMOTE_RULES`（push・PR・Issue の作成）と、`overnight/` ブランチでの拒否（作業中のディレクトリとプロジェクトの両方のブランチを見る）
+- 引用符・ヒアドキュメントの中身を除いて判定すること。ただし `bash -c "..."`・`sh -c '...'`・`eval "..."` の中身はコマンドとして見る
+- コミットの検査（`--no-verify` / `-n`、`core.hooksPath` の変更）も、引用符の中身を除いて判定すること（コミットメッセージに `-n` と書いただけで止めない）
+
+> このフックと `permissions.ask` で、普通の書き方の push・PR・Issue の作成には確認が出る。ただし、`gh api` で直接作る、`echo "$(git push)"` のように引用符の中で実行する、git のエイリアスを使う、など拾えない書き方もある。確認を確実な防御とは考えず、作業の区切りで人間が確かめることと組み合わせる。
+>
+> コミットの検査（`scripts/check-staged.sh`）は、Claude が作業しているディレクトリで行う。`cd` や `git -C` で別の作業ツリーに移ってコミットした場合はフックでは拾えないことがあるが、git のコミット前フック（`.githooks/pre-commit`）が止める。
 
 ### 自動フォーマットのフック（任意）
 

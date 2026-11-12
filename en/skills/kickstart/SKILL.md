@@ -937,7 +937,7 @@ Fill in `<...>` from A4–A7. As with `/task`, keep only the variant matching th
 ---
 name: overnight
 description: Implements delegated tasks in order while the human sleeps. After the up-front confirmation, never asks the human; leaves points needing a decision in the list and moves on.
-argument-hint: [limit (e.g., 3 tasks, 6 hours)]
+argument-hint: [limit (e.g., 3 tasks, 6 hours; omit for no limit)]
 disable-model-invocation: true
 ---
 
@@ -946,8 +946,8 @@ disable-model-invocation: true
 ## Before Starting (the only time to ask the human)
 
 1. Check with `git status` that the working tree is clean. If not, say so and stop
-2. Show the task list and have the human choose which tasks to delegate. Recommend from the top of "Next." Don't delegate tasks without a done-when
-3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise 3 tasks)
+2. Show the task list and have the human choose which tasks to delegate. Recommend every task in "Next" that has a done-when (worked from the top). Don't delegate tasks without a done-when
+3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise no limit — work through all the delegated tasks)
 4. Check the setting that continues automatically after a usage limit resets (`autoContinueAtUsageLimit`; in `/config`, **Continue automatically at usage limit**; on by default)
    - Read `~/.claude/settings.json`. If it's `false`, it's off
    - If the user settings don't have this key but `.claude/settings.json` or `.claude/settings.local.json` does, it's off regardless of the value (this key is read only from user and managed settings; setting it in a project turns it off)
@@ -977,7 +977,7 @@ Work through the delegated tasks from the top, one at a time.
    - Done: next task
    - Human decision needed: go to "When a Human Decision Is Needed" below
    - Tests or review still fail after fixing: stash the uncommitted changes with `git stash push -m "<ID> failing"`, move the task to awaiting decision with what fails, and go to the next task
-4. When the limit is reached or no task can proceed, write the "Morning Report" and finish
+4. When the limit is reached (with no limit, when the delegated tasks are done) or no task can proceed, write the "Morning Report" and finish
 
 ## When a Human Decision Is Needed
 

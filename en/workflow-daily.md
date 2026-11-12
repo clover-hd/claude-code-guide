@@ -508,7 +508,7 @@ For `docs/tasks.md`, delete tasks moved to "Done" at this point. Git history kee
 Type `/overnight` before going to bed and it implements the delegated tasks in order until morning.
 
 ```
-You: /overnight 4 tasks
+You: /overnight
 
 Claude: The working tree is clean. Choose which tasks to delegate.
         Next:
@@ -516,7 +516,7 @@ Claude: The working tree is clean. Choose which tasks to delegate.
         - T-004 Restaurant search
         - T-005 Show restaurant images
         - T-006 Sort search results
-        Limit is 4 tasks; I'll work on overnight/2026-11-12.
+        No limit, so I'll work through all 4. Branch: overnight/2026-11-12.
         The setting that continues automatically after a usage limit resets is on.
         To be sure, also check Continue automatically at usage limit in /config.
         No more questions until morning. No push or deploy.
@@ -526,6 +526,8 @@ Claude: The working tree is clean. Choose which tasks to delegate.
 
 You: OK
 ```
+
+By default there's no limit; it works through all the delegated tasks. To cap it, pass something like `/overnight 3 tasks` or `/overnight 6 hours`.
 
 > **So a usage limit doesn't stop you until morning**: If you hit a usage limit during the night, Claude Code continues automatically after the reset as long as **Continue automatically at usage limit** in `/config` (setting key `autoContinueAtUsageLimit`; on by default) is on. `/overnight` checks this setting before starting and tells you if it's off. However, closing Claude Code ends the wait. If the limit resets while the computer has been asleep for more than about 30 minutes, it stops until you press Enter. It doesn't wait when the reset is 24 hours or more away, such as a weekly limit, and it continues automatically at most 3 times.
 

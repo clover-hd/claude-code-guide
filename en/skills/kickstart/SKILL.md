@@ -1130,14 +1130,29 @@ Node.js example:
 ```js
 // Claude Code PreToolUse hook (Bash).
 // - git commit: block hook-skipping flags and check staged changes with scripts/check-staged.sh
-// - Pushes, PR creation, and commands that could break production: ask a human to confirm (ASK_RULES)
+// - Pushes, PR and Issue creation, and commands that could break production: ask a human to confirm (REMOTE_RULES / ASK_RULES)
+// - During /overnight work (an overnight/ branch), reject them instead of asking
 import { execFileSync, spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const input = JSON.parse(readFileSync(0, "utf8"));
-const cmd = String(input?.tool_input?.command ?? "");
+let input = {};
+try { input = JSON.parse(readFileSync(0, "utf8")) ?? {}; } catch {}
+const cmd = String(input?.tool_input?.command ?? "").replace(/\\\r?\n/g, "");
 const projectDir = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+const workDir = input.cwd && existsSync(input.cwd) ? input.cwd : projectDir; // look at the worktree / directory Claude is working in
+// Match against the command with quoted strings and heredoc bodies removed (so that a commit message
+// or a grep argument that merely contains "git push" or "-n" doesn't trigger anything).
+const QUOTED = String.raw`\$'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|'[^']*'`;
+function strip(s) {
+  return s
+    .replace(/<<-?\s*(['"]?)(\w+)\1([^\n]*)\n(?:[\s\S]*?\n)??[ \t]*\2(?=\s|\)|$)/g, "$3")
+    .replace(new RegExp(QUOTED, "g"), '""');
+}
+// Treat the contents of bash -c "..." / sh -c '...' / eval "..." as commands
+const inner = [...cmd.matchAll(new RegExp(String.raw`\b(?:(?:ba|z|da)?sh\s+(?:-\w+\s+)*-\w*c|eval)\s+(` + QUOTED + ")", "g"))]
+  .map((m) => m[1].replace(/^\$?['"]|['"]$/g, ""));
+const bare = [cmd, ...inner].map(strip).join("\n");
 
 function deny(reason) {
   process.stderr.write(reason + "\n");
@@ -1158,50 +1173,50 @@ function ask(reason) {
 }
 
 // ---- git commit ----
-const isCommit = /\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*commit\b/.test(cmd);
+const isCommit = /\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*commit\b/.test(bare);
 if (isCommit) {
-  if (/--no-verify\b/.test(cmd) || /\bcommit\b[^;&|\n]*\s-[A-Za-z]*n[A-Za-z]*(\s|$)/.test(cmd)) {
+  if (/--no-veri\w*/.test(bare) || /\bcommit\b[^;&|\n]*\s-[aeiopqsvz]*n/.test(bare)) {
     deny("Flags that skip commit hooks (--no-verify / -n) are not allowed.");
   }
-  if (/core\.hooksPath/.test(cmd)) {
+  if (/core\.hookspath|GIT_CONFIG_/i.test(bare) || /(?:-c\s*|--config-env[=\s])["']?core\.hookspath/i.test(cmd)) {
     deny("You can't change core.hooksPath while committing.");
   }
 
   let hooksPath = "";
   try {
-    hooksPath = execFileSync("git", ["config", "--get", "core.hooksPath"], { cwd: projectDir, encoding: "utf8" }).trim();
+    hooksPath = execFileSync("git", ["config", "--get", "core.hooksPath"], { cwd: workDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
   } catch {}
   if (hooksPath !== ".githooks") {
     deny("The git pre-commit hook is not enabled. Run `git config core.hooksPath .githooks` first.");
   }
 
-  const r = spawnSync("bash", [join(projectDir, "scripts/check-staged.sh")], { cwd: projectDir, encoding: "utf8" });
+  const r = spawnSync("bash", [join(projectDir, "scripts/check-staged.sh")], { cwd: workDir, encoding: "utf8" });
   if (r.status !== 0) {
     deny((r.stderr || "") + (r.stdout || "") || "scripts/check-staged.sh failed.");
   }
 }
 
-// ---- Pushes, PR creation, and commands that could break production: ask a human to confirm ----
-// Ignore the contents of quotes and heredocs (so that a commit message or a grep argument
-// that merely contains "git push" doesn't trigger a confirmation).
-const bare = cmd
-  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?\n\s*\2\b/g, "")
-  .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
-
+// ---- Pushes, PR and Issue creation, and commands that could break production: ask a human to confirm ----
 // During /overnight work (an overnight/ branch), a confirmation would stall everything until morning,
 // so reject push, PR creation, Issue creation, and ASK_RULES commands instead of asking. Claude takes the reason and moves on.
-let branch = "";
-try {
-  branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
-    cwd: projectDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
-  }).trim();
-} catch {}
-const overnight = branch.startsWith("overnight/");
+function branchOf(dir) {
+  const git = (...a) => {
+    try { return execFileSync("git", a, { cwd: dir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return ""; }
+  };
+  const b = git("symbolic-ref", "--short", "-q", "HEAD"); // works even on a branch with no commits yet
+  if (b) return b;
+  for (const p of ["rebase-merge/head-name", "rebase-apply/head-name"]) { // during a rebase (detached HEAD)
+    try { return readFileSync(git("rev-parse", "--path-format=absolute", "--git-path", p), "utf8").trim().replace(/^refs\/heads\//, ""); } catch {}
+  }
+  return "";
+}
+// Check both the working directory and the project, for work done in a worktree
+const overnight = [workDir, projectDir].some((d) => branchOf(d).startsWith("overnight/"));
 
 // Push, PR creation, and Issue creation are included by default (auto mode lets them through without confirmation).
 const GH = String.raw`\bgh\s+(?:(?:-R|--repo)[=\s]\S+\s+)?`;
 const REMOTE_RULES = [
-  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*push\b/, "This pushes to a remote."],
+  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*(?:(?:subtree|lfs)\s+)?push(?![\w-])(?![^;&|\n]*\s(?:--dry-run|--help|-h)\b)/, "This pushes to a remote."],
   [new RegExp(GH + String.raw`pr\s+(create|merge)\b`), "This creates or merges a Pull Request."],
   [new RegExp(GH + String.raw`issue\s+create\b`), "This creates an Issue."],
 ];
@@ -1222,6 +1237,7 @@ for (const [re, reason] of ASK_RULES) {
 }
 
 process.exit(0);
+
 ```
 
 Keep `REMOTE_RULES` (push, PR, and Issue creation) as is. In `ASK_RULES`, put — after discussing with the user — the commands that **could break production** for the infrastructure and DB chosen in A4 (leaving it empty is fine if there are none). On `overnight/` branches, both are rejected instead of asking.
@@ -1256,12 +1272,18 @@ Keep `REMOTE_RULES` (push, PR, and Issue creation) as is. In `ASK_RULES`, put �
 
 After creating it, confirm the following two things.
 
-- Stage `.env`, try `git commit`, and confirm it's blocked (this is before the initial commit, so unstage it afterward with `git rm --cached .env`)
+- Stage `.env` with `git add -f .env`, try `git commit`, and confirm it's blocked (`-f` is needed because `.env` is in `.gitignore`; this is before the initial commit, so unstage it afterward with `git rm --cached .env`)
 - The hook recognizes a push. Use the Write tool to create a file (e.g., `/tmp/push-test.json`) containing `{"tool_input":{"command":"git -C . push"}}`, run `node .claude/hooks/guard-bash.mjs < /tmp/push-test.json`, and confirm that `permissionDecision: "ask"` is returned (if you wrote the push text directly in the command, the hook would react to the verification command itself, so pass it via a file. This works even if no remote exists yet)
 
-When writing it in Python or another language, include the same `REMOTE_RULES` (push, PR, and Issue creation, and rejection on `overnight/` branches) and the same behavior of ignoring the contents of quotes and heredocs.
+When writing it in Python or another language, include the same behavior:
 
-> With this hook and `permissions.ask`, confirmation appears for push, PR, and Issue creation written in the ordinary way. However, some forms slip through, such as creating one directly with `gh api`. Don't treat confirmation as a sure defense; combine it with a human checking at natural breakpoints in the work.
+- `REMOTE_RULES` (push, PR, and Issue creation) and rejection on `overnight/` branches (checking the branch of both the working directory and the project)
+- Matching against the command with quoted strings and heredoc bodies removed, while still treating the contents of `bash -c "..."`, `sh -c '...'`, and `eval "..."` as commands
+- Applying the same removal to the commit checks (`--no-verify` / `-n`, changing `core.hooksPath`), so a commit message that merely contains `-n` isn't blocked
+
+> With this hook and `permissions.ask`, confirmation appears for push, PR, and Issue creation written in the ordinary way. However, some forms slip through, such as creating one directly with `gh api`, running it inside quotes like `echo "$(git push)"`, or using a git alias. Don't treat confirmation as a sure defense; combine it with a human checking at natural breakpoints in the work.
+>
+> The commit check (`scripts/check-staged.sh`) runs in the directory Claude is working in. If Claude moves to another worktree with `cd` or `git -C` and commits there, the hook may not catch it, but the git pre-commit hook (`.githooks/pre-commit`) still blocks it.
 
 ### Auto-formatting Hook (Optional)
 

@@ -41,7 +41,7 @@
 | セクション | 内容 |
 |-----------|------|
 | [サブエージェント](sub-agents.md) | 専門AIチームの構築 |
-| [スキル（Skills）](skills.md) | `/commit`, `/consult`, `/task`, `/overnight` 等のテンプレート化（新SKILL.md形式） |
+| [スキル（Skills）](skills.md) | `/commit`, `/consult`, `/task`, `/overnight`, `/handoff` 等のテンプレート化（新SKILL.md形式） |
 | [MCPサーバー](mcp.md) | 外部ツール連携（Sequential Thinking, Serena, Context7） |
 | [CLAUDE.md・Hooks](project-config.md) | プロジェクト設定ファイルと自動化 |
 
@@ -85,6 +85,7 @@
 | `/plan` | Plan Mode に入る |
 | `/clear` | コンテキストをリセット |
 | `/compact` | 会話を圧縮してコンテキスト延命 |
+| `/handoff` | 状態を残してからクリアし、続きをやるプロンプトを出す（`/kickstart` で作るスキル） |
 | `/init` | CLAUDE.mdを自動生成 |
 | `Esc` | 実行中のタスクを中断 |
 | `Esc + Esc` | チェックポイント選択（巻き戻し） |

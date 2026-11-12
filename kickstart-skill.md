@@ -147,7 +147,8 @@ my-new-project/
     │   ├── ask-advisor/SKILL.md           ← advisor への相談
     │   ├── commit/SKILL.md                ← コミットスキル
     │   ├── task/SKILL.md                  ← タスクを見る・増やす・閉じる
-    │   └── overnight/SKILL.md             ← 寝ている間にタスクを進める
+    │   ├── overnight/SKILL.md             ← 寝ている間にタスクを進める
+    │   └── handoff/SKILL.md               ← クリアの前に引き継ぎを残す
     └── agents/
         ├── advisor.md                     ← 相談役・区切りの全体レビュー（読み取り専用）
         ├── developer.md                   ← 実装担当

@@ -1027,6 +1027,79 @@ OKをもらったら、以降は人間に聞かない。
 - コミットのフックを飛ばす（`--no-verify` を使う）
 ````
 
+### /handoff スキルの作成
+
+`.claude/skills/handoff/SKILL.md` を作成する。コンテキストが残り少なくなったときに打つと、今の状態を残して、クリア後に続きをやるためのプロンプトを出す。
+
+続きに必要なことは、**まずハーネスの決まった置き場所（タスク・詳細設計・判断・コミット）に残し**、どこにも収まらない作業途中の状態だけを短い引き継ぎメモに書く。メモは再開したら消す使い捨てにして、内容が古くなって残り続けないようにする。
+
+`<...>` はA4〜A7の内容で埋める。
+
+````markdown
+---
+name: handoff
+description: コンテキストをクリアする前に、今の状態を残し、クリア後に続きをやるためのプロンプトを出す。
+disable-model-invocation: true
+---
+
+# /handoff - クリアの前に引き継ぎを残す
+
+## 1. 決まった置き場所を最新にする
+
+引き継ぎメモに書く前に、まず次を今の状態に合わせる。ここに書いたことは、メモでは繰り返さない。
+
+- タスク（<docs/tasks.md または GitHub Issues>）: 作業中のタスクの状態。終わったものは `/task done` の手順で閉じる
+- 詳細設計（`docs/_wip/<テーマ>.md`）: 会話の中で変わった設計や段取り
+- 判断（`docs/decisions/`）: 会話で決めたことのうち、退けた案があってまだ記録していないもの
+- コミット: 区切りのよい変更があれば、コミットするかを人間に聞く。勝手にはしない
+
+## 2. 引き継ぎメモを書く
+
+どこにも収まらない作業途中の状態だけを、`docs/_wip/handoff.md` に書く（すでにあれば上書きする）。
+
+```markdown
+# 引き継ぎ（YYYY-MM-DD HH:MM）
+
+## やっていること
+- タスク: T-003 …（詳細設計: docs/_wip/…）
+- 今の段階: （例: 実装ステップ3のうち2まで終わり、テストが1件落ちている）
+
+## まだコミットしていない変更
+- ファイル — 何のための変更か（`git status` で確かめて書く）
+
+## 次にやること
+1. …
+
+## 分かったこと・はまりどころ
+- （試してだめだったこと、気をつけること）
+
+## 人間が言ったこと・待っている判断
+- （会話の中で人間が伝えた好みや指示、聞いていてまだ答えがないこと）
+```
+
+- 短く書く。docs/ やタスクにあることは、場所を示すだけにする
+- 会話にしか残っていないこと（試したこと、人間の指示や好み）を優先して残す
+- 秘密の値（APIキーなど）は書かない
+
+## 3. 再開用のプロンプトを出す
+
+最後に、次の形で出す。人間がこれを `/clear` のあとに貼る。
+
+```
+/clear のあとに、次のプロンプトを貼ってください:
+
+docs/_wip/handoff.md を読んで、続きをやって。作業を始めたら handoff.md は削除して。
+```
+
+次にやることがはっきりしていれば、「次は〇〇から」と1行足す。
+
+## してはいけないこと
+
+- `/clear` を自分で打つ（人間が打つ）
+- 人間に聞かずにコミットする
+- 決まった置き場所に書くべきことを、引き継ぎメモにだけ書く
+````
+
 ### コミットガードの設定（標準）
 
 秘密の値やDBファイルのコミットを**機械的に止める**仕組みを二層で置く。どちらも同じ検査スクリプトを呼ぶ。
@@ -1343,7 +1416,7 @@ chore: プロジェクトの開発基盤を構築
 
 - CLAUDE.md（目次と約束）
 - .claude/agents/（advisor, developer, qa-engineer, code-reviewer）
-- .claude/skills/（consult, ask-advisor, commit, task, overnight）
+- .claude/skills/（consult, ask-advisor, commit, task, overnight, handoff）
 - .claude/settings.json, .claude/hooks/, .githooks/, scripts/check-staged.sh（コミットガード）
 - .gitignore
 ```
@@ -1411,7 +1484,7 @@ argument-hint: "[local|staging|production]"
   docs/tasks.md / GitHub Issues   — タスク（MVPから作った最初の一覧）
   CLAUDE.md                       — 目次と約束
   .claude/agents/                 — advisor, developer, qa-engineer, code-reviewer
-  .claude/skills/                 — consult, ask-advisor, commit, task, overnight
+  .claude/skills/                 — consult, ask-advisor, commit, task, overnight, handoff
   .claude/settings.json ほか       — コミットガード
   .gitignore                      — セキュリティ基本設定
 
@@ -1439,7 +1512,8 @@ argument-hint: "[local|staging|production]"
 
 ■ コンテキスト管理
   タスクが変わったら → /clear（リセット）
-  70%付近になったら → /compact（圧縮）
+  残り少なくなったら → /handoff で状態を残す → /clear → 出てきたプロンプトを貼る
+  急ぎで続けたいなら → /compact（圧縮。ファイルには残らない）
 
 ■ 困ったら
   Esc+Esc → チェックポイントに巻き戻し

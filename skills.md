@@ -26,11 +26,13 @@
     │   └── SKILL.md         ← /ask-advisor で呼び出し
     ├── task/
     │   └── SKILL.md         ← /task で呼び出し
-    └── overnight/
-        └── SKILL.md         ← /overnight で呼び出し
+    ├── overnight/
+    │   └── SKILL.md         ← /overnight で呼び出し
+    └── handoff/
+        └── SKILL.md         ← /handoff で呼び出し
 ```
 
-> `/kickstart` で作るプロジェクトには、この5つのスキルが入ります。中身は [kickstart スキル](skills/kickstart/SKILL.md) の A2 と A7 を参照してください。
+> `/kickstart` で作るプロジェクトには、この6つのスキルが入ります。中身は [kickstart スキル](skills/kickstart/SKILL.md) の A2 と A7 を参照してください。
 
 旧形式との比較：
 
@@ -219,3 +221,4 @@ commands形式との最大の違いは、**補助ファイルを同梱**でき�
 | `/ask-advisor` | advisor エージェントへの相談・区切りのレビュー | `false` |
 | `/task` | タスクを見る・増やす・閉じる | `false` |
 | `/overnight` | 寝ている間に、任せたタスクを順に実装する | `true`（人間が打ったときだけ夜用の動きに入る） |
+| `/handoff` | クリアの前に今の状態を残し、再開用のプロンプトを出す | `true`（人間が打ったときだけ） |

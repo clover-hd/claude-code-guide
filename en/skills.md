@@ -61,6 +61,7 @@ Key frontmatter fields:
 | `argument-hint` | Hint for the argument typed after `/name`. Received in the body as `$ARGUMENTS` |
 | `context: fork` | Run in a context separate from the main conversation |
 | `agent` | The sub-agent to use with `context: fork` |
+| `background` | Used only with `context: fork`. Defaults to `true`: it runs in the background and the result arrives later. Set it to `false` to wait for the result on the spot |
 
 ## Skill Placement Scope
 
@@ -129,6 +130,8 @@ description: Consult on service requirements and planning
 
 Combining `context: fork` with `agent:` lets **the specified sub-agent run the skill in a separate context**. The main conversation doesn't fill up with the consultation process.
 
+A `context: fork` skill runs in the background by default, and the result arrives later. Because we want to see the answer to the consultation before moving on, we add `background: false` so it waits on the spot.
+
 ```markdown
 ---
 name: ask-advisor
@@ -136,6 +139,7 @@ description: Consult the advisor. Use when unsure about principles, data shape, 
 argument-hint: <what you want to consult on, or "milestone review">
 context: fork
 agent: advisor
+background: false
 ---
 
 Answer the following consultation.

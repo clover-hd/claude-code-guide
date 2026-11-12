@@ -404,11 +404,11 @@ The final touch on your development infrastructure.
 scripts/check-staged.sh       ← Check script called by both
 ```
 
-- **/ask-advisor**: A skill that sends a question to the advisor with `context: fork`. You get a decision without cluttering the main conversation (see [Skills](skills.md))
+- **/ask-advisor**: A skill that sends a question to the advisor with `context: fork`. You get a decision without cluttering the main conversation. It's given `background: false` so it waits for the answer on the spot (see [Skills](skills.md))
 - **/task**: The entry point for viewing the task list and picking what's next (no argument), adding (`add`), and closing (`done`). Only the procedure for the location chosen in A4 is written into it
 - **/overnight**: Typed before going to bed, it implements the delegated tasks in order until morning. Instead of asking the human, it leaves points that need a decision in the list and moves on as long as they don't block later work. The rules for while you sleep live only in this skill; normally the human is still asked on the spot
 - **First tasks**: Created from the MVP in `docs/requirements.md`, one feature per task. The list is confirmed before being written
-- **Commit guard**: Mechanically blocks commits of secrets and DB files. For why it's placed in two layers—a git hook and a Claude Code hook—see [Security Basics](security.md#commit-guard--stop-secrets-mechanically)
+- **Commit guard**: Mechanically blocks commits of secrets and DB files. For why it's placed in two layers—a git hook and a Claude Code hook—see [Security Basics](security.md#commit-guard--stop-secrets-mechanically). It also makes confirmation appear before pushes and creating Pull Requests and Issues (because auto mode lets them through without confirmation)
 
 ---
 

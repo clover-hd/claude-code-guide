@@ -103,7 +103,30 @@ done < <(git diff --cached --name-only --diff-filter=ACMR -z)
 - **Blocks** `git commit --no-verify` / `-n` (options that skip git hooks)
 - **Blocks** if the git hook (`core.hooksPath`) isn't enabled, and says to enable it
 - Runs the check script and **blocks** on a hit (the reason is passed to Claude, which then unstages the file)
-- **Asks a human to confirm** commands that could break production (such as migrating the production DB)
+- **Asks a human to confirm** pushes, creating Pull Requests and Issues, and commands that could break production (such as migrating the production DB)
+
+### Require Confirmation Before Push and Pull Requests
+
+Claude Code starts in **auto mode** by default. In auto mode, pushes to the current repository (including the default branch) and creating Pull Requests **go through without confirmation**. The classifier also reads instructions in CLAUDE.md, but that doesn't guarantee a confirmation will appear. An instruction given only in conversation, such as "don't push," can disappear when the conversation is compacted.
+
+If you want a human to confirm before a push, put it in `permissions.ask` in `.claude/settings.json`. Operations matching these rules always prompt for confirmation, even in auto mode.
+
+```json
+{
+  "permissions": {
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh issue create *)"
+    ]
+  }
+}
+```
+
+These rules match commands written as `git push` (including a part chained with `&&`). They don't catch other forms such as `git -C <dir> push`, so the PreToolUse hook above also looks at the whole command and asks for confirmation. `/kickstart` sets up both.
+
+Even so, some things slip through depending on how they're written, such as creating one directly with `gh api`. Treat the confirmation setup not as a sure defense but as something that "stops the ordinary way of writing it," and combine it with a human checking at natural breakpoints in the work.
 
 For how to write hooks, see [CLAUDE.md and Hooks](project-config.md#hooks-automation). The full script and hook are in A7 of the [kickstart skill](skills/kickstart/SKILL.md). With `/kickstart`, this is set up automatically when the project is created.
 

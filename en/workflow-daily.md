@@ -498,7 +498,8 @@ Claude: The working tree is clean. Choose which tasks to delegate.
         - T-006 Sort search results
         Limit is 4 tasks; I'll work on overnight/2026-11-12.
         No more questions until morning. No push or deploy.
-        Please switch to auto mode so permission prompts don't stall me.
+        I'll run in auto mode so permission prompts don't stall me.
+        If auto mode on isn't shown at the bottom of the screen, switch with Shift+Tab.
 
 You: OK
 ```
@@ -509,7 +510,7 @@ You: OK
 |---|---|---|
 | When a decision is needed | Ask the human on the spot | Leave it under "Awaiting Human Decision" and move on |
 | Branch | Your usual branch, e.g. `develop` | `overnight/<date>` |
-| Push / deploy | After human confirmation | Never |
+| Push / deploy | After human confirmation | Never (on `overnight/` branches, the hook rejects push and creating PRs and Issues) |
 | New tasks | Add with `/task add` | Not added; written as candidates in the morning report |
 
 Normal behavior hasn't changed at all. The developer consults the advisor, and if told "only a human can decide," it stops and returns the question. Normally, the main conversation then asks you; under `/overnight`, the skill records it in the list and moves on.

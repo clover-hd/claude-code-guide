@@ -760,6 +760,8 @@ Worth noting (optional to fix):
 
 Create `.claude/skills/ask-advisor/SKILL.md` with the following content. With `context: fork` and `agent: advisor`, you can send a consultation to advisor without cluttering the main conversation.
 
+A `context: fork` skill runs in the background by default, and the answer arrives later. Because we want to see the answer to the consultation before moving on, add `background: false` so it waits for the answer on the spot.
+
 ```markdown
 ---
 name: ask-advisor
@@ -767,6 +769,7 @@ description: Consult advisor. Use when unsure about principles, data shape, scre
 argument-hint: <what to consult about, or "milestone review">
 context: fork
 agent: advisor
+background: false
 ---
 
 Answer the following consultation.
@@ -889,7 +892,7 @@ When the human answers an item "Awaiting Human Decision":
 ## Procedure (for GitHub Issues)
 
 - List: `gh issue list --state open`
-- Add: `gh issue create --title "<what to do>" --body "<done when>"`. **Show the title and body to the human and get confirmation before creating** (it writes outside the repo)
+- Add: `gh issue create --title "<what to do>" --body "<done when>"`. **Show the title and body to the human and get confirmation before creating** (it writes outside the repo; the commit guard's hook and settings also prompt for confirmation)
 - Mark in progress: `gh issue edit <number> --add-assignee @me`
 - Close: `gh issue close <number> --comment "<commits that handled it>"`
 ````
@@ -948,8 +951,9 @@ disable-model-invocation: true
 4. Create and switch to `overnight/YYYY-MM-DD` from `<working branch>`
 5. Tell the human the following and get OK
    - No more questions until morning
-   - To avoid stalling on permission prompts, auto mode or an allowlist is needed
-   - No push or deploy. In the morning, review `overnight/YYYY-MM-DD` before merging
+   - To avoid stalling on permission prompts, it has to run in auto mode. Ask them to check that `auto mode on` is shown at the bottom of the screen
+   - If it isn't, ask them to press `Shift+Tab` a few times to switch to auto mode (Claude Code normally starts in auto mode, but they may have set a different mode in settings)
+   - No push or deploy. In the morning, review `overnight/YYYY-MM-DD` before merging (on `overnight/` branches, the hook rejects push and creating PRs and Issues)
 
 Once you have OK, don't ask the human anything after that.
 
@@ -983,7 +987,7 @@ Work through the delegated tasks from the top, one at a time.
 - Write them under "Awaiting Human Decision" in `docs/tasks.md` and commit to `overnight/YYYY-MM-DD`
 
 <For GitHub Issues>
-- Don't create Issues (creating them needs human confirmation). Write them only in the morning report; the human adds them with `/task add` in the morning
+- Don't create Issues (creating them needs human confirmation; the hook also rejects it on `overnight/` branches). Write them only in the morning report; the human adds them with `/task add` in the morning
 
 ## Morning Report
 
@@ -1030,6 +1034,8 @@ Put a two-layer mechanism in place that **mechanically blocks** commits of secre
 |---|---|---|
 | git pre-commit hook (`.githooks/`) | Blocks commits including human ones | Claude Code hooks alone can't stop human commits |
 | Claude Code PreToolUse hook | Agents' `git commit`, bypassing hooks with `--no-verify`, environments where git hooks aren't enabled | git hooks aren't enabled just by cloning, and `--no-verify` skips them |
+
+In addition, **get human confirmation before a push, a Pull Request, or an Issue is created**. Claude Code starts in auto mode by default, and in auto mode a push to the current repository (including the default branch) and creating a PR go through without confirmation. Put them in both `permissions.ask` in `.claude/settings.json` and `REMOTE_RULES` in the PreToolUse hook (`permissions.ask` can't catch forms such as `git -C <dir> push`, so the hook, which looks at the whole command, fills the gap). During `/overnight` work (on an `overnight/` branch), a confirmation would stall everything until morning, so the hook returns a rejection instead of a confirmation.
 
 #### 1. Check script `scripts/check-staged.sh`
 
@@ -1124,7 +1130,7 @@ Node.js example:
 ```js
 // Claude Code PreToolUse hook (Bash).
 // - git commit: block hook-skipping flags and check staged changes with scripts/check-staged.sh
-// - Commands that could break production: ask a human to confirm (add them to ASK_RULES)
+// - Pushes, PR creation, and commands that could break production: ask a human to confirm (ASK_RULES)
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1175,24 +1181,61 @@ if (isCommit) {
   }
 }
 
-// ---- Commands that could break production: ask a human to confirm ----
-// Add rules matching the infrastructure chosen in A4. Examples:
+// ---- Pushes, PR creation, and commands that could break production: ask a human to confirm ----
+// Ignore the contents of quotes and heredocs (so that a commit message or a grep argument
+// that merely contains "git push" doesn't trigger a confirmation).
+const bare = cmd
+  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?\n\s*\2\b/g, "")
+  .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
+
+// During /overnight work (an overnight/ branch), a confirmation would stall everything until morning,
+// so reject push, PR creation, and Issue creation instead of asking. Claude takes the reason and moves on.
+let branch = "";
+try {
+  branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    cwd: projectDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+} catch {}
+const overnight = branch.startsWith("overnight/");
+
+// Push, PR creation, and Issue creation are included by default (auto mode lets them through without confirmation).
+const GH = String.raw`\bgh\s+(?:(?:-R|--repo)[=\s]\S+\s+)?`;
+const REMOTE_RULES = [
+  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*push\b/, "This pushes to a remote."],
+  [new RegExp(GH + String.raw`pr\s+(create|merge)\b`), "This creates or merges a Pull Request."],
+  [new RegExp(GH + String.raw`issue\s+create\b`), "This creates an Issue."],
+];
+for (const [re, reason] of REMOTE_RULES) {
+  if (!re.test(bare)) continue;
+  if (overnight) deny(reason + " This is not done during overnight work (overnight/ branch). Note it in the morning report and move on.");
+  ask(reason + " Check the content before allowing it.");
+}
+
+// Add rules for commands that could break production, matching the infrastructure chosen in A4. Examples:
 //   [/\bprisma\s+migrate\s+deploy\b/, "This command applies migrations to the production DB."],
 //   [/\bterraform\s+(apply|destroy)\b/, "This command changes infrastructure."],
 const ASK_RULES = [];
 for (const [re, reason] of ASK_RULES) {
-  if (re.test(cmd)) ask(reason + " Check the impact before allowing it.");
+  if (re.test(bare)) ask(reason + " Check the impact before allowing it.");
 }
 
 process.exit(0);
 ```
 
-In `ASK_RULES`, put — after discussing with the user — the commands that **could break production** for the infrastructure and DB chosen in A4 (leaving it empty is fine if there are none).
+Keep `REMOTE_RULES` (push, PR, and Issue creation) as is. In `ASK_RULES`, put — after discussing with the user — the commands that **could break production** for the infrastructure and DB chosen in A4 (leaving it empty is fine if there are none).
 
 `.claude/settings.json`:
 
 ```json
 {
+  "permissions": {
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh issue create *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -1209,7 +1252,14 @@ In `ASK_RULES`, put — after discussing with the user — the commands that **c
 }
 ```
 
-After creating it, stage `.env`, try `git commit`, and confirm it's blocked (this is before the initial commit, so unstage it afterward with `git rm --cached .env`).
+After creating it, confirm the following two things.
+
+- Stage `.env`, try `git commit`, and confirm it's blocked (this is before the initial commit, so unstage it afterward with `git rm --cached .env`)
+- The hook recognizes a push. Use the Write tool to create a file (e.g., `/tmp/push-test.json`) containing `{"tool_input":{"command":"git -C . push"}}`, run `node .claude/hooks/guard-bash.mjs < /tmp/push-test.json`, and confirm that `permissionDecision: "ask"` is returned (if you wrote the push text directly in the command, the hook would react to the verification command itself, so pass it via a file. This works even if no remote exists yet)
+
+When writing it in Python or another language, include the same `REMOTE_RULES` (push, PR, and Issue creation, and rejection on `overnight/` branches) and the same behavior of ignoring the contents of quotes and heredocs.
+
+> With this hook and `permissions.ask`, confirmation appears for push, PR, and Issue creation written in the ordinary way. However, some forms slip through, such as creating one directly with `gh api`. Don't treat confirmation as a sure defense; combine it with a human checking at natural breakpoints in the work.
 
 ### Auto-formatting Hook (Optional)
 

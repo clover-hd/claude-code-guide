@@ -27,21 +27,21 @@
 | セクション | 内容 |
 |-----------|------|
 | [Claude Codeとは・基本操作](overview.md) | 何ができるか、**権限モードと承認の注意事項**、よく使うコマンド |
-| [モデルの違い・Sonnet 4.6](models.md) | Opus/Sonnet/Haikuの使い分け、Sonnet 4.6の飛躍的進化 |
+| [モデルの違いと選び方](models.md) | Fable/Opus/Sonnet/Haikuの使い分け、ワークフロー別の選び方 |
 
 ### 開発ワークフロー
 
 | セクション | 内容 |
 |-----------|------|
-| [Phase A：プロジェクトの立ち上げ](workflow-setup.md) | ゼロからの土台作り（A0〜A8の依存関係付き手順） |
-| [Phase B：日常の開発サイクル](workflow-daily.md) | consult→Plan→永続化→実装→テスト→commit→区切りの流れ |
+| [Phase A：プロジェクトの立ち上げ](workflow-setup.md) | ゼロからの土台作り（A0〜A8の依存関係付き手順。タスクの置き場所もここで決める） |
+| [Phase B：日常の開発サイクル](workflow-daily.md) | タスク選択→consult→Plan→永続化→実装→テスト→commit→区切りの流れ。寝ている間に進める `/overnight` |
 
 ### Claude Codeの拡張機能
 
 | セクション | 内容 |
 |-----------|------|
 | [サブエージェント](sub-agents.md) | 専門AIチームの構築 |
-| [スキル（Skills）](skills.md) | `/commit`, `/consult` 等のテンプレート化（新SKILL.md形式） |
+| [スキル（Skills）](skills.md) | `/commit`, `/consult`, `/task`, `/overnight` 等のテンプレート化（新SKILL.md形式） |
 | [MCPサーバー](mcp.md) | 外部ツール連携（Sequential Thinking, Serena, Context7） |
 | [CLAUDE.md・Hooks](project-config.md) | プロジェクト設定ファイルと自動化 |
 
@@ -79,8 +79,8 @@
 
 | コマンド | 説明 |
 |----------|------|
-| `/model sonnet` | Sonnet 4.6に切り替え（日常使いはこれ） |
-| `/model opus` | Opus 4.6に切り替え（複雑な設計時） |
+| `/model sonnet` | Sonnetに切り替え（日常使いはこれ） |
+| `/model opus` | Opusに切り替え（複雑な設計時） |
 | `Shift + Tab` | Plan Mode ON/OFF |
 | `/clear` | コンテキストをリセット |
 | `/compact` | 会話を圧縮してコンテキスト延命 |
@@ -91,22 +91,29 @@
 ### 日常の開発サイクル（Phase B 要約）
 
 ```
+0. /task       → 次にやるタスクを選ぶ（新しい案は /task add）
 1. /consult     → 何を作るか壁打ち
 2. Shift+Tab    → Plan Modeで設計
 2.5. 永続化     → 計画を docs/_wip/ に詳細設計として保存
 3. Shift+Tab    → 通常モードで実装
 3.5. テスト     → ユニットテスト & E2Eテスト
 4. /commit      → レビューを通してコミット
-5. 区切り       → /ask-advisor で全体レビュー、docs/_wip/ を片付け
+5. 区切り       → /ask-advisor で全体レビュー、docs/_wip/ を片付け、/task done
+
+寝る前       → /overnight で任せたタスクを朝まで進める
+               判断が要る点は「人間の判断待ち」に残して先へ進む
 ```
 
 ### モデル使い分けの目安
 
 ```
-日常コーディング・バグ修正     → Sonnet 4.6（Opusの1/5コスト）
-大規模設計・複雑なリファクタ   → Opus 4.6
-簡単な質問・定型作業           → Haiku 4.5
+日常コーディング・バグ修正     → Sonnet（まずはこれ）
+大規模設計・複雑なリファクタ   → Opus
+方針を左右する難しい判断       → Fable（プランによっては usage credits から引かれる）
+簡単な質問・定型作業           → Haiku
 ```
+
+> バージョン番号や価格は新しいモデルが出るたびに変わるので、このガイドには書いていません。`/model sonnet` のように系統名で指定すると、その系統の最新モデルが使われます。
 
 ---
 
@@ -119,7 +126,8 @@
 | **スキル** | よく使う操作のテンプレート化 | `.claude/skills/<name>/SKILL.md` |
 | **MCPサーバー** | 外部ツール・サービスとの連携 | `.mcp.json` / 設定ファイル |
 | **CLAUDE.md** | プロジェクト固有のルール・知識 | ルートディレクトリ |
+| **タスク管理** | やることの一覧を残し、`/task` で選ぶ・増やす・閉じる。`/overnight` で寝ている間に進める | `docs/tasks.md` または GitHub Issues |
 | **Hooks** | ツール実行前後の自動処理 | `.claude/settings.json` |
 | **ステータスライン** | 使用率・コンテキスト残量のリアルタイム表示 | `~/.claude/settings.json` + [`statusline.py`](statusline.md) |
 
-**まずはSonnet 4.6で日常のコーディングを始めてみてください。** AIと一緒にコードを書く体験は、きっと「ニヤリとする瞬間」をもたらしてくれるはずです。
+**まずはSonnetで日常のコーディングを始めてみてください。** AIと一緒にコードを書く体験は、きっと「ニヤリとする瞬間」をもたらしてくれるはずです。

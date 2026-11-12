@@ -61,6 +61,7 @@ frontmatterの主要フィールド：
 | `argument-hint` | `/name` の後に入れる引数のヒント。本文では `$ARGUMENTS` で受け取る |
 | `context: fork` | メインの会話とは別のコンテキストで実行する |
 | `agent` | `context: fork` のときに使うサブエージェント |
+| `background` | `context: fork` のときだけ使う。既定は `true` で、バックグラウンドで動き、結果は後から届く。`false` にすると、その場で結果を待つ |
 
 ## スキルの配置スコープ
 
@@ -129,6 +130,8 @@ description: サービスの要件・企画レベルの相談を行う
 
 `context: fork` と `agent:` を組み合わせると、スキルの中身を**指定したサブエージェントに、別のコンテキストで**実行させられます。相談の過程でメインの会話が埋まりません。
 
+`context: fork` のスキルは、既定ではバックグラウンドで動き、結果は後から届きます。相談の答えを見てから次に進みたいので、`background: false` を付けてその場で待つようにしています。
+
 ```markdown
 ---
 name: ask-advisor
@@ -136,6 +139,7 @@ description: advisor に相談する。方針、データの形、画面の流�
 argument-hint: <相談したいこと、または「区切りのレビュー」>
 context: fork
 agent: advisor
+background: false
 ---
 
 次の相談に答えてください。

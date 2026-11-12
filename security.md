@@ -103,7 +103,30 @@ done < <(git diff --cached --name-only --diff-filter=ACMR -z)
 - `git commit --no-verify` / `-n`（git のフックを飛ばす指定）を**止める**
 - git のフック（`core.hooksPath`）が有効になっていなければ**止めて**、有効にするよう伝える
 - 検査スクリプトを走らせ、引っかかったら**止める**（理由はClaudeに伝わり、Claudeがそのファイルをステージから外す）
-- 本番を壊しうるコマンド（本番DBへのマイグレーションなど）は、**人間に確認を求める**
+- push・Pull Request・Issue の作成と、本番を壊しうるコマンド（本番DBへのマイグレーションなど）は、**人間に確認を求める**
+
+### push と Pull Request の前に確認を入れる
+
+Claude Code は既定で **auto モード**で始まります。auto モードでは、今のリポジトリへの push（既定のブランチも含む）と Pull Request の作成が、**確認なしで通ります**。CLAUDE.md に書いた指示は分類器も読みますが、必ず確認が出る保証にはなりません。会話の中で「push しないで」と伝えただけの指示は、会話が圧縮されると消えることがあります。
+
+push の前に人間の確認を取りたいなら、`.claude/settings.json` の `permissions.ask` に入れます。このルールに当たる操作には、auto モードでも必ず確認が出ます。
+
+```json
+{
+  "permissions": {
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh issue create *)"
+    ]
+  }
+}
+```
+
+このルールは `git push` と書かれたコマンド（`&&` でつないだ一部も含む）に当たります。`git -C <dir> push` のような別の書き方は拾えないので、上の PreToolUse フックでもコマンド全体を見て確認を求めます。`/kickstart` では、この両方が設定されます。
+
+それでも、`gh api` で直接作るなど、書き方によっては拾えないものがあります。確認の設定は確実な防御ではなく「普通の書き方なら止まる」ものと考え、作業の区切りで人間が確かめることと組み合わせましょう。
 
 フックの書き方は[CLAUDE.md・Hooks](project-config.md#hooks自動化)、スクリプトとフックの全文は [kickstart スキル](skills/kickstart/SKILL.md) の A7 にあります。`/kickstart` を使えば、プロジェクトの立ち上げ時に自動で設定されます。
 

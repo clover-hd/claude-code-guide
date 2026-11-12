@@ -761,6 +761,8 @@ tools: Read, Grep, Glob, Bash
 
 `.claude/skills/ask-advisor/SKILL.md` を以下の内容で作成する。`context: fork` と `agent: advisor` により、メインの会話を汚さずに advisor に相談を投げられる。
 
+`context: fork` のスキルは、既定ではバックグラウンドで動き、答えは後から届く。相談の答えを見てから次に進みたいので、`background: false` を付けて、その場で答えを待つようにする。
+
 ```markdown
 ---
 name: ask-advisor
@@ -768,6 +770,7 @@ description: advisor に相談する。方針、データの形、画面の流�
 argument-hint: <相談したいこと、または「区切りのレビュー」>
 context: fork
 agent: advisor
+background: false
 ---
 
 次の相談に答えてください。
@@ -890,7 +893,7 @@ argument-hint: [add <内容> | done <ID> | 引数なしで一覧と次の候補]
 ## 手順（GitHub Issues の場合）
 
 - 一覧: `gh issue list --state open`
-- 追加: `gh issue create --title "<何をするか>" --body "<完了条件>"`。**作る前に、題名と本文を人間に見せて確認を取る**（リポジトリの外に書くため）
+- 追加: `gh issue create --title "<何をするか>" --body "<完了条件>"`。**作る前に、題名と本文を人間に見せて確認を取る**（リポジトリの外に書くため。コミットガードのフックと設定でも確認が出る）
 - 作業中にする: `gh issue edit <番号> --add-assignee @me`
 - 閉じる: `gh issue close <番号> --comment "<対応したコミット>"`
 ````
@@ -949,8 +952,9 @@ disable-model-invocation: true
 4. `<作業ブランチ>` から `overnight/YYYY-MM-DD` を作って切り替える
 5. 次のことを伝えて、OKをもらう
    - これ以降は朝まで質問しない
-   - 権限の確認で止まらないよう、auto モードか許可リストの設定が要る
-   - push とデプロイはしない。朝に `overnight/YYYY-MM-DD` を見てから取り込む
+   - 権限の確認で止まらないよう、auto モードで動かす必要がある。画面下部に `auto mode on` と出ているかを見てもらう
+   - 出ていなければ、`Shift+Tab` を何度か押して auto モードにしてもらう（Claude Code は通常 auto モードで始まるが、設定で別のモードにしていることがある）
+   - push とデプロイはしない。朝に `overnight/YYYY-MM-DD` を見てから取り込む（`overnight/` ブランチでは、push・PR・Issue の作成はフックが拒否する）
 
 OKをもらったら、以降は人間に聞かない。
 
@@ -984,7 +988,7 @@ OKをもらったら、以降は人間に聞かない。
 - `docs/tasks.md` の「人間の判断待ち」に書き、`overnight/YYYY-MM-DD` にコミットする
 
 <GitHub Issues の場合>
-- Issue は作らない（作るには人間の確認が要るため）。朝の報告にだけ書く。朝に人間が `/task add` で足す
+- Issue は作らない（作るには人間の確認が要るため。`overnight/` ブランチではフックも拒否する）。朝の報告にだけ書く。朝に人間が `/task add` で足す
 
 ## 朝の報告
 
@@ -1031,6 +1035,8 @@ OKをもらったら、以降は人間に聞かない。
 |---|---|---|
 | git の pre-commit フック（`.githooks/`） | 人間のコミットも含めて止める | Claude Code のフックだけでは人間のコミットを止められない |
 | Claude Code の PreToolUse フック | エージェントの `git commit`、`--no-verify` によるフックの迂回、git フックが無効な環境 | git のフックは clone しただけでは有効にならず、`--no-verify` で飛ばせる |
+
+あわせて、**push・Pull Request・Issue の作成の前に、人間の確認を取る**ようにする。Claude Code は既定で auto モードで始まり、auto モードでは今のリポジトリへの push（既定のブランチも含む）と PR の作成が、確認なしで通るため。`.claude/settings.json` の `permissions.ask` と、PreToolUse フックの `REMOTE_RULES` の両方に入れる（`permissions.ask` は `git -C <dir> push` のような書き方を拾えないので、コマンド全体を見るフックで補う）。`/overnight` の作業中（`overnight/` ブランチ）は、確認を出すと朝まで止まってしまうので、フックが確認ではなく拒否を返す。
 
 #### 1. 検査スクリプト `scripts/check-staged.sh`
 
@@ -1125,7 +1131,7 @@ Node.js の例：
 ```js
 // Claude Code の PreToolUse フック（Bash）。
 // - git commit: フックを飛ばす指定を止め、ステージした変更を scripts/check-staged.sh で検査する
-// - 本番を壊しうるコマンド: 人間に確認を求める（ASK_RULES に足す）
+// - push・PR の作成と、本番を壊しうるコマンド: 人間に確認を求める（ASK_RULES）
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1176,24 +1182,61 @@ if (isCommit) {
   }
 }
 
-// ---- 本番を壊しうるコマンド: 人間に確認を求める ----
-// A4 で決めたインフラに合わせて足す。例:
+// ---- push・PR の作成と、本番を壊しうるコマンド: 人間に確認を求める ----
+// 引用符の中身とヒアドキュメントの中身は見ない（コミットメッセージや grep の引数に
+// 「git push」と書いてあるだけで確認が出ないようにする）。
+const bare = cmd
+  .replace(/<<-?\s*(['"]?)(\w+)\1[\s\S]*?\n\s*\2\b/g, "")
+  .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
+
+// /overnight の作業中（overnight/ ブランチ）は、確認を出すと朝まで止まってしまうので、
+// push・PR・Issue の作成は確認ではなく拒否する。Claude は理由を受け取って先へ進む。
+let branch = "";
+try {
+  branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    cwd: projectDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+} catch {}
+const overnight = branch.startsWith("overnight/");
+
+// push・PR・Issue の作成は既定で入れておく（auto モードでは確認なしで通るため）。
+const GH = String.raw`\bgh\s+(?:(?:-R|--repo)[=\s]\S+\s+)?`;
+const REMOTE_RULES = [
+  [/\bgit\s+(?:-[cC]\s+\S+\s+|--?[\w-]+(?:=\S+)?\s+)*push\b/, "リモートへの push です。"],
+  [new RegExp(GH + String.raw`pr\s+(create|merge)\b`), "Pull Request の作成・マージです。"],
+  [new RegExp(GH + String.raw`issue\s+create\b`), "Issue の作成です。"],
+];
+for (const [re, reason] of REMOTE_RULES) {
+  if (!re.test(bare)) continue;
+  if (overnight) deny(reason + " 夜間の作業（overnight/ ブランチ）では行いません。朝の報告に書いて、先へ進んでください。");
+  ask(reason + " 内容を確かめてから許可してください。");
+}
+
+// 本番を壊しうるコマンドは、A4 で決めたインフラに合わせて足す。例:
 //   [/\bprisma\s+migrate\s+deploy\b/, "本番のDBにマイグレーションを適用するコマンドです。"],
 //   [/\bterraform\s+(apply|destroy)\b/, "インフラを変更するコマンドです。"],
 const ASK_RULES = [];
 for (const [re, reason] of ASK_RULES) {
-  if (re.test(cmd)) ask(reason + " 影響を確かめてから許可してください。");
+  if (re.test(bare)) ask(reason + " 影響を確かめてから許可してください。");
 }
 
 process.exit(0);
 ```
 
-`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。
+`REMOTE_RULES`（push・PR・Issue の作成）は既定のまま入れる。`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。
 
 `.claude/settings.json`：
 
 ```json
 {
+  "permissions": {
+    "ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh issue create *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -1210,7 +1253,14 @@ process.exit(0);
 }
 ```
 
-作成後、`.env` をステージして `git commit` を試み、止まることを確かめる（初期コミットの前なので、確かめた後は `git rm --cached .env` でステージから外す）。
+作成後、次の2つを確かめる。
+
+- `.env` をステージして `git commit` を試み、止まること（初期コミットの前なので、確かめた後は `git rm --cached .env` でステージから外す）
+- push を見分けられること。`{"tool_input":{"command":"git -C . push"}}` と書いたファイル（例: `/tmp/push-test.json`）を Write ツールで作り、`node .claude/hooks/guard-bash.mjs < /tmp/push-test.json` を実行して、`permissionDecision: "ask"` が返ることを確かめる（コマンドに直接 push の文字を書くと、確かめるコマンド自体にフックが反応するため、ファイル経由で渡す。リモートがまだなくても確かめられる）
+
+Python などで書く場合も、`REMOTE_RULES`（push・PR・Issue の作成と、overnight/ ブランチでの拒否）と、引用符・ヒアドキュメントの中身を見ないことは同じように入れる。
+
+> このフックと `permissions.ask` で、普通の書き方の push・PR・Issue の作成には確認が出る。ただし、`gh api` で直接作るなど、書き方によっては拾えないものもある。確認を確実な防御とは考えず、作業の区切りで人間が確かめることと組み合わせる。
 
 ### 自動フォーマットのフック（任意）
 

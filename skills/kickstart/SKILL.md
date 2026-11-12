@@ -1190,7 +1190,7 @@ const bare = cmd
   .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
 
 // /overnight の作業中（overnight/ ブランチ）は、確認を出すと朝まで止まってしまうので、
-// push・PR・Issue の作成は確認ではなく拒否する。Claude は理由を受け取って先へ進む。
+// push・PR・Issue の作成と ASK_RULES のコマンドは、確認ではなく拒否する。Claude は理由を受け取って先へ進む。
 let branch = "";
 try {
   branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
@@ -1217,13 +1217,15 @@ for (const [re, reason] of REMOTE_RULES) {
 //   [/\bterraform\s+(apply|destroy)\b/, "インフラを変更するコマンドです。"],
 const ASK_RULES = [];
 for (const [re, reason] of ASK_RULES) {
-  if (re.test(bare)) ask(reason + " 影響を確かめてから許可してください。");
+  if (!re.test(bare)) continue;
+  if (overnight) deny(reason + " 夜間の作業（overnight/ ブランチ）では行いません。朝の報告に書いて、先へ進んでください。");
+  ask(reason + " 影響を確かめてから許可してください。");
 }
 
 process.exit(0);
 ```
 
-`REMOTE_RULES`（push・PR・Issue の作成）は既定のまま入れる。`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。
+`REMOTE_RULES`（push・PR・Issue の作成）は既定のまま入れる。`ASK_RULES` には、A4で決めたインフラ・DBで**本番を壊しうるコマンド**をユーザーと相談して入れる（なければ空のままでよい）。どちらも、`overnight/` ブランチでは確認ではなく拒否になる。
 
 `.claude/settings.json`：
 

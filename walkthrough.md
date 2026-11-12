@@ -212,7 +212,7 @@ Claudeが以下を作成・実行します：
 1. `/ask-advisor` スキル（advisor への相談・区切りのレビュー）と `/commit` スキル
 2. `/task` スキル（タスクを見る・増やす・閉じる）と `/overnight` スキル（寝ている間にタスクを進める）
 3. 最初のタスク（MVPの4機能を1機能1タスクにして `docs/tasks.md` に書く。一覧を見せてくれるので確認して「OK」）
-4. コミットガード（`.env` やAPIキーのコミットを、git のフックと Claude Code のフックの二層で止める。push と Pull Request の作成の前には必ず確認が出る）
+4. コミットガード（`.env` やAPIキーのコミットを、git のフックと Claude Code のフックの二層で止める。push・Pull Request・Issue の作成の前には確認が出る。`/overnight` の作業中は、確認の代わりに拒否される）
 5. Hooks設定（フォーマッター、任意）
 6. テスト戦略の確認
 7. 初期コミット

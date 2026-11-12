@@ -1189,7 +1189,7 @@ const bare = cmd
   .replace(/"(?:[^"\\]|\\.)*"|'[^']*'/g, '""');
 
 // During /overnight work (an overnight/ branch), a confirmation would stall everything until morning,
-// so reject push, PR creation, and Issue creation instead of asking. Claude takes the reason and moves on.
+// so reject push, PR creation, Issue creation, and ASK_RULES commands instead of asking. Claude takes the reason and moves on.
 let branch = "";
 try {
   branch = execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
@@ -1216,13 +1216,15 @@ for (const [re, reason] of REMOTE_RULES) {
 //   [/\bterraform\s+(apply|destroy)\b/, "This command changes infrastructure."],
 const ASK_RULES = [];
 for (const [re, reason] of ASK_RULES) {
-  if (re.test(bare)) ask(reason + " Check the impact before allowing it.");
+  if (!re.test(bare)) continue;
+  if (overnight) deny(reason + " This is not done during overnight work (overnight/ branch). Note it in the morning report and move on.");
+  ask(reason + " Check the impact before allowing it.");
 }
 
 process.exit(0);
 ```
 
-Keep `REMOTE_RULES` (push, PR, and Issue creation) as is. In `ASK_RULES`, put — after discussing with the user — the commands that **could break production** for the infrastructure and DB chosen in A4 (leaving it empty is fine if there are none).
+Keep `REMOTE_RULES` (push, PR, and Issue creation) as is. In `ASK_RULES`, put — after discussing with the user — the commands that **could break production** for the infrastructure and DB chosen in A4 (leaving it empty is fine if there are none). On `overnight/` branches, both are rejected instead of asking.
 
 `.claude/settings.json`:
 

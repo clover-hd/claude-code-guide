@@ -210,7 +210,7 @@ Claude creates and executes:
 1. `/ask-advisor` skill (consulting the advisor, milestone reviews) and `/commit` skill
 2. `/task` skill (view, add, and close tasks) and `/overnight` skill (advance tasks while you sleep)
 3. First tasks (turns the 4 MVP features into one task per feature and writes them to `docs/tasks.md`. Claude shows you the list; check it and say "OK")
-4. Commit guard (blocks commits of `.env` files and API keys with two layers: a git hook and a Claude Code hook. You are always asked for confirmation before a push or creating a Pull Request)
+4. Commit guard (blocks commits of `.env` files and API keys with two layers: a git hook and a Claude Code hook. You are asked for confirmation before a push or creating a Pull Request or Issue; during `/overnight` work they are rejected instead)
 5. Hooks configuration (formatter, optional)
 6. Test strategy confirmation
 7. Initial commit

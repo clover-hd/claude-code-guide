@@ -483,6 +483,55 @@ For `docs/tasks.md`, delete tasks moved to "Done" at this point. Git history kee
 
 ---
 
+## Advance While You Sleep — `/overnight`
+
+Type `/overnight` before going to bed and it implements the delegated tasks in order until morning.
+
+```
+You: /overnight 4 tasks
+
+Claude: The working tree is clean. Choose which tasks to delegate.
+        Next:
+        - T-003 Profile image upload
+        - T-004 Restaurant search
+        - T-005 Show restaurant images
+        - T-006 Sort search results
+        Limit is 4 tasks; I'll work on overnight/2026-11-12.
+        No more questions until morning. No push or deploy.
+        Please switch to auto mode so permission prompts don't stall me.
+
+You: OK
+```
+
+### How it differs from normal
+
+| | Normal (while awake) | `/overnight` |
+|---|---|---|
+| When a decision is needed | Ask the human on the spot | Leave it under "Awaiting Human Decision" and move on |
+| Branch | Your usual branch, e.g. `develop` | `overnight/<date>` |
+| Push / deploy | After human confirmation | Never |
+| New tasks | Add with `/task add` | Not added; written as candidates in the morning report |
+
+Normal behavior hasn't changed at all. The developer consults the advisor, and if told "only a human can decide," it stops and returns the question. Normally, the main conversation then asks you; under `/overnight`, the skill records it in the list and moves on.
+
+### When a point needing a decision comes up
+
+1. Record the question, options considered, and the originating task under "Awaiting Human Decision"
+2. Ask the advisor what to do with that task
+   - **Easy to change later**: provisionally implement the recommended option, finish the task, and note "provisionally did X"
+   - **Involves data shape, wording or flows users see, or principles to keep**: don't decide provisionally. Stash the uncommitted changes with `git stash`
+3. Skip later tasks that depend on the decision and move to unrelated ones. Finish when no task can proceed
+
+### What to do in the morning
+
+1. Read `docs/_wip/overnight-<date>.md`. "Awaiting Human Decision" is at the top
+2. Answer the items. Typing `/task` shows them first; answer there and it records the decision and moves the waiting tasks back
+3. Review the diff of `overnight/<date>` and merge it into your usual branch if it looks good. Delete the report file once read
+
+> **Delegate tasks with a clear done-when.** If the done-when is vague, Claude can't tell whether the task is finished.
+
+---
+
 ## Workflow Application Patterns
 
 ### Pattern A: New Feature Development (Full Course)

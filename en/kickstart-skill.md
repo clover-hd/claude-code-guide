@@ -146,7 +146,8 @@ my-new-project/
     │   ├── consult/SKILL.md               ← Requirements consultation skill
     │   ├── ask-advisor/SKILL.md           ← Consult the advisor
     │   ├── commit/SKILL.md                ← Commit skill
-    │   └── task/SKILL.md                  ← View, add, and close tasks
+    │   ├── task/SKILL.md                  ← View, add, and close tasks
+    │   └── overnight/SKILL.md             ← Advance tasks while you sleep
     └── agents/
         ├── advisor.md                     ← Advisor and milestone review (read-only)
         ├── developer.md                   ← Implementation
@@ -208,6 +209,10 @@ Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude C
 ### Which task location should I choose?
 
 For solo development, `docs/tasks.md`; for a team using Pull Requests, GitHub Issues. Either way, day-to-day operations go through the `/task` skill, so usage is the same. To switch later, rewrite the procedure in the `/task` skill and the task sections in the developer and advisor definitions, then record it in `docs/decisions/` as a new decision.
+
+### Can it implement while I sleep?
+
+Type `/overnight` before going to bed and it implements the delegated tasks in order until morning. After confirming which tasks to delegate and the limit up front, it asks no more questions; points that need a decision are left under "Awaiting Human Decision" and it moves on. Work happens on an `overnight/<date>` branch, with no push. Normally (when not using `/overnight`), it asks you on the spot when a decision is needed. See [Phase B](workflow-daily.md#advance-while-you-sleep--overnight) for details.
 
 ### I want to change .gitignore contents
 

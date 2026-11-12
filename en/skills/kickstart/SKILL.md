@@ -608,6 +608,10 @@ You may decide fine implementation choices yourself (how to split functions, det
 
 When consulting, tell advisor: what you want to decide, the options you considered (two or more), pros and cons of each, and the relevant files.
 
+### When a Human Decision Is Needed
+
+If advisor replies that only a human can decide, don't decide it yourself. Stop there without committing and return: the question to ask the human (one sentence), the options you considered, advisor's assessment, and the files with uncommitted changes. How to ask the human is up to whoever called you.
+
 ### Recording Consulted Decisions
 
 **You yourself** record decisions made through consultation in `docs/decisions/NNNN-short-name.md`, following `docs/README.md`. Write "Consulted advisor (developer)" in the "Decided by" field. Put the record in the same commit as the implementation that uses the decision.
@@ -851,9 +855,18 @@ Location: <docs/tasks.md or GitHub Issues (<owner>/<repo>)>
 
 ## No argument: list and next candidate
 
-1. List tasks in progress and not started
-2. Against the MVP and principles in `docs/requirements.md`, recommend one to do next, with a one-line reason
-3. When the human picks one, mark it in progress
+1. If there are items "Awaiting Human Decision," show them first (left by `/overnight`)
+2. List tasks in progress and not started
+3. Against the MVP and principles in `docs/requirements.md`, recommend one to do next, with a one-line reason
+4. When the human picks one, mark it in progress
+
+## Answering items awaiting decision
+
+When the human answers an item "Awaiting Human Decision":
+
+1. If there were rejected alternatives, record it in `docs/decisions/` (Decided by: human)
+2. If something was provisionally implemented ("provisionally did X") and the answer differs, add a task to fix it
+3. Move the waiting tasks back to "Next" and remove the item
 
 ## add <content>
 
@@ -888,6 +901,9 @@ Location: <docs/tasks.md or GitHub Issues (<owner>/<repo>)>
 
 Format: `- [ ] T-001 What to do — Done when: … — Design: docs/_wip/<topic>.md (if any)`
 Add and close tasks with `/task`. Delete "Done" items after the milestone review.
+Format for items awaiting decision: `- Question — Options: … — From: T-003 — Waiting tasks: T-005 (or "none")`
+
+## Awaiting Human Decision
 
 ## In Progress
 
@@ -905,6 +921,106 @@ Create the first tasks from the MVP in `docs/requirements.md`.
 - One MVP feature becomes one task. Split features that are too big (ones that won't finish in a single request)
 - Order them by the priority decided in A3. Put "features to add later" under "Someday" (for GitHub Issues, don't create them)
 - Show the list to the human and write it only after getting OK. For GitHub Issues, check authentication with `gh auth status` at this point
+
+### Create /overnight Skill
+
+Create `.claude/skills/overnight/SKILL.md`. Typed before going to bed, it implements the delegated tasks in order until morning.
+
+Normally (while the human is awake), when a decision is needed, the human is asked on the spot. That already happens through developer's "When a Human Decision Is Needed" and the main conversation's flow. **Keep the rules for while the human sleeps inside this skill; don't write them into agent definitions.** Set `disable-model-invocation: true` so the overnight behavior starts only when the human types it.
+
+Fill in `<...>` from A4–A7. As with `/task`, keep only the variant matching the chosen task location.
+
+````markdown
+---
+name: overnight
+description: Implements delegated tasks in order while the human sleeps. After the up-front confirmation, never asks the human; leaves points needing a decision in the list and moves on.
+argument-hint: [limit (e.g., 3 tasks, 6 hours)]
+disable-model-invocation: true
+---
+
+# /overnight - Advance Tasks While You Sleep
+
+## Before Starting (the only time to ask the human)
+
+1. Check with `git status` that the working tree is clean. If not, say so and stop
+2. Show the task list and have the human choose which tasks to delegate. Recommend from the top of "Next." Don't delegate tasks without a done-when
+3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise 3 tasks)
+4. Create and switch to `overnight/YYYY-MM-DD` from `<working branch>`
+5. Tell the human the following and get OK
+   - No more questions until morning
+   - To avoid stalling on permission prompts, auto mode or an allowlist is needed
+   - No push or deploy. In the morning, review `overnight/YYYY-MM-DD` before merging
+
+Once you have OK, don't ask the human anything after that.
+
+## How to Proceed
+
+Work through the delegated tasks from the top, one at a time.
+
+1. Mark the task in progress
+2. Call a fresh developer. Tell it:
+   - The task ID and done-when
+   - This is overnight work and the human can't be asked. If a point needing a human decision comes up, stop and return per "When a Human Decision Is Needed" in its definition
+   - Commit to `overnight/YYYY-MM-DD`
+3. Branch on developer's report
+   - Done: next task
+   - Human decision needed: go to "When a Human Decision Is Needed" below
+   - Tests or review still fail after fixing: stash the uncommitted changes with `git stash push -m "<ID> failing"`, move the task to awaiting decision with what fails, and go to the next task
+4. When the limit is reached or no task can proceed, write the "Morning Report" and finish
+
+## When a Human Decision Is Needed
+
+1. Add it to awaiting decision: the question (one sentence), options considered, the originating task
+2. Decide what to do with that task by asking advisor: "Is this decision easy to change later? If so, which option should we provisionally go with?"
+   - **Easy to change later**: have developer continue with advisor's recommended option and finish the task. Append "provisionally did X (commit <hash>)" to the item
+   - **Involves data shape, wording or flows users see, or principles to keep**: don't decide provisionally. Stash the uncommitted changes with `git stash push -m "<ID> awaiting decision"` and take the task out of in progress
+3. Find remaining tasks that depend on this decision. Skip them and list them under "Waiting tasks" in the item
+4. Move on to the next task
+
+## Where Items Awaiting Decision Go
+
+<For docs/tasks.md>
+- Write them under "Awaiting Human Decision" in `docs/tasks.md` and commit to `overnight/YYYY-MM-DD`
+
+<For GitHub Issues>
+- Don't create Issues (creating them needs human confirmation). Write them only in the morning report; the human adds them with `/task add` in the morning
+
+## Morning Report
+
+When finishing, write it to `docs/_wip/overnight-YYYY-MM-DD.md`, commit it, and also print the same content as the final message.
+
+```markdown
+# Overnight Work YYYY-MM-DD
+
+Branch: overnight/YYYY-MM-DD (from <hash> of <working branch>)
+
+## Awaiting Human Decision (answer these first)
+- Question — Options — From — Provisional choice (if any) — Waiting tasks
+
+## Finished Tasks
+- T-003 … — commit <hash>
+
+## Skipped or Stopped Tasks
+- T-005 … — reason — stashed changes (stash name)
+
+## Task Candidates (from developer and advisor)
+- …
+
+## Last Type Check and Test Run
+(paste the tail of the output)
+```
+
+After the human reads this file in the morning and answers the items awaiting decision, delete it.
+
+## Don't
+
+- Ask the human anything after the up-front confirmation
+- Do irreversible operations such as push, deploy, or DB migrations (don't use runbook skills even if they exist)
+- Commit to any branch other than `overnight/YYYY-MM-DD`
+- Add new tasks (only write them as task candidates in the morning report)
+- Decide and close items awaiting decision yourself
+- Bypass the commit hook (use `--no-verify`)
+````
 
 ### Set Up the Commit Guard (Standard)
 
@@ -1152,7 +1268,7 @@ chore: set up development foundation
 
 - CLAUDE.md (index and promises)
 - .claude/agents/ (advisor, developer, qa-engineer, code-reviewer)
-- .claude/skills/ (consult, ask-advisor, commit, task)
+- .claude/skills/ (consult, ask-advisor, commit, task, overnight)
 - .claude/settings.json, .claude/hooks/, .githooks/, scripts/check-staged.sh (commit guard)
 - .gitignore
 ```
@@ -1220,7 +1336,7 @@ Project foundation is ready!
   docs/tasks.md / GitHub Issues   — Tasks (first list created from the MVP)
   CLAUDE.md                       — Index and promises
   .claude/agents/                 — advisor, developer, qa-engineer, code-reviewer
-  .claude/skills/                 — consult, ask-advisor, commit, task
+  .claude/skills/                 — consult, ask-advisor, commit, task, overnight
   .claude/settings.json etc.      — Commit guard
   .gitignore                      — Security basics
 
@@ -1234,6 +1350,9 @@ Project foundation is ready!
   4. /ask-advisor milestone review → Get a full review when a chunk of features is done
   5. Clean up              → Move docs/_wip/ content into docs/ or delete it
                              Close with /task done; /task add the review's "→task" items and developer's task candidates
+
+  ※ Before bed, /overnight → advances delegated tasks until morning, leaving points that need a decision and moving on
+    In the morning, read docs/_wip/overnight-<date>.md, answer the items awaiting decision, then merge the branch
 
   ※ Consult /ask-advisor on uncertain decisions and record them in docs/decisions/.
     Sessions end, but documents remain.

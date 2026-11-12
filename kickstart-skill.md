@@ -17,6 +17,7 @@
 - プロジェクトの初期化（`.gitignore`、docs/ の構成とドキュメントの方針、git init）
 - 要件（守る方針・作らないもの）の言語化と壁打ち
 - 基本仕様と実装の方針（迷ったときの倒し方）の決定と記録
+- タスクの置き場所（`docs/tasks.md` か GitHub Issues）の決定と、MVPからの最初のタスク作成
 - CLAUDE.md（目次と約束）、サブエージェント4人、スキルの構築
 - 秘密の値のコミットを止めるコミットガードの設定
 - 初期コミット
@@ -136,6 +137,7 @@ my-new-project/
 │   ├── spec.md                            ← 基本仕様（変わりにくい骨格だけ）
 │   ├── implementation-policy.md           ← 実装の方針（迷ったときの倒し方）
 │   ├── decisions/                         ← なぜそう決めたか（1判断1ファイル）
+│   ├── tasks.md                           ← タスク（ファイルを選んだ場合）
 │   └── _wip/                              ← 実装中の詳細設計（終わったら移すか削除）
 └── .claude/
     ├── settings.json                      ← フックの登録
@@ -143,7 +145,8 @@ my-new-project/
     ├── skills/
     │   ├── consult/SKILL.md               ← 要件相談スキル
     │   ├── ask-advisor/SKILL.md           ← advisor への相談
-    │   └── commit/SKILL.md                ← コミットスキル
+    │   ├── commit/SKILL.md                ← コミットスキル
+    │   └── task/SKILL.md                  ← タスクを見る・増やす・閉じる
     └── agents/
         ├── advisor.md                     ← 相談役・区切りの全体レビュー（読み取り専用）
         ├── developer.md                   ← 実装担当
@@ -152,6 +155,7 @@ my-new-project/
 ```
 
 > **Note**: エージェントはまず4人から始め、プロジェクトの成長に合わせて追加します。advisor のモデルは既定で Opus です。Fable に切り替える方法は[サブエージェント](sub-agents.md#advisor-に-fable-を使う)を参照。
+> A4でタスクの置き場所に GitHub Issues を選んだ場合、`docs/tasks.md` は作られず、最初のタスクは Issue として作られます（作る前に確認があります）。
 > フックはA4で決めた言語で作られます（Node.js なら `guard-bash.mjs`、Python なら `guard_bash.py`）。A8の手順書スキルを作った場合は `.claude/skills/` に追加されます。
 
 Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデルの使い分け、コンテキスト管理のコツ）を表示して完了です。
@@ -168,11 +172,11 @@ Claudeが**Phase Bへの移行ガイド**（日常の開発サイクル、モデ
 | **A1** | 要件 — 何を作るか、守る方針、作らないもの | Sonnet |
 | **A2** | /consult スキル — 相談相手を作る | Sonnet |
 | **A3** | 要件の壁打ち — MVP・優先順位を固める | Sonnet |
-| **A4** | 基本仕様 — 技術構成・ブランチ運用・コマンド | **Opus** |
+| **A4** | 基本仕様 — 技術構成・ブランチ運用・タスクの置き場所・コマンド | **Opus** |
 | **A4.5** | 実装の方針 — 迷ったときの倒し方 | **Opus** |
 | **A5** | CLAUDE.md — 目次と約束 | Sonnet |
 | **A6** | サブエージェント — advisor / developer / qa-engineer / code-reviewer | Sonnet |
-| **A7** | スキル・コミットガード・初期コミット | Sonnet |
+| **A7** | スキル・コミットガード・最初のタスク・初期コミット | Sonnet |
 | **A8** | 手順書スキル（任意） — 取り返しのつかない操作 | Sonnet |
 
 ## よくある質問
@@ -200,6 +204,10 @@ Claudeが既存ドキュメントを読み込んでA4から進めてくれます
 ### 作られたエージェントやスキルが微妙だったら？
 
 そのまま手動で `.claude/agents/` や `.claude/skills/` のファイルを編集してください。もしくはClaude Codeに「developerの相談の範囲に○○を追加して」と指示すれば修正してくれます。プロジェクト設定は使いながら育てるものです。
+
+### タスクの置き場所はどちらを選べばいい？
+
+一人で開発するなら `docs/tasks.md`、チームで Pull Request を使うなら GitHub Issues がおすすめです。どちらを選んでも、日々の操作は `/task` スキルにまとまっているので使い方は変わりません。後から変える場合は、`/task` スキルの手順と developer・advisor の定義のタスクの節を書き換え、`docs/decisions/` に新しい判断として記録してください。
 
 ### .gitignore の内容を変更したい
 

@@ -147,7 +147,7 @@ Use SQLite for the DB and Open-Meteo for the weather API.
 Choose the tech stack and show me a comparison table."
 ```
 
-Besides the tech stack, this step also settles the branch workflow (e.g., work on `develop`, keep `main` always working) and the type-check and test commands.
+Besides the tech stack, this step also settles the branch workflow (e.g., work on `develop`, keep `main` always working) the type-check and test commands, and **where tasks live**. For a solo project, `docs/tasks.md` is recommended; for a team, GitHub Issues. This walkthrough uses `docs/tasks.md`.
 
 Claude creates `docs/spec.md` (only the skeleton that rarely changes) and records each decision with rejected options as one file in `docs/decisions/`.
 
@@ -208,10 +208,12 @@ Verify that each agent's description includes **specific technology stack names*
 Claude creates and executes:
 
 1. `/ask-advisor` skill (consulting the advisor, milestone reviews) and `/commit` skill
-2. Commit guard (blocks commits of `.env` files and API keys with two layers: a git hook and a Claude Code hook)
-3. Hooks configuration (formatter, optional)
-4. Test strategy confirmation
-5. Initial commit
+2. `/task` skill (view, add, and close tasks) and `/overnight` skill (advance tasks while you sleep)
+3. First tasks (turns the 4 MVP features into one task per feature and writes them to `docs/tasks.md`. Claude shows you the list; check it and say "OK")
+4. Commit guard (blocks commits of `.env` files and API keys with two layers: a git hook and a Claude Code hook. You are always asked for confirmation before a push or creating a Pull Request)
+5. Hooks configuration (formatter, optional)
+6. Test strategy confirmation
+7. Initial commit
 
 When asked about test strategy:
 ```
@@ -233,19 +235,30 @@ Once Phase A is complete, implement features one by one using this cycle:
 ### Cycle Flow
 
 ```
-1. /consult                            → Brainstorm feature requirements
-2. Shift+Tab                           → Make implementation plan in Plan Mode
-2.5. Persistence                       → Save detailed design to docs/_wip/
-3. Implement with @.claude/agents/developer.md → implement → qa-engineer → code-reviewer → commit
-4. Cleanup                             → Move docs/_wip/ content into docs/ or delete it
-(Once 2–3 features are done, /ask-advisor milestone review)
+0. /task                  → Pick the next task
+1. /consult               → Brainstorm feature requirements
+2. Plan Mode              → Make implementation plan (enter with /plan)
+2.5. Persistence          → Save detailed design to docs/_wip/
+3. Implement with @agent-developer → implement → qa-engineer → code-reviewer → commit
+4. Cleanup                → Move docs/_wip/ content into docs/ or delete it, /task done
+(Once 2–3 features are done, /ask-advisor milestone review. For findings marked "→task", use /task add)
 ```
+
+> Type `/overnight` before bed and Claude advances the tasks you've handed off until morning. See [Phase B: Advance While You Sleep](workflow-daily.md#advance-while-you-sleep--overnight) for details.
 
 ### Recommended Implementation Order
 
 Implementing the 4 MVP features in this order shows progress at each stage:
 
 #### First Cycle: Spot CRUD
+
+First, pick the next task.
+
+```
+> /task
+(Claude lists the "next up" tasks and recommends T-001 Spot CRUD)
+> Go with T-001
+```
 
 ```
 > /consult
@@ -259,16 +272,16 @@ Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-spot-crud.md, implement the full-stack feature.
+> @agent-developer Following the detailed design in docs/_wip/feature-spot-crud.md, implement the full-stack feature.
   Implement the CRUD API with SQLite persistence, and build the spot list display,
   registration form, edit, and delete UI. Use category-specific icons to make it visually appealing.
   Also implement a map component using Leaflet and OpenStreetMap to display all registered spots.
   Write unit tests too.
 ```
 
-When implementation is done, developer asks qa-engineer to test and code-reviewer to review the staged diff, then commits. Check that the report includes the tail of the type-check and test output. After the commit, clean up `docs/_wip/feature-spot-crud.md` (move requirements and decision rationale into docs/, delete the rest).
+When implementation is done, developer asks qa-engineer to test and code-reviewer to review the staged diff, then commits. Check that the report includes the tail of the type-check and test output. After the commit, clean up `docs/_wip/feature-spot-crud.md` (move requirements and decision rationale into docs/, delete the rest). Since developer has moved the task to "Done", run `/task done T-001` to check that the completion criteria are met and close it.
 
-> **Note**: The `@.claude/agents/developer.md` path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
+From the second cycle on, start the same way by picking with `/task`, and close with `/task done`.
 
 What you're building:
 - Spot CRUD API with SQLite persistence
@@ -296,7 +309,7 @@ Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather.md, implement the full-stack feature.
+> @agent-developer Following the detailed design in docs/_wip/feature-weather.md, implement the full-stack feature.
   Implement the module that fetches weather forecasts from Open-Meteo API with caching (about 30 minutes).
   Build the weather forecast card component displaying weather icons, temperature, and precipitation probability.
   Include unit tests with mocked API responses.
@@ -334,7 +347,7 @@ Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather-chart.md, implement it.
+> @agent-developer Following the detailed design in docs/_wip/feature-weather-chart.md, implement it.
   Build the weekly weather graph components using a chart library to make visually appealing graphs
   for temperature trends and precipitation probability.
 ```
@@ -352,7 +365,7 @@ Once the detailed design is saved, `/clear` then implement:
 
 ```
 > /clear
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-recommend.md, implement the full-stack feature.
+> @agent-developer Following the detailed design in docs/_wip/feature-recommend.md, implement the full-stack feature.
   Implement the recommendation logic with tests, and build the "today's recommended" spot card UI.
   Make the card background color and icons change based on the weather.
 ```
@@ -360,7 +373,10 @@ Once the detailed design is saved, `/clear` then implement:
 **Wrapping up after MVP completion:**
 
 ```
-> @.claude/agents/qa-engineer.md Test all features end-to-end. If any areas lack coverage, add tests.
+> @agent-qa-engineer Test all features end-to-end. If any areas lack coverage, add tests.
+> /ask-advisor milestone review. The previous milestone was <the commit last reviewed>
+> /task
+(Clear out the tasks left in "Done", and add the review's "→task" findings with /task add)
 ```
 
 
@@ -372,15 +388,15 @@ In Phase B's development cycle, utilize the agents created in Phase A's Step 6.
 
 #### How to Call Agents
 
-When you type `@` in Claude Code's prompt, file path completion works. Specify the agent file path:
+When you type `@` in Claude Code's prompt, agents appear as suggestions alongside files. If you select an agent, it is inserted as `@"developer (agent)"`; then write your instructions and send. Typing `@agent-developer` by hand works the same way:
 
 ```
-> @.claude/agents/developer.md (write your instructions here)
+> @agent-developer (write your instructions here)
 ```
 
-> **Important**: The `@agent-path` and your instructions must be sent as **a single message**. If you send just the path, the agent will start running without instructions.
+> If you specify a file path such as `@.claude/agents/developer.md`, you are passing a **file**, not the agent. To call an agent, select it from the suggestions or write `@agent-<name>`.
 
-> **Completion tip**: Type `@.cl` and `.claude/` appears as an option. Then select `agents/` → filename. After completing the path, continue typing your instructions before pressing Enter.
+> Asking by name, such as "implement this with the developer agent", will usually delegate to it too. Specifying it with `@` guarantees that agent is used.
 
 #### Agent Usage Map
 
@@ -392,7 +408,7 @@ Plan Mode (implementation planning)
   ↓
 Persistence (save detailed design to docs/_wip/)
   ↓
-Implementation ← @.claude/agents/developer.md implements backend and frontend
+Implementation ← @agent-developer implements backend and frontend
   ↓   (developer calls these itself)
   ├─ Testing ← qa-engineer writes tests and runs them itself
   ├─ Review ← code-reviewer looks at the staged diff
@@ -417,12 +433,12 @@ Sub-agents can reference current context (conversation flow). When working with 
   ↓
 /clear to reset context
   ↓
-@.claude/agents/developer.md is called
+@agent-developer is called
   → Tell it to "read docs/_wip/xxx.md and implement" — share info via files
   ↓
 After implementation, /clear again if needed
   ↓
-@.claude/agents/qa-engineer.md is called
+@agent-qa-engineer is called
   → References detailed design and implementation files
 ```
 
@@ -442,7 +458,7 @@ After implementation, /clear again if needed
 **developer — Spot CRUD (full-stack)**
 
 ```
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-spot-crud.md,
+> @agent-developer Following the detailed design in docs/_wip/feature-spot-crud.md,
   implement the full-stack CRUD feature for outing spots.
   Build the API with SQLite persistence and the UI components.
   Write unit tests for both backend and frontend.
@@ -451,7 +467,7 @@ After implementation, /clear again if needed
 **developer — Weather display (full-stack)**
 
 ```
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-weather.md,
+> @agent-developer Following the detailed design in docs/_wip/feature-weather.md,
   implement the full-stack weather feature.
   Build the module that fetches forecasts from Open-Meteo API with caching (about 30 minutes),
   and implement the weather forecast card component.
@@ -471,7 +487,7 @@ After implementation, /clear again if needed
 **qa-engineer — Testing**
 
 ```
-> @.claude/agents/qa-engineer.md Enhance unit tests for spot CRUD and recommendation logic.
+> @agent-qa-engineer Enhance unit tests for spot CRUD and recommendation logic.
   Cover these edge cases:
   - No spots registered
   - Weather API returns an error
@@ -483,8 +499,8 @@ After implementation, /clear again if needed
 | Tip | Explanation |
 |------|-----------|
 | **Pass detailed designs** | When you say "follow the detailed design in docs/_wip/xxx.md", agent reads the design then implements |
-| **Save investigation results** | Always save research to `docs/research/`. Without saving, next agent can't reference |
-| **Focus per agent** | developer handles full-stack implementation; advisor handles consultation and milestone reviews; qa-engineer handles testing |
+| **Save investigation results** | Have research results saved to `docs/_wip/<topic>.md`. Without saving, next agent can't reference. Anything used to make a decision is kept under "Evidence" in `docs/decisions/` |
+| **One request, one task** | developer can build both backend and frontend, but give each request only one task (one feature). The completion criteria are clear and review is easier |
 | **Two levels of review** | Per commit: code-reviewer (light). Per feature set: `/ask-advisor` milestone review (heavy) |
 | **Verify "it passed" with output** | Check that developer's report includes the tail of the type-check and test output. qa-engineer also runs them itself |
 
@@ -520,9 +536,10 @@ That's it — it creates rule-following commits. If the commit guard blocks it, 
 
 ```
 > /clear
+> /task
 ```
 
-Reset context before tackling the next feature.
+Reset context, then pick the next task with `/task`. Add any "worth doing" items that came up along the way (such as the "task candidates" in developer's report) with `/task add` here.
 
 ---
 
@@ -698,11 +715,12 @@ Once comfortable, you can let the team handle the entire MVP:
 | **Detailed designs are essential** | Team members read the detailed designs in `docs/_wip/`. Ambiguous designs → scattered implementations |
 | **Conflicts** | Multiple members touching same file → git conflicts. Keep responsibilities clear |
 | **Start small** | Don't jump to all features. Try 2-3 people on 1 feature first |
+| **Runs outside the harness flow** | Members work in parallel in the same working tree, and the leader commits everything together. The developer flow of "go through qa-engineer and code-reviewer before committing" and "split working trees with `git worktree` when running in parallel" does not apply. The commit guard still works, but ask the leader to confirm tests and review |
 
 ### Choosing Between Sub-agent and Team Methods
 
 ```
-Sub-agent method (@.claude/agents/xxx.md calls)
+Sub-agent method (called with @agent-xxx)
   → "Pair programming" style: instruct one by one
   → Stable, low cost
   → Start here

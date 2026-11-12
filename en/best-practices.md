@@ -84,15 +84,13 @@ It detects the build system, test framework, and code conventions to create a fo
 
 ## 4. Keep CLAUDE.md Short and Specific
 
-CLAUDE.md should target **200 lines or less**. If it's too long, important rules get buried and Claude starts ignoring them.
+Keep CLAUDE.md to **just a table of contents and promises**, targeting **50 lines or less**. CLAUDE.md is loaded into every conversation, so the longer it is, the more important rules get buried and Claude starts ignoring them. Put the substance in docs/ and have CLAUDE.md only link to it (for the thinking behind this, see [A5 in Phase A](workflow-setup.md#a5-create-claudemd)).
 
-| Should write | Should NOT write |
-|-------------|-------------|
-| Commands Claude can't infer | Things obvious from reading code |
-| Code style different from default | Standard language conventions |
-| How to run tests | Detailed API documentation (links are enough) |
-| Branch naming rules, PR conventions | Frequently changing information |
-| Project-specific architecture decisions | Self-evident instructions like "write clean code" |
+| Write in CLAUDE.md | Put elsewhere | Don't write |
+|-------------|-------------|-------------|
+| Commands Claude can't infer (type check, tests, dev server) | Which way to lean when in doubt → `docs/implementation-policy.md` | Things obvious from reading code |
+| Promises to keep (never commit secrets, working branch) | Architecture decisions and their reasons → `docs/decisions/` | Standard language conventions |
+| Table of contents linking to docs/ | Each agent's procedure → `.claude/agents/` | Self-evident instructions like "write clean code" |
 
 **When Claude doesn't follow instructions**: Often caused by CLAUDE.md being too long. Review periodically and cut unnecessary lines.
 
@@ -140,7 +138,7 @@ When building large features, you'll always miss considerations. **Having Claude
 You: I want to build a chat feature. Interview me in detail.
      Cover technical implementation, UI/UX, edge cases, and tradeoffs.
      Deep-dive into difficult parts I might miss. Once we've covered
-     everything, write the spec to SPEC.md.
+     everything, write it out as a detailed design in docs/_wip/chat.md.
 
 Claude: I'd like to ask some questions.
         1. How real-time does this need to be? (instant vs. few-second delay OK?)
@@ -176,7 +174,7 @@ Since you can rewind, you can freely try risky implementations. Checkpoints pers
 |---------------|------|------|
 | **Mixed-up session** | Running unrelated tasks one after another in one session | Use `/clear` to reset per task |
 | **Fix loop** | Same problem needs fixing 2+ times despite instructions | `/clear` and restart with better initial prompt including what you learned |
-| **Bloated CLAUDE.md** | Claude not following rules | Reduce to 200 lines. Don't write what Claude can figure out |
+| **Bloated CLAUDE.md** | Claude not following rules | Cut it down to just a table of contents and promises, 50 lines or less. Move the substance to docs/, and don't write what Claude can figure out |
 | **Unvalidated trust** | Looks like it works but actually missing edge cases | Always require validation: tests, builds, linters, etc. |
 | **Endless investigation** | Vague "research" requests lead to reading tons of files | Narrow scope or delegate to sub-agent |
 

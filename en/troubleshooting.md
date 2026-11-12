@@ -92,12 +92,12 @@ Claude isn't following the rules or style guide in CLAUDE.md.
 
 ```
 Common causes (in order):
-1. CLAUDE.md is too long (over 200 lines) → Important rules get buried
+1. CLAUDE.md is too long (well over 50 lines) → Important rules get buried
 2. Instructions are vague → Rewrite more specifically
 3. Context is full → Use `/compact` or `/clear`
 
 Solution:
-- Reduce CLAUDE.md to 200 lines or less
+- Cut CLAUDE.md down to just a table of contents and promises, 50 lines or less (move the substance to docs/ and link to it)
 - Put the most important rules at the top
 - Explicitly tell Claude "re-read and follow the CLAUDE.md rules"
 ```

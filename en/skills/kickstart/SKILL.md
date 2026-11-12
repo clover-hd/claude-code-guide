@@ -947,20 +947,22 @@ disable-model-invocation: true
 
 1. Check with `git status` that the working tree is clean. If not, say so and stop
 2. Show the task list and have the human choose which tasks to delegate. Recommend every task in "Next" that has a done-when (worked from the top). Don't delegate tasks without a done-when
-3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise no limit — work through all the delegated tasks)
+3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise set no limit and work through all the delegated tasks). A time limit counts elapsed time from the start (including time spent waiting for a usage reset)
 4. Check the setting that continues automatically after a usage limit resets (`autoContinueAtUsageLimit`; in `/config`, **Continue automatically at usage limit**; on by default)
    - Read `~/.claude/settings.json`. If it's `false`, it's off
-   - If the user settings don't have this key but `.claude/settings.json` or `.claude/settings.local.json` does, it's off regardless of the value (this key is read only from user and managed settings; setting it in a project turns it off)
-   - Managed settings may override it, so finally ask the human to check in `/config`
+   - If none of user settings, `--settings`, or managed settings has this key, but `.claude/settings.json` or `.claude/settings.local.json` does, it's off regardless of the value (because this key is read only from user settings, `--settings`, and managed settings)
+   - Finally, ask the human to open `/config`. If there's a **Continue automatically at usage limit** row, have them check its value. If there's no row, it's set by managed settings or `--settings` and can't be changed from here. Since you can't tell whether it's on, tell them work may stop at a usage limit until morning
    - If it's off, ask the human whether to turn it on. The human turns it on in the `/config` panel (the `/config autoContinueAtUsageLimit=true` form can't turn it on). If it stays off, tell them work will stop at the usage limit until morning
-5. Create and switch to `overnight/YYYY-MM-DD` from `<working branch>`
+5. Create and switch to `overnight/YYYY-MM-DD` from `<working branch>`. If there's a time limit, note the start time with `date`
 6. Tell the human the following and get OK
    - No more questions until morning
    - To avoid stalling on permission prompts, it has to run in auto mode. Ask them to check that `auto mode on` is shown at the bottom of the screen
    - If it isn't, ask them to press `Shift+Tab` a few times to switch to auto mode (Claude Code normally starts in auto mode, but they may have set a different mode in settings)
+   - Even in auto mode, if actions keep getting blocked (3 in a row, or 20 in total), it falls back to permission prompts and may stop there until morning
    - No push or deploy. In the morning, review `overnight/YYYY-MM-DD` before merging (on `overnight/` branches, the hook rejects push and creating PRs and Issues)
-   - If work stops at a usage limit, it continues automatically only when: Claude Code stays open (closing it ends the wait), they're signed in with a claude.ai subscription, the reset is within 24 hours (it won't wait for a weekly limit), and it has continued automatically no more than 3 times
-   - Don't let the computer sleep. If the limit resets during a sleep of more than about 30 minutes, it stops until someone presses Enter (on macOS, run `caffeinate -i` in another terminal)
+   - If work stops at a usage limit, it continues automatically mainly when all of these hold: Claude Code stays open (closing it, running `/clear`, or moving it to Remote Control or the background ends the wait), they're signed in with a claude.ai subscription, Claude Code isn't too old, and the reset is within 24 hours (it won't wait for something further out, such as a weekly limit). Even so, it continues automatically at most 3 times
+   - Running with no limit also uses up weekly usage. To keep some, cap it by number of tasks or time
+   - Don't let the computer sleep. If a sleep lasts more than about 30 minutes and the limit resets during it, it stops until someone presses Enter (on macOS, run `caffeinate -i` in another terminal; keep a laptop's lid open and plugged in)
 
 Once you have OK, don't ask the human anything after that.
 
@@ -973,11 +975,15 @@ Work through the delegated tasks from the top, one at a time.
    - The task ID and done-when
    - This is overnight work and the human can't be asked. If a point needing a human decision comes up, stop and return per "When a Human Decision Is Needed" in its definition
    - Commit to `overnight/YYYY-MM-DD`
+   - Don't rephrase and retry an action auto mode blocked. Stop and report what was blocked
 3. Branch on developer's report
    - Done: next task
    - Human decision needed: go to "When a Human Decision Is Needed" below
+   - An action was blocked: stash the uncommitted changes with `git stash push -m "<ID> blocked"`, leave what was blocked under awaiting decision, and go to the next task
    - Tests or review still fail after fixing: stash the uncommitted changes with `git stash push -m "<ID> failing"`, move the task to awaiting decision with what fails, and go to the next task
 4. When the limit is reached (with no limit, when the delegated tasks are done) or no task can proceed, write the "Morning Report" and finish
+
+After a usage limit stop, when work continues automatically, first check `git status` and the in-progress task. If there are partial changes, have developer continue that task.
 
 ## When a Human Decision Is Needed
 
@@ -1030,6 +1036,7 @@ After the human reads this file in the morning and answers the items awaiting de
 - Commit to any branch other than `overnight/YYYY-MM-DD`
 - Add new tasks (only write them as task candidates in the morning report)
 - Decide and close items awaiting decision yourself
+- Rephrase and retry an action auto mode blocked
 - Bypass the commit hook (use `--no-verify`)
 ````
 

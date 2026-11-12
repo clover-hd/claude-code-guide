@@ -516,7 +516,8 @@ Claude: The working tree is clean. Choose which tasks to delegate.
         - T-004 Restaurant search
         - T-005 Show restaurant images
         - T-006 Sort search results
-        No limit, so I'll work through all 4. Branch: overnight/2026-11-12.
+        I recommend delegating all 4. Tell me if you want to drop any.
+        No limit, so I'll work through all the delegated tasks. Branch: overnight/2026-11-12.
         The setting that continues automatically after a usage limit resets is on.
         To be sure, also check Continue automatically at usage limit in /config.
         No more questions until morning. No push or deploy.
@@ -527,9 +528,19 @@ Claude: The working tree is clean. Choose which tasks to delegate.
 You: OK
 ```
 
-By default there's no limit; it works through all the delegated tasks. To cap it, pass something like `/overnight 3 tasks` or `/overnight 6 hours`.
+By default there's no limit; it works through all the delegated tasks. To cap it, pass something like `/overnight 3 tasks` or `/overnight 6 hours` (time includes waiting for a usage reset). Running with no limit also uses up weekly usage, so cap it on days you want to keep some.
 
-> **So a usage limit doesn't stop you until morning**: If you hit a usage limit during the night, Claude Code continues automatically after the reset as long as **Continue automatically at usage limit** in `/config` (setting key `autoContinueAtUsageLimit`; on by default) is on. `/overnight` checks this setting before starting and tells you if it's off. However, closing Claude Code ends the wait. If the limit resets while the computer has been asleep for more than about 30 minutes, it stops until you press Enter. It doesn't wait when the reset is 24 hours or more away, such as a weekly limit, and it continues automatically at most 3 times.
+> **Keeping a usage limit from stalling the night**: If you hit a usage limit during the night, Claude Code continues automatically after the reset as long as **Continue automatically at usage limit** in `/config` (setting key `autoContinueAtUsageLimit`; on by default) is on. `/overnight` checks this setting before starting and tells you if it's off. However, it stops in these cases:
+
+> - You close Claude Code, run `/clear`, or move the session to Remote Control or the background (the wait ends)
+> - You aren't signed in with a claude.ai subscription (with an API key and the like, there's no wait feature)
+> - A sleep lasts more than about 30 minutes and the limit resets during it (it stops until you press Enter; keep a laptop's lid open and plugged in)
+> - The reset is more than 24 hours away, such as a weekly limit
+> - It has already continued automatically 3 times
+>
+> For the full official list of conditions, see [Interactive mode](https://code.claude.com/docs/en/interactive-mode#wait-for-a-usage-limit-to-reset).
+>
+> Also, even in auto mode, if actions keep getting blocked (3 in a row, or 20 in total), it falls back to permission prompts and may stop there.
 
 ### How it differs from normal
 
@@ -552,7 +563,7 @@ Normal behavior hasn't changed at all. The developer consults the advisor, and i
 
 ### What to do in the morning
 
-1. Read `docs/_wip/overnight-<date>.md`. "Awaiting Human Decision" is at the top
+1. Read `docs/_wip/overnight-<date>.md`. "Awaiting Human Decision" is at the top. If the file isn't there, work stopped partway. Check the screen and press Enter or send "continue". To wrap up instead, ask it to "write the morning report"
 2. Answer the items. Typing `/task` shows them first; answer there and it records the decision and moves the waiting tasks back
 3. Review the diff of `overnight/<date>` and merge it into your usual branch if it looks good. Delete the report file once read
 

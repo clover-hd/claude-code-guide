@@ -213,7 +213,7 @@ For solo development, `docs/tasks.md`; for a team using Pull Requests, GitHub Is
 
 ### Can it implement while I sleep?
 
-Type `/overnight` before going to bed and it implements the delegated tasks in order until morning. After confirming which tasks to delegate and the limit up front, it asks no more questions; points that need a decision are left under "Awaiting Human Decision" and it moves on. Work happens on an `overnight/<date>` branch, with no push. Normally (when not using `/overnight`), it asks you on the spot when a decision is needed. See [Phase B](workflow-daily.md#advance-while-you-sleep--overnight) for details.
+Type `/overnight` before going to bed and it implements the delegated tasks in order until morning. After confirming up front which tasks to delegate and what could stop the run, it asks no more questions; points that need a decision are left under "Awaiting Human Decision" and it moves on. Work happens on an `overnight/<date>` branch, with no push. Normally (when not using `/overnight`), it asks you on the spot when a decision is needed. See [Phase B](workflow-daily.md#advance-while-you-sleep--overnight) for details.
 
 ### I want to change .gitignore contents
 

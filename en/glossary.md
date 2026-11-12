@@ -40,8 +40,9 @@ Explanation of terms used in this guide.
 
 | Term | Pronunciation | Definition |
 |------|--------|------|
-| **Opus** | "O-pus" | Claude's top-tier model. Best reasoning ability, but higher cost |
-| **Sonnet** | "Sahn-ay" | Claude's mid-tier model. With 4.6, achieved near-Opus coding performance. Best value |
+| **Fable** | "Fay-bul" | Claude's top-tier model. For the hardest, longest-running work. On some plans, drawn from usage credits |
+| **Opus** | "O-pus" | Claude's high-capability model. Good for complex reasoning and design, but consumes more usage than Sonnet |
+| **Sonnet** | "Sahn-ay" | Claude's mid-tier model. Balanced capability and cost, for everyday coding |
 | **Haiku** | "Hai-koo" | Claude's lightest model. Fastest and cheapest. Good for simple tasks |
 | **SWE-bench** | "S-W-E bench" | Software Engineering benchmark. Measures how well AI can solve real GitHub issues. An indicator of coding ability |
 

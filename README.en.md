@@ -14,7 +14,9 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 
 **End-to-end workflow coverage** — Not just "what each feature does," but "how to wire them together into a working development process." Phase A (project setup) flows into Phase B (daily development cycle) with clear, repeatable steps.
 
-**Sub-agent team architecture** — Start with a 3-agent starter team (architect, developer, QA) and scale up as your project grows, with practical guidance on when and how to delegate.
+**Sub-agent team architecture** — Start with a 4-agent starter team (advisor, developer, QA engineer, code reviewer) and scale up as your project grows, with practical guidance on when and how to delegate.
+
+**Task management and overnight runs** — Keep a task list that outlives sessions, pick and close tasks with `/task`, and let `/overnight` work through delegated tasks while you sleep — leaving decisions that need a human for the morning instead of guessing.
 
 **Battle-tested patterns** — Anti-patterns, debugging strategies, cost management, and context window optimization learned from actual production use.
 
@@ -33,19 +35,19 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 | Section | Covers |
 |---------|--------|
 | [Overview & Basic Operations](en/overview.md) | Capabilities, **permission modes & approval safety**, common commands |
-| [Model Selection](en/models.md) | Opus / Sonnet / Haiku comparison, choosing the right model per task |
+| [Model Selection](en/models.md) | Fable / Opus / Sonnet / Haiku comparison, choosing the right model per task |
 
 ### Development Workflow
 | Section | Covers |
 |---------|--------|
-| [Phase A: Project Setup](en/workflow-setup.md) | Building foundations from scratch (steps A0–A8 with dependencies) |
-| [Phase B: Daily Development Cycle](en/workflow-daily.md) | consult → Plan → persist → implement → test → commit → milestone |
+| [Phase A: Project Setup](en/workflow-setup.md) | Building foundations from scratch (steps A0–A8 with dependencies, including where tasks live) |
+| [Phase B: Daily Development Cycle](en/workflow-daily.md) | pick a task → consult → Plan → persist → implement → test → commit → milestone; `/overnight` while you sleep |
 
 ### Extending Claude Code
 | Section | Covers |
 |---------|--------|
-| [Sub-Agents](en/sub-agents.md) | Start with 3 agents, scale up as needed |
-| [Skills](en/skills.md) | Reusable prompt templates (`/commit`, `/consult`, etc.) |
+| [Sub-Agents](en/sub-agents.md) | Start with 4 agents, scale up as needed |
+| [Skills](en/skills.md) | Reusable prompt templates (`/commit`, `/consult`, `/task`, `/overnight`, etc.) |
 | [MCP Servers](en/mcp.md) | External tool integration (Sequential Thinking, Serena, Context7) |
 | [CLAUDE.md & Hooks](en/project-config.md) | Project-specific config and automation |
 
@@ -75,13 +77,17 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ## Daily Development Cycle (Quick Reference)
 
 ```
+0. /task           → Pick the next task (add new ideas with /task add)
 1. /consult        → Brainstorm requirements
 2. Shift+Tab       → Plan Mode — design the approach
 2.5. Persist       → Save the plan to docs/_wip/ as a detailed design
 3. Shift+Tab       → Normal Mode — implement
 3.5. Test          → Unit tests & E2E tests
 4. /commit         → Commit after review
-5. Milestone       → /ask-advisor milestone review, clean up docs/_wip/
+5. Milestone       → /ask-advisor milestone review, clean up docs/_wip/, /task done
+
+Before bed        → /overnight works through delegated tasks until morning,
+                    leaving points that need a human decision and moving on
 ```
 
 ---

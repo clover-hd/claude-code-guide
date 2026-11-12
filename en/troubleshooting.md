@@ -48,7 +48,7 @@ Solution:
 
 | Technique | Benefit |
 |-----------|---------|
-| Use Sonnet with `/model sonnet` | 1/5 token consumption of Opus |
+| Use Sonnet with `/model sonnet` | Consumes less usage than Opus |
 | Reset with `/clear` per task | Prevent unnecessary context accumulation |
 | Give specific instructions | Fewer trial-and-error iterations |
 | Plan in Plan Mode first | Read-only mode uses fewer tokens than implementation |

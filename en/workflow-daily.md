@@ -570,4 +570,4 @@ For "Can we use this library?" or "Will this design work?" — investigate witho
 
 ## Model Selection Per Workflow
 
-How to pick which model for each phase is detailed in [Model Differences and Selection Guide](models.md#workflow-specific-selection-guide). The best practice: **default to Sonnet 4.6, switch to Opus only for deep design decisions like Plan Mode**.
+How to pick which model for each phase is detailed in [Model Differences and Selection Guide](models.md#workflow-specific-selection-guide). The best practice: **default to Sonnet, switch to Opus only for deep design decisions like Plan Mode**.

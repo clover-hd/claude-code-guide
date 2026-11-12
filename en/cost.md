@@ -6,12 +6,11 @@
 
 ## Plans and Pricing
 
-| Plan | Monthly Cost | Claude Code | Notes |
-|------|------|-------------|------|
-| **Free** | Free | Not available | — |
-| **Pro** | $20 | Available | This project uses this |
-| **Max 5x** | $100 | 5x Pro's limit | For heavy users |
-| **Max 20x** | $200 | 20x Pro's limit | For all-day users |
+Claude Code is available on paid plans. Higher plans come with larger usage allowances.
+
+Plans and prices change from time to time, so this guide doesn't list them. For the latest details and which plans include Claude Code, see the [pricing page](https://claude.com/pricing).
+
+We recommend starting with the most affordable individual paid plan and considering a higher plan once you hit the limits often.
 
 ## Pro Plan Usage Limits
 
@@ -31,13 +30,13 @@ See [statusline.md](statusline.md) for setup instructions.
 
 | Technique | Benefit | How |
 |-----------|---------|------|
-| **Use Sonnet 4.6** | 1/5 the cost of Opus | `/model sonnet` (sufficient for daily use) |
+| **Use Sonnet** | Consumes less than Opus | `/model sonnet` (sufficient for daily use) |
 | **Use `/clear` frequently** | Avoid wasting context on unnecessary information | Reset every time you change tasks |
 | **Use `/compact`** | Compress context and extend session life | Run around 70% usage |
 | **Delegate to sub-agents** | Reduce main context consumption | "Investigate with sub-agent" |
 | **Give specific instructions** | Reduce trial-and-error iterations | Specify file names, function names, expected behavior |
 | **Plan first in Plan Mode** | Read-only mode is lighter than implementation | Always plan large tasks first |
 
-For more details on model selection by workflow, see [Model Differences and Selection Guide](models.md#workflow-specific-usage-guide).
+For more details on model selection by workflow, see [Model Differences and Selection Guide](models.md#workflow-specific-selection-guide).
 
 > **Tip**: When you hit the 5-hour limit, use that time to manually organize specifications and documentation for your next session. Development isn't just about writing code.

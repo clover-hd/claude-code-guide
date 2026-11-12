@@ -147,7 +147,8 @@ my-new-project/
     │   ├── ask-advisor/SKILL.md           ← Consult the advisor
     │   ├── commit/SKILL.md                ← Commit skill
     │   ├── task/SKILL.md                  ← View, add, and close tasks
-    │   └── overnight/SKILL.md             ← Advance tasks while you sleep
+    │   ├── overnight/SKILL.md             ← Advance tasks while you sleep
+    │   └── handoff/SKILL.md               ← Leave a handoff before clearing
     └── agents/
         ├── advisor.md                     ← Advisor and milestone review (read-only)
         ├── developer.md                   ← Implementation

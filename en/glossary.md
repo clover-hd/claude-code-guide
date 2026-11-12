@@ -37,6 +37,7 @@ Explanation of terms used in this guide.
 | **docs/decisions/** | — | Where "why we decided that" is kept, one decision per file. Write what was decided, the rejected alternatives, and the conditions for revisiting |
 | **commit guard** | — | A mechanism that mechanically blocks committing secrets or DB files. Placed in two layers: a git hook and a Claude Code hook |
 | **/task** | — | Skill to view, add, and close tasks. Tasks live in `docs/tasks.md` or GitHub Issues |
+| **/handoff** | — | Skill that saves the current state before the context is cleared and prints a prompt for continuing the work after the clear |
 | **/overnight** | — | Skill that implements delegated tasks in order while you sleep. Points that need a decision are left in "Awaiting Human Decision" and it moves on |
 | **MCP** | "M-C-P" | Model Context Protocol. How Claude Code connects to external tools. "Claude Code's USB-C port" |
 | **Hooks** | "Hooks" | Automatically runs shell commands before and after Claude Code executes tools. Example: auto-format after file edit |

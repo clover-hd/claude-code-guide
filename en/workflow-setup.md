@@ -43,7 +43,7 @@ Phase A: Project Initialization
       │  advisor / developer / qa-engineer / code-reviewer
       ▼
   A7. Skills, Commit Guard, Initial Commit
-      │  /ask-advisor, /commit, /task, /overnight, hooks that block secrets,
+      │  /ask-advisor, /commit, /task, /overnight, /handoff, hooks that block secrets,
       │  first tasks from the MVP
       ▼
   A8. Runbook Skills (optional)
@@ -391,7 +391,8 @@ The final touch on your development infrastructure.
 │   ├── ask-advisor/SKILL.md  ← Consult the advisor
 │   ├── commit/SKILL.md       ← Commit rules
 │   ├── task/SKILL.md         ← View, add, and close tasks
-│   └── overnight/SKILL.md    ← Advance tasks while you sleep
+│   ├── overnight/SKILL.md    ← Advance tasks while you sleep
+│   └── handoff/SKILL.md      ← Leave a handoff before clearing
 ├── agents/
 │   ├── advisor.md
 │   ├── developer.md
@@ -407,6 +408,7 @@ scripts/check-staged.sh       ← Check script called by both
 - **/ask-advisor**: A skill that sends a question to the advisor with `context: fork`. You get a decision without cluttering the main conversation. It's given `background: false` so it waits for the answer on the spot (see [Skills](skills.md))
 - **/task**: The entry point for viewing the task list and picking what's next (no argument), adding (`add`), and closing (`done`). Only the procedure for the location chosen in A4 is written into it
 - **/overnight**: Typed before going to bed, it implements the delegated tasks in order until morning. Instead of asking the human, it leaves points that need a decision in the list and moves on as long as they don't block later work. The rules for while you sleep live only in this skill; normally the human is still asked on the spot
+- **/handoff**: Typed when the context is running low, it saves the current state and prints a prompt for continuing the work after clearing. What's needed to continue is saved in tasks, detailed design, decisions, and commits, and only the in-progress state that fits nowhere else goes into a throwaway handoff note
 - **First tasks**: Created from the MVP in `docs/requirements.md`, one feature per task. The list is confirmed before being written
 - **Commit guard**: Mechanically blocks commits of secrets and DB files. For why it's placed in two layers—a git hook and a Claude Code hook—see [Security Basics](security.md#commit-guard--stop-secrets-mechanically). It also makes confirmation appear before pushes and creating Pull Requests and Issues (because auto mode lets them through without confirmation)
 

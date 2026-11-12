@@ -1026,6 +1026,79 @@ After the human reads this file in the morning and answers the items awaiting de
 - Bypass the commit hook (use `--no-verify`)
 ````
 
+### Create /handoff Skill
+
+Create `.claude/skills/handoff/SKILL.md`. Typed when the context is running low, it saves the current state and prints a prompt for continuing the work after clearing.
+
+What's needed to continue is **first saved in the harness's usual places (tasks, detailed design, decisions, commits)**, and only the in-progress state that fits nowhere else goes into a short handoff note. The note is throwaway, deleted on resume, so that stale content doesn't linger.
+
+Fill in `<...>` with the contents of A4 to A7.
+
+````markdown
+---
+name: handoff
+description: Before clearing the context, save the current state and print a prompt for continuing the work after the clear.
+disable-model-invocation: true
+---
+
+# /handoff - Leave a Handoff Before Clearing
+
+## 1. Bring the Usual Places Up to Date
+
+Before writing the handoff note, first bring the following in line with the current state. Don't repeat in the note what you write here.
+
+- Tasks (<docs/tasks.md or GitHub Issues>): the state of the task in progress. Close finished ones using the `/task done` procedure
+- Detailed design (`docs/_wip/<topic>.md`): design or steps that changed during the conversation
+- Decisions (`docs/decisions/`): anything decided in the conversation that has a rejected alternative and isn't recorded yet
+- Commits: if there's a clean break point in the changes, ask the human whether to commit. Don't do it on your own
+
+## 2. Write the Handoff Note
+
+Write only the in-progress state that fits nowhere else to `docs/_wip/handoff.md` (overwrite it if it already exists).
+
+```markdown
+# Handoff (YYYY-MM-DD HH:MM)
+
+## What I'm Working On
+- Task: T-003 ... (detailed design: docs/_wip/...)
+- Current stage: (e.g., finished 2 of 3 implementation steps; 1 test is failing)
+
+## Uncommitted Changes
+- File — what the change is for (check with `git status` before writing)
+
+## Next Steps
+1. ...
+
+## Findings and Pitfalls
+- (what was tried and didn't work, things to watch out for)
+
+## What the Human Said / Decisions Pending
+- (preferences or instructions the human gave in the conversation, questions asked that are still unanswered)
+```
+
+- Keep it short. For anything already in docs/ or the tasks, just point to where it is
+- Prioritize what exists only in the conversation (what was tried, the human's instructions and preferences)
+- Don't write secret values (API keys, etc.)
+
+## 3. Print the Prompt for Resuming
+
+Finally, print it in this form. The human pastes it after `/clear`.
+
+```
+After /clear, paste the following prompt:
+
+Read docs/_wip/handoff.md and continue the work. Once you start, delete handoff.md.
+```
+
+If the next step is clear, add one line such as "Start from X."
+
+## Don'ts
+
+- Type `/clear` yourself (the human types it)
+- Commit without asking the human
+- Write only in the handoff note what belongs in the usual places
+````
+
 ### Set Up the Commit Guard (Standard)
 
 Put a two-layer mechanism in place that **mechanically blocks** commits of secrets and DB files. Both layers call the same check script.
@@ -1342,7 +1415,7 @@ chore: set up development foundation
 
 - CLAUDE.md (index and promises)
 - .claude/agents/ (advisor, developer, qa-engineer, code-reviewer)
-- .claude/skills/ (consult, ask-advisor, commit, task, overnight)
+- .claude/skills/ (consult, ask-advisor, commit, task, overnight, handoff)
 - .claude/settings.json, .claude/hooks/, .githooks/, scripts/check-staged.sh (commit guard)
 - .gitignore
 ```
@@ -1410,7 +1483,7 @@ Project foundation is ready!
   docs/tasks.md / GitHub Issues   — Tasks (first list created from the MVP)
   CLAUDE.md                       — Index and promises
   .claude/agents/                 — advisor, developer, qa-engineer, code-reviewer
-  .claude/skills/                 — consult, ask-advisor, commit, task, overnight
+  .claude/skills/                 — consult, ask-advisor, commit, task, overnight, handoff
   .claude/settings.json etc.      — Commit guard
   .gitignore                      — Security basics
 
@@ -1438,7 +1511,8 @@ Project foundation is ready!
 
 ■ Context Management
   Task changes        → /clear (reset)
-  70% full            → /compact (compress)
+  Running low         → /handoff to save state → /clear → paste the prompt it prints
+  Need to continue fast → /compact (compress; nothing is saved to files)
 
 ■ Stuck?
   Esc+Esc → Rewind to checkpoint

@@ -111,6 +111,7 @@ Solution:
 /compact                           ← Summarize and compress the conversation
 /compact Focus on API changes      ← Compress while preserving specific topics
 /clear                             ← Complete reset (when moving to a different task)
+/handoff → /clear                  ← Save the state, reset, then resume with the prompt it prints
 ```
 
 → See [Best Practices > Context Management](best-practices.md#2-manage-your-context-window) for details

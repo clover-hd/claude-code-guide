@@ -26,11 +26,13 @@ Place files in the structure `.claude/skills/<skill-name>/SKILL.md`.
     │   └── SKILL.md         ← Invoked with /ask-advisor
     ├── task/
     │   └── SKILL.md         ← Invoked with /task
-    └── overnight/
-        └── SKILL.md         ← Invoked with /overnight
+    ├── overnight/
+    │   └── SKILL.md         ← Invoked with /overnight
+    └── handoff/
+        └── SKILL.md         ← Invoked with /handoff
 ```
 
-> Projects created with `/kickstart` include these five skills. For their contents, see A2 and A7 of the [kickstart skill](skills/kickstart/SKILL.md).
+> Projects created with `/kickstart` include these six skills. For their contents, see A2 and A7 of the [kickstart skill](skills/kickstart/SKILL.md).
 
 Comparison with old format:
 
@@ -219,3 +221,4 @@ You can keep `SKILL.md` concise while separating detailed information into files
 | `/ask-advisor` | Consult the advisor agent, milestone review | `false` |
 | `/task` | View, add, and close tasks | `false` |
 | `/overnight` | Implement delegated tasks in order while you sleep | `true` (the overnight behavior kicks in only when a human types it) |
+| `/handoff` | Save the current state before clearing and print a prompt for resuming | `true` (only when a human types it) |

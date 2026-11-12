@@ -39,6 +39,7 @@ Your conversations with Claude, files read, command output...everything accumula
 | Command | Timing | Effect |
 |----------|-----------|------|
 | `/clear` | **When switching to unrelated tasks** | Completely reset context |
+| `/handoff` → `/clear` | **When running low mid-task** | Save the current state to files, reset, and resume with the prompt it prints (a skill created by `/kickstart`. [Phase B](workflow-daily.md#when-context-runs-low--handoff)) |
 | `/compact` | **Around 70% context fill** | Summarize and compress conversation (CLAUDE.md is re-read) |
 | `/compact Focusing on API changes` | When you want to retain specific topics | Control summary content with instructions |
 | `Esc + Esc` → "Summarize from here" | When you want to summarize from a point | Compress only from selection onward |

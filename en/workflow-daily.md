@@ -553,6 +553,33 @@ Normal behavior hasn't changed at all. The developer consults the advisor, and i
 
 ---
 
+## When Context Runs Low — `/handoff`
+
+When the context runs low in the middle of work, save the current state with `/handoff` and then `/clear`.
+
+```
+You: /handoff
+
+Claude: Updated the task status and docs/_wip/profile-image-upload.md.
+        The changes to S3Client.ts aren't committed yet. Commit them?
+
+You: Not yet
+
+Claude: Wrote the handoff to docs/_wip/handoff.md.
+        After /clear, paste the following prompt:
+
+        Read docs/_wip/handoff.md and continue the work. Once you start, delete handoff.md.
+
+You: /clear
+You: Read docs/_wip/handoff.md and continue the work. Once you start, delete handoff.md.
+```
+
+`/handoff` first saves what's needed to continue in the **usual places** (the task list, the detailed design in `docs/_wip/`, `docs/decisions/`, and commits). Only the in-progress state that fits nowhere else (which stage you're at, what was tried and didn't work, instructions you gave in the conversation) goes into the handoff note `docs/_wip/handoff.md`. The note is deleted on resume, so stale content never lingers.
+
+> `/compact` can also compress the conversation so you can keep going, but what to keep is left to Claude and nothing is saved to files. If another session or another person might pick up the work, use `/handoff`.
+
+---
+
 ## Workflow Application Patterns
 
 ### Pattern A: New Feature Development (Full Course)

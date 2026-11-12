@@ -47,7 +47,7 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 | Section | Covers |
 |---------|--------|
 | [Sub-Agents](en/sub-agents.md) | Start with 4 agents, scale up as needed |
-| [Skills](en/skills.md) | Reusable prompt templates (`/commit`, `/consult`, `/task`, `/overnight`, etc.) |
+| [Skills](en/skills.md) | Reusable prompt templates (`/commit`, `/consult`, `/task`, `/overnight`, `/handoff`, etc.) |
 | [MCP Servers](en/mcp.md) | External tool integration (Sequential Thinking, Serena, Context7) |
 | [CLAUDE.md & Hooks](en/project-config.md) | Project-specific config and automation |
 

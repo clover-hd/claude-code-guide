@@ -147,7 +147,7 @@ Claudeにこう伝えてもOK：
  技術選定はおまかせで、比較表を見せて。」
 ```
 
-技術構成に加えて、ブランチ運用（例：`develop` で作業し `main` は常に動く状態）と、型検査・テストのコマンドもここで決めます。
+技術構成に加えて、ブランチ運用（例：`develop` で作業し `main` は常に動く状態）、型検査・テストのコマンド、**タスクの置き場所**もここで決めます。タスクの置き場所は、一人で作るなら `docs/tasks.md`、チームなら GitHub Issues がおすすめです。このウォークスルーでは `docs/tasks.md` にします。
 
 Claudeが `docs/spec.md`（変わりにくい骨格だけ）を作成し、退けた案がある判断は `docs/decisions/` に1判断1ファイルで記録します。
 
@@ -210,10 +210,12 @@ developer エージェントのdescriptionに**具体的な技術スタック名
 Claudeが以下を作成・実行します：
 
 1. `/ask-advisor` スキル（advisor への相談・区切りのレビュー）と `/commit` スキル
-2. コミットガード（`.env` やAPIキーのコミットを、git のフックと Claude Code のフックの二層で止める）
-3. Hooks設定（フォーマッター、任意）
-4. テスト戦略の確認
-5. 初期コミット
+2. `/task` スキル（タスクを見る・増やす・閉じる）と `/overnight` スキル（寝ている間にタスクを進める）
+3. 最初のタスク（MVPの4機能を1機能1タスクにして `docs/tasks.md` に書く。一覧を見せてくれるので確認して「OK」）
+4. コミットガード（`.env` やAPIキーのコミットを、git のフックと Claude Code のフックの二層で止める。push と Pull Request の作成の前には必ず確認が出る）
+5. Hooks設定（フォーマッター、任意）
+6. テスト戦略の確認
+7. 初期コミット
 
 テスト戦略を聞かれたら：
 ```
@@ -235,19 +237,30 @@ Phase Aが完了したら、以下のサイクルで機能を1つずつ実装し
 ### サイクルの流れ
 
 ```
-1. /consult                            → 機能の要件を壁打ち
-2. Shift+Tab                           → Plan Modeで実装計画
-2.5. 永続化                            → docs/_wip/ に詳細設計を保存
-3. @.claude/agents/developer.md で実装  → 実装 → qa-engineer → code-reviewer → コミット
-4. 片付け                              → docs/_wip/ の内容を docs/ に移すか削除
-（機能が2〜3個揃ったら /ask-advisor 区切りのレビュー）
+0. /task                  → 次にやるタスクを選ぶ
+1. /consult               → 機能の要件を壁打ち
+2. Plan Mode              → 実装計画（/plan で入る）
+2.5. 永続化               → docs/_wip/ に詳細設計を保存
+3. @agent-developer で実装 → 実装 → qa-engineer → code-reviewer → コミット
+4. 片付け                 → docs/_wip/ の内容を docs/ に移すか削除、/task done
+（機能が2〜3個揃ったら /ask-advisor 区切りのレビュー。指摘のうち「→タスク」は /task add）
 ```
+
+> 寝る前に `/overnight` を打つと、任せたタスクを朝まで進めてもらえます。詳しくは[Phase B：寝ている間に進める](workflow-daily.md#寝ている間に進める--overnight)を参照してください。
 
 ### 実装の順番（おすすめ）
 
 MVPの4機能を以下の順で実装すると、段階的に動くものが見えて楽しいです。
 
 #### 第1サイクル：おでかけスポットのCRUD
+
+まず、次にやるタスクを選びます。
+
+```
+> /task
+（Claudeが「次にやる」の一覧を出し、T-001 スポットのCRUD を勧めてくる）
+> T-001 で
+```
 
 ```
 > /consult
@@ -261,7 +274,7 @@ MVPの4機能を以下の順で実装すると、段階的に動くものが見�
 
 ```
 > /clear
-> @.claude/agents/developer.md docs/_wip/feature-spot-crud.md の詳細設計に従って実装して。
+> @agent-developer docs/_wip/feature-spot-crud.md の詳細設計に従って実装して。
   バックエンド（CRUD API + SQLiteでの永続化）と
   フロントエンド（一覧表示・登録フォーム・編集・削除のUI）を実装して。
   カテゴリ別のアイコンを使って見た目も楽しくして。
@@ -269,9 +282,9 @@ MVPの4機能を以下の順で実装すると、段階的に動くものが見�
   ユニットテストも書いて。
 ```
 
-developer は実装が終わると、qa-engineer にテストを頼み、code-reviewer にステージした差分のレビューを頼んでからコミットします。報告に型検査とテストの出力の末尾が貼られているか確認してください。コミットが済んだら、`docs/_wip/feature-spot-crud.md` を片付けます（要件・判断の理由は docs/ に移し、残りは削除）。
+developer は実装が終わると、qa-engineer にテストを頼み、code-reviewer にステージした差分のレビューを頼んでからコミットします。報告に型検査とテストの出力の末尾が貼られているか確認してください。コミットが済んだら、`docs/_wip/feature-spot-crud.md` を片付けます（要件・判断の理由は docs/ に移し、残りは削除）。developer がタスクを「完了」に移しているので、`/task done T-001` で完了条件を満たしているかを確かめて閉じます。
 
-> **注意**: `@.claude/agents/developer.md` とその後の指示は、**1つのメッセージとして送信**してください。エージェントのパスだけ先にEnterで送ると、指示なしでエージェントが動き出してしまいます。
+第2サイクル以降も、同じく `/task` で選ぶところから始めて、`/task done` で閉じます。
 
 ここで作るもの：
 - スポット登録フォーム（名前・住所・カテゴリ）
@@ -299,7 +312,7 @@ developer は実装が終わると、qa-engineer にテストを頼み、code-re
 
 ```
 > /clear
-> @.claude/agents/developer.md docs/_wip/feature-weather.md の詳細設計に従って実装して。
+> @agent-developer docs/_wip/feature-weather.md の詳細設計に従って実装して。
   バックエンド（Open-Meteo APIからの天気取得・キャッシュ機能）と
   フロントエンド（天気予報カードのコンポーネント）を実装して。
   天気アイコン、気温、降水確率を表示。サンプルデータで動くようにして。
@@ -337,7 +350,7 @@ advisor は前回の区切りからの差分を見て、「直すべきこと（
 
 ```
 > /clear
-> @.claude/agents/developer.md docs/_wip/feature-weather-chart.md の詳細設計に従って実装して。
+> @agent-developer docs/_wip/feature-weather-chart.md の詳細設計に従って実装して。
   チャートライブラリを使って、見た目が映えるグラフにして。
   ユニットテストも書いて。
 ```
@@ -364,7 +377,7 @@ advisor は前回の区切りからの差分を見て、「直すべきこと（
 
 ```
 > /clear
-> @.claude/agents/developer.md docs/_wip/feature-recommend.md の詳細設計に従って実装して。
+> @agent-developer docs/_wip/feature-recommend.md の詳細設計に従って実装して。
   バックエンド（おすすめロジック）と
   フロントエンド（「今日のおすすめ」カードのUI）を実装して。
   天気に合わせてカードの背景色やアイコンが変わるようにして。
@@ -383,7 +396,10 @@ advisor は前回の区切りからの差分を見て、「直すべきこと（
 **MVP完成後のまとめ作業：**
 
 ```
-> @.claude/agents/qa-engineer.md 全機能を通したテストを確認して。カバレッジの低い部分があれば追加して。
+> @agent-qa-engineer 全機能を通したテストを確認して。カバレッジの低い部分があれば追加して。
+> /ask-advisor 区切りのレビュー。前回の区切りは <前回レビューしたコミット>
+> /task
+（「完了」に残ったタスクを片付け、レビューの「→タスク」を /task add で足す）
 ```
 
 
@@ -395,15 +411,15 @@ Phase Aのステップ6で作成されたエージェントを、Phase Bの開�
 
 #### エージェントの呼び出し方
 
-Claude Codeのプロンプトで `@` を入力するとファイルパスの補完が効きます。エージェントファイルのパスを指定して呼び出します：
+Claude Codeのプロンプトで `@` を入力すると、ファイルと並んでエージェントが候補に出ます。エージェントを選ぶと `@"developer (agent)"` のように入るので、続けて指示を書いて送信します。手で `@agent-developer` と打っても同じです：
 
 ```
-> @.claude/agents/developer.md （ここに指示を書く）
+> @agent-developer （ここに指示を書く）
 ```
 
-> **重要**: `@エージェントパス` と指示は **1つのメッセージにまとめて** Enterで送信してください。パスだけ先に送ると、エージェントが指示なしで勝手に動き出します。
+> `@.claude/agents/developer.md` のようにファイルのパスを指定すると、エージェントではなく**ファイル**を渡したことになります。エージェントを呼ぶときは、候補からエージェントを選ぶか `@agent-<名前>` と書いてください。
 
-> **補完のコツ**: `@.cl` まで打つと `.claude/` が候補に出ます。そこから `agents/` → ファイル名と選んでいけます。補完でパスを確定した後、続けて指示を入力してからEnterを押してください。
+> 名前を出して「developer エージェントで実装して」と頼んでも、たいていは委任されます。`@` で指定すると、そのエージェントが確実に使われます。
 
 #### エージェントの使いどころマップ
 
@@ -415,7 +431,7 @@ Plan Mode（実装計画）
   ↓
 永続化（docs/_wip/ に詳細設計を保存）
   ↓
-実装 ← @.claude/agents/developer.md がバックエンド・フロントエンドを実装
+実装 ← @agent-developer がバックエンド・フロントエンドを実装
   ↓   （developer が自分で呼ぶ）
   ├─ テスト ← qa-engineer がテストを書き、自分で走らせる
   ├─ レビュー ← code-reviewer がステージした差分を見る
@@ -472,7 +488,7 @@ developer を再度呼ぶ
 **developer — スポットCRUD + 地図表示（API + UI）**
 
 ```
-> @.claude/agents/developer.md docs/_wip/feature-spot-crud.md の詳細設計に従って、
+> @agent-developer docs/_wip/feature-spot-crud.md の詳細設計に従って、
   CRUD API（SQLiteベースの永続化付き）と
   スポット一覧・登録・編集・削除のUI、
   そして地図上のスポット表示（Leaflet + OpenStreetMap）を実装して。
@@ -482,7 +498,7 @@ developer を再度呼ぶ
 **developer — 天気予報表示（API連携 + UI）**
 
 ```
-> @.claude/agents/developer.md docs/_wip/feature-weather.md の詳細設計に従って、
+> @agent-developer docs/_wip/feature-weather.md の詳細設計に従って、
   Open-Meteo APIから天気予報を取得するバックエンドモジュール（キャッシュ付き）と
   天気予報カードコンポーネントを実装して。
   ユニットテストではAPIをモックして。
@@ -491,8 +507,7 @@ developer を再度呼ぶ
 **developer — グラフ実装**
 
 ```
-> @.claude/agents/developer.md
-> docs/_wip/feature-weather-chart.md の詳細設計に従って、
+> @agent-developer docs/_wip/feature-weather-chart.md の詳細設計に従って、
   週間気温グラフと降水確率グラフを実装して。
   見た目が映えるチャートライブラリを使って。
   ユニットテストも書いて。
@@ -511,7 +526,7 @@ developer を再度呼ぶ
 **qa-engineer — テスト**
 
 ```
-> @.claude/agents/qa-engineer.md スポットCRUDとおすすめロジックのテストを充実させて。
+> @agent-qa-engineer スポットCRUDとおすすめロジックのテストを充実させて。
   以下のエッジケースをカバーして：
   - スポットが0件のときのおすすめ表示
   - 天気APIがエラーを返したときの挙動
@@ -523,8 +538,8 @@ developer を再度呼ぶ
 | コツ | 説明 |
 |------|------|
 | **詳細設計を渡す** | `docs/_wip/xxx.md の詳細設計に従って` と指定すると、エージェントが設計を読んでから実装する |
-| **調査結果を保存** | 調査系タスクは必ず `docs/research/` に保存させる。保存しないと次のエージェントが参照できない |
-| **1エージェント1タスク** | 「UIも作ってAPIも作って」ではなく、担当ごとに分けて指示する |
+| **調査結果を保存** | 調査した結果は `docs/_wip/<テーマ>.md` に保存させる。保存しないと次のエージェントが参照できない。判断に使ったものは `docs/decisions/` の「根拠にしたもの」に残す |
+| **1回の依頼は1タスク** | developer はバックエンドもフロントエンドも作れるが、1回の依頼には1つのタスク（1つの機能）だけを渡す。完了条件がはっきりし、レビューもしやすくなる |
 | **レビューは二段** | コミットごとは code-reviewer（軽い）、機能のまとまりごとは `/ask-advisor` の区切りのレビュー（重い） |
 | **「通った」は出力で確かめる** | developer の報告に型検査とテストの出力の末尾が貼られているか見る。qa-engineer も自分で走らせている |
 
@@ -560,9 +575,10 @@ developer に実装を頼んだ場合は、developer が qa-engineer と code-re
 
 ```
 > /clear
+> /task
 ```
 
-コンテキストをリセットしてから次の機能に取り掛かる。
+コンテキストをリセットしてから、`/task` で次のタスクを選ぶ。作業中に出てきた「やったほうがよいこと」（developer の報告の「タスク候補」など）は、ここで `/task add` しておく。
 
 ---
 
@@ -738,11 +754,12 @@ qa → リーダー:
 | **詳細設計が必須** | チームメンバーは `docs/_wip/` の詳細設計を読んで動く。設計が曖昧だと各メンバーがバラバラに実装する |
 | **コンフリクト** | 同じファイルを複数メンバーが触るとgitコンフリクトが起きる。担当領域を明確に分けること |
 | **最初は小さく** | いきなり全機能ではなく、まずは2〜3人のチームで1機能を試す |
+| **ハーネスの流れの外で動く** | メンバーは同じ作業ツリーで並行して作業し、リーダーがまとめてコミットする。developer の「qa-engineer と code-reviewer を通してからコミットする」「並行するなら `git worktree` で作業ツリーを分ける」という流れは通らない。コミットガードは効くが、テストとレビューはリーダーに頼んで確かめる |
 
 ### サブエージェント方式との使い分け
 
 ```
-サブエージェント（@.claude/agents/xxx.md で呼び出し）
+サブエージェント（@agent-xxx で呼び出し）
   → 1人ずつ順番に指示する「ペアプログラミング」スタイル
   → 安定している、コスト控えめ
   → まずはこちらから始める

@@ -8,7 +8,7 @@
 
 **スキル（Skills）** は、Claudeに専門知識や手順をテンプレートとして持たせ、`/スキル名` で呼び出せる機能です。
 
-> **注意**: 旧バージョンでは `.claude/commands/` にMarkdownファイルを置く方式でしたが、最新版では **`.claude/skills/` ディレクトリに `SKILL.md` を配置する方式が推奨**されています。旧方式も後方互換で動作しますが、新規作成はskills形式で行いましょう。
+> **注意**: 以前は `.claude/commands/` にMarkdownファイルを置く方式（カスタムコマンド）でしたが、今はスキルに統合されています。`.claude/commands/deploy.md` と `.claude/skills/deploy/SKILL.md` は、どちらも `/deploy` になり、同じように動きます。既存の commands もそのまま使えますが、補助ファイルを置けるなどの利点があるので、新しく作るならskills形式がおすすめです。
 
 ## 設定方法
 
@@ -19,10 +19,18 @@
 └── skills/
     ├── commit/
     │   └── SKILL.md         ← /commit で呼び出し
-    └── consult/
-        ├── SKILL.md         ← /consult で呼び出し
-        └── examples.md      ← 補助ファイル（任意）
+    ├── consult/
+    │   ├── SKILL.md         ← /consult で呼び出し
+    │   └── examples.md      ← 補助ファイル（任意）
+    ├── ask-advisor/
+    │   └── SKILL.md         ← /ask-advisor で呼び出し
+    ├── task/
+    │   └── SKILL.md         ← /task で呼び出し
+    └── overnight/
+        └── SKILL.md         ← /overnight で呼び出し
 ```
+
+> `/kickstart` で作るプロジェクトには、この5つのスキルが入ります。中身は [kickstart スキル](skills/kickstart/SKILL.md) の A2 と A7 を参照してください。
 
 旧形式との比較：
 
@@ -30,8 +38,8 @@
 |--|-------------------|---------------------|
 | **配置場所** | `.claude/commands/commit.md` | `.claude/skills/commit/SKILL.md` |
 | **補助ファイル** | 不可 | 可（テンプレート、スクリプト等を同梱） |
-| **呼び出し制御** | 限定的 | frontmatterで柔軟に制御可能 |
-| **自動呼び出し** | Claudeが判断 | `disable-model-invocation` で制御可 |
+| **frontmatter** | `name` と `paths` 以外は同じものが使える | すべて使える |
+| **同じ名前があるとき** | — | skills の方が優先される |
 
 ## スキル定義の書き方（SKILL.md）
 
@@ -115,8 +123,9 @@ description: サービスの要件・企画レベルの相談を行う
 # /consult - サービス要件相談
 
 ## 前提知識の読み込み
-1. docs/requirements.md（要件と守る方針）を読み込む
-2. 機能実装状況を把握する
+1. docs/requirements.md（要件と守る方針）
+2. docs/spec.md（基本仕様。あれば）
+3. docs/decisions/ のうち、相談に関わる過去の判断（あれば）
 
 ## 相談相手としての振る舞い
 - 対等な立場で議論する
@@ -208,3 +217,5 @@ commands形式との最大の違いは、**補助ファイルを同梱**でき�
 | `/deploy` | デプロイ手順の実行 | `true`（副作用あり） |
 | `/consult` | サービス企画の壁打ち | `false` |
 | `/ask-advisor` | advisor エージェントへの相談・区切りのレビュー | `false` |
+| `/task` | タスクを見る・増やす・閉じる | `false` |
+| `/overnight` | 寝ている間に、任せたタスクを順に実装する | `true`（人間が打ったときだけ夜用の動きに入る） |

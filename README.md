@@ -81,7 +81,8 @@
 |----------|------|
 | `/model sonnet` | Sonnetに切り替え（日常使いはこれ） |
 | `/model opus` | Opusに切り替え（複雑な設計時） |
-| `Shift + Tab` | Plan Mode ON/OFF |
+| `Shift + Tab` | 操作モードを切り替え（auto → 手動 → Auto-Accept → Plan Mode） |
+| `/plan` | Plan Mode に入る |
 | `/clear` | コンテキストをリセット |
 | `/compact` | 会話を圧縮してコンテキスト延命 |
 | `/init` | CLAUDE.mdを自動生成 |
@@ -93,9 +94,9 @@
 ```
 0. /task       → 次にやるタスクを選ぶ（新しい案は /task add）
 1. /consult     → 何を作るか壁打ち
-2. Shift+Tab    → Plan Modeで設計
-2.5. 永続化     → 計画を docs/_wip/ に詳細設計として保存
-3. Shift+Tab    → 通常モードで実装
+2. /plan        → Plan Modeで設計
+2.5. 永続化     → 計画を docs/_wip/ に詳細設計として保存して止まる
+3. developer   → /clear して @agent-developer に実装を頼む
 3.5. テスト     → ユニットテスト & E2Eテスト
 4. /commit      → レビューを通してコミット
 5. 区切り       → /ask-advisor で全体レビュー、docs/_wip/ を片付け、/task done

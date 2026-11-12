@@ -65,9 +65,9 @@ curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/to
 
 > 既に `settings.json` に他の設定がある場合は、`statusLine` キーだけ追記してください。
 
-### 3. Claude Codeを再起動
+### 3. 表示を確かめる
 
-設定を反映するにはClaude Codeを再起動します。ターミナル下部にステータスラインが表示されれば成功です。
+Claude Code は設定ファイルの保存を検知して、自動で読み込み直します。ターミナル下部にステータスラインが表示されれば成功です（表示されない場合は、Claude Code を起動し直してください）。
 
 ## 仕組み
 
@@ -78,7 +78,9 @@ curl -fsSL https://raw.githubusercontent.com/clover-hd/claude-code-guide/main/to
 | repo/branch/ahead-behind | `git` コマンド |
 | モデル名 | Claude Codeからstdinで渡されるJSON |
 | コンテキスト残量 | Claude Codeからstdinで渡されるJSON |
-| 使用率（5h/7d） | [OAuth Usage API](https://docs.anthropic.com/) + OAuthトークン |
+| 使用率（5h/7d、モデル別の週の使用量） | OAuth Usage API + OAuthトークン |
+
+> Claude Code から渡されるJSONにも、5時間と7日の使用率（`rate_limits`）が含まれるようになりました（Pro・Max・Ultra のプランで、セッションの最初の応答のあとから。ない場合もあります）。ただし、Fable などモデル別の週の使用量は含まれないため、このスクリプトは OAuth Usage API から取得しています。5時間と7日の使用率だけでよければ、`rate_limits` を読むだけで表示できます（[公式ドキュメント](https://code.claude.com/docs/en/statusline)）。
 
 ### OAuthトークンの取得
 

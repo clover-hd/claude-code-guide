@@ -30,7 +30,7 @@ Claude: エラーの発生箇所を確認します...
 原因がわからない複雑なバグは、**Plan Modeで調査してから修正**するのが安全です。
 
 ```
-# Shift+Tab でPlan Modeに入る
+# /plan で Plan Mode に入る（Shift+Tab を何度か押しても入れる）
 
 あなた: ログイン後にセッションが維持されないバグがある。
         以下のファイルが関係しそう：
@@ -38,20 +38,20 @@ Claude: エラーの発生箇所を確認します...
         - src/middleware/auth.ts
         原因を調べて。修正はまだしないで。
 
-Claude: （コードベースを読み取り専用で調査）
+Claude: （ソースは編集せずに調査）
         原因を特定しました。session.ts のトークンリフレッシュ処理で...
 
-# 原因が分かったら Shift+Tab で通常モードに戻して修正
+# 原因が分かったら、計画を承認するか Shift+Tab で Plan Mode を抜けて修正
 ```
 
 ## パターン2：ログを渡す
 
 ```bash
 # エラーログをパイプで直接渡す
-cat error.log | claude "このエラーログを分析して、原因と修正方法を教えて"
+cat error.log | claude -p "このエラーログを分析して、原因と修正方法を教えて"
 
 # Docker環境のログ
-docker compose logs api-server --tail 50 | claude "このログからエラーの原因を特定して"
+docker compose logs api-server --tail 50 | claude -p "このログからエラーの原因を特定して"
 ```
 
 ## パターン3：再現テストから書く

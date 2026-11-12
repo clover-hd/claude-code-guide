@@ -11,7 +11,7 @@
 | **OS** | macOS 13.0+ / Windows 10 1809+ / Ubuntu 20.04+ |
 | **メモリ** | 4GB以上 |
 | **ネットワーク** | インターネット接続が必要 |
-| **アカウント** | Claude Pro, Max, Teams, Enterprise のいずれか（無料プランでは利用不可） |
+| **アカウント** | Claude Code を含む有料プラン、または Claude Console のアカウント（無料プランでは利用不可。対象のプランは[料金ページ](https://claude.com/pricing)を参照） |
 
 > 今回のプロジェクトでは**Proライセンスを会社が全額負担**します。
 
@@ -30,17 +30,28 @@ claude --version
 claude
 ```
 
-### Windows（WSL推奨）
+### Windows
 
-Claude Codeは内部的にBashでコマンドを実行するため、**WSL（Windows Subsystem for Linux）上で使うことを強く推奨**します。PowerShellでも動作しますが、以下の理由からWSLの方が圧倒的に快適です。
+Windows では、**ネイティブ**（PowerShell / CMD）と **WSL** のどちらでも使えます。
 
-| | PowerShell | WSL（推奨） |
+| | ネイティブの Windows | WSL 2 |
 |--|-----------|------------|
-| **コマンド互換性** | Linux系コマンドが動かないことがある | macOS/Linuxと同じコマンドがそのまま動く |
-| **Docker連携** | Docker Desktop経由で間接的に動作 | WSL 2 + Docker でネイティブに動作 |
-| **チーム環境** | macOSメンバーと手順が異なる | 全員が同じBash環境で統一できる |
-| **Claude Codeの安定性** | Git Bashを内部で使うため追加設定が必要 | そのまま動く |
-| **サンドボックス** | 非対応 | WSL 2で対応（セキュリティ向上） |
+| **向いているもの** | Windows のプロジェクトやツールを使う | Linux 向けのツールを使う。macOS のメンバーと手順をそろえたい |
+| **必要なもの** | なし（Git for Windows は任意） | WSL 2 を有効にする |
+| **シェル** | Git for Windows があれば Git Bash、なければ PowerShell でコマンドを実行する | macOS/Linux と同じ Bash |
+| **サンドボックス** | 非対応 | 対応 |
+
+このガイドのコマンド例は Bash で書いているので、チームで手順をそろえたいなら WSL 2 が楽です。
+
+**ネイティブの Windows（PowerShell）:**
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+```
+
+CMD の場合は `curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd` を実行します。管理者として実行する必要はありません。
+
+**WSL:**
 
 ```bash
 # 1. WSLをインストール（PowerShellを管理者として実行）
@@ -51,15 +62,11 @@ wsl --install -d Ubuntu-24.04
 
 # 3. WSL内でClaude Codeをインストール（macOSと同じコマンド）
 curl -fsSL https://claude.ai/install.sh | bash
-
-# 4. インストール確認
-claude --version
-
-# 5. 初回起動
-claude
 ```
 
-> **npmでのインストールは非推奨になりました。** 上記のネイティブインストーラーが推奨です。自動アップデートにも対応しています。
+どちらの場合も、インストールが終わったら新しいターミナルを開き、`claude --version` で確認してから `claude` で起動します。
+
+> **インストール方法について**: 上記のネイティブインストーラーがおすすめです。バックグラウンドで自動更新されます。ほかに Homebrew・WinGet・npm でも入れられますが、Homebrew と WinGet は自動更新されないので、自分で更新する必要があります。
 
 > **Tip**: WSLからWindowsのファイルには `/mnt/c/Users/...` でアクセスできますが、パフォーマンスのためWSL内のファイルシステム（`~/projects/` 等）で作業するのがベストです。
 

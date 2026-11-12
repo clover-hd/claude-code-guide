@@ -40,13 +40,13 @@ Claude Codeはクラウド上のAIと通信しています。以下は入力し�
 
 ## .gitignore のテンプレート
 
-新しいプロジェクトを始めるとき、最低限これを入れておきましょう：
+新しいプロジェクトを始めるとき、最低限これを入れておきましょう（`/kickstart` の A0 で作られるものと同じです）：
 
 ```gitignore
 # 環境変数・シークレット
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
 # 認証情報
 credentials.json
@@ -54,17 +54,20 @@ credentials.json
 *.key
 service-account.json
 
-# 依存パッケージ
-node_modules/
-
-# ビルド成果物
-dist/
-build/
+# Claude Code の個人設定
+.claude/settings.local.json
 
 # OS・エディタ
 .DS_Store
+Thumbs.db
+*.swp
 .vscode/settings.json
+.idea/
 ```
+
+技術スタックが決まったら、それに合わせた項目を足します（Node.js なら `node_modules/`、`dist/`、`build/`、Python なら `__pycache__/`、`.venv/` など）。
+
+> `.claude/settings.local.json` には、承認の確認で「今後は聞かない」を選んだルールなど、個人の設定が保存されます。チームで共有する設定は `.claude/settings.json` に書きます。
 
 ## コミットガード — 秘密の値を機械的に止める
 

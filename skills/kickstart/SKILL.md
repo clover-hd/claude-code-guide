@@ -1395,7 +1395,7 @@ argument-hint: "[local|staging|production]"
 
   0. /task              → 次にやるタスクを選ぶ（新しい案は /task add で増やす）
   1. /consult           → 作りたい機能をClaudeと壁打ち（要件は requirements.md へ）
-  2. Shift+Tab          → Plan Mode で実装計画を立てる
+  2. /plan              → Plan Mode で実装計画を立てる
   2.5. 永続化           → 計画を docs/_wip/<テーマ>.md に詳細設計として保存
   3. developer に依頼   → 実装 → qa-engineer → code-reviewer → コミット
   4. /ask-advisor 区切りのレビュー → 機能のまとまりが一つできたら全体を見てもらう

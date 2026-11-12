@@ -39,7 +39,7 @@ You've reached your plan's usage limit. The message shows the time the limit res
 
 ```
 Solution:
-1. Wait until the reset time. If you leave the session open, it automatically continues after the reset (it does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
+1. Wait until the reset time. If you leave the session open, it automatically continues after the reset (Continue automatically at usage limit in `/config`; on by default. It does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
 2. While waiting, manually organize specifications and documentation
 3. Next time, be mindful of these saving techniques
 ```

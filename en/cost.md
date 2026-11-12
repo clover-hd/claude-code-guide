@@ -15,7 +15,7 @@ We recommend starting with the most affordable individual paid plan and consider
 ## Pro Plan Usage Limits
 
 - Usage resets in a **5-hour rolling window**
-- When the limit is reached, you'll see "Usage limit reached" along with the reset time. If you leave the session open, it automatically resumes after the reset (it does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
+- When the limit is reached, you'll see "Usage limit reached" along with the reset time. If you leave the session open, it automatically resumes after the reset (Continue automatically at usage limit in `/config`; on by default. It does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
 - Opus consumes more tokens, so you'll hit the limit faster
 
 ## Set Up Status Line First

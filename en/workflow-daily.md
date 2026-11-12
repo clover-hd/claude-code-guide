@@ -517,12 +517,17 @@ Claude: The working tree is clean. Choose which tasks to delegate.
         - T-005 Show restaurant images
         - T-006 Sort search results
         Limit is 4 tasks; I'll work on overnight/2026-11-12.
+        The setting that continues automatically after a usage limit resets is on.
+        To be sure, also check Continue automatically at usage limit in /config.
         No more questions until morning. No push or deploy.
         I'll run in auto mode so permission prompts don't stall me.
         If auto mode on isn't shown at the bottom of the screen, switch with Shift+Tab.
+        Keep Claude Code open and don't let the computer sleep.
 
 You: OK
 ```
+
+> **So a usage limit doesn't stop you until morning**: If you hit a usage limit during the night, Claude Code continues automatically after the reset as long as **Continue automatically at usage limit** in `/config` (setting key `autoContinueAtUsageLimit`; on by default) is on. `/overnight` checks this setting before starting and tells you if it's off. However, closing Claude Code ends the wait. If the limit resets while the computer has been asleep for more than about 30 minutes, it stops until you press Enter. It doesn't wait when the reset is 24 hours or more away, such as a weekly limit, and it continues automatically at most 3 times.
 
 ### How it differs from normal
 

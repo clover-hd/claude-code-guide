@@ -65,9 +65,9 @@ Add `statusLine` to `~/.claude/settings.json`.
 
 > If `settings.json` already has other settings, just append the `statusLine` key.
 
-### 3. Restart Claude Code
+### 3. Check the display
 
-Restart Claude Code to apply the settings. You'll see the status line at the terminal bottom if successful.
+Claude Code detects when the settings file is saved and reloads it automatically. If the status line appears at the terminal bottom, it worked (if it doesn't, restart Claude Code).
 
 ## How It Works
 
@@ -78,7 +78,9 @@ Restart Claude Code to apply the settings. You'll see the status line at the ter
 | repo/branch/ahead-behind | `git` command |
 | Model name | JSON passed to stdin from Claude Code |
 | Context remaining | JSON passed to stdin from Claude Code |
-| Usage rates (5h/7d) | [OAuth Usage API](https://docs.anthropic.com/) + OAuth token |
+| Usage rates (5h/7d, per-model weekly usage) | OAuth Usage API + OAuth token |
+
+> The JSON passed from Claude Code now also includes the 5-hour and 7-day usage rates (`rate_limits`) (on Pro, Max, and Ultra plans, after the session's first response; it may be absent). However, it doesn't include per-model weekly usage such as Fable, so this script gets it from the OAuth Usage API. If you only need the 5-hour and 7-day rates, you can display them by just reading `rate_limits` ([official docs](https://code.claude.com/docs/en/statusline)).
 
 ### Getting OAuth Token
 

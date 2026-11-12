@@ -8,7 +8,7 @@
 
 **Skills** are a feature that allows you to give Claude specialized knowledge or procedures as templates that can be invoked with `/skill-name`.
 
-> **Note**: Older versions used Markdown files in `.claude/commands/`, but the latest version **recommends placing `SKILL.md` in the `.claude/skills/` directory**. The old format still works for backward compatibility, but new skills should be created in the skills format.
+> **Note**: Previously, skills were Markdown files in `.claude/commands/` (custom commands), but they have now been merged into skills. `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` both become `/deploy` and work the same way. Existing commands keep working, but the skills format has advantages such as supporting files, so it's recommended for new ones.
 
 ## How to Set Up
 
@@ -19,10 +19,18 @@ Place files in the structure `.claude/skills/<skill-name>/SKILL.md`.
 └── skills/
     ├── commit/
     │   └── SKILL.md         ← Invoked with /commit
-    └── consult/
-        ├── SKILL.md         ← Invoked with /consult
-        └── examples.md      ← Supporting file (optional)
+    ├── consult/
+    │   ├── SKILL.md         ← Invoked with /consult
+    │   └── examples.md      ← Supporting file (optional)
+    ├── ask-advisor/
+    │   └── SKILL.md         ← Invoked with /ask-advisor
+    ├── task/
+    │   └── SKILL.md         ← Invoked with /task
+    └── overnight/
+        └── SKILL.md         ← Invoked with /overnight
 ```
+
+> Projects created with `/kickstart` include these five skills. For their contents, see A2 and A7 of the [kickstart skill](skills/kickstart/SKILL.md).
 
 Comparison with old format:
 
@@ -30,8 +38,8 @@ Comparison with old format:
 |--|-------------------|---------------------|
 | **Location** | `.claude/commands/commit.md` | `.claude/skills/commit/SKILL.md` |
 | **Supporting files** | Not possible | Possible (templates, scripts, etc. included) |
-| **Invocation control** | Limited | Flexible control via frontmatter |
-| **Auto-invocation** | Claude decides | Controllable with `disable-model-invocation` |
+| **Frontmatter** | Same as skills except `name` and `paths` | All supported |
+| **When names collide** | — | The skill takes precedence |
 
 ## How to Write Skill Definitions (SKILL.md)
 
@@ -115,8 +123,9 @@ description: Consult on service requirements and planning
 # /consult - Service requirements consultation
 
 ## Loading prerequisite knowledge
-1. Read docs/requirements.md (requirements and principles to keep)
-2. Understand feature implementation status
+1. docs/requirements.md (requirements and principles to keep)
+2. docs/spec.md (base spec, if it exists)
+3. Past decisions in docs/decisions/ that relate to the consultation (if any)
 
 ## Behavior as a consultant
 - Discuss from an equal perspective
@@ -208,3 +217,5 @@ You can keep `SKILL.md` concise while separating detailed information into files
 | `/deploy` | Execute deployment procedure | `true` (has side effects) |
 | `/consult` | Brainstorm service planning | `false` |
 | `/ask-advisor` | Consult the advisor agent, milestone review | `false` |
+| `/task` | View, add, and close tasks | `false` |
+| `/overnight` | Implement delegated tasks in order while you sleep | `true` (the overnight behavior kicks in only when a human types it) |

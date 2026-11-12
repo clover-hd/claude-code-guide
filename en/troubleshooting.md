@@ -33,13 +33,13 @@ In WSL environments, the browser may not open automatically. Copy the displayed 
 
 ### Rate Limiting (Overuse)
 
-#### "Try again in X hours" appears
+#### "Usage limit reached" appears
 
-You've reached your Pro plan usage limit.
+You've reached your plan's usage limit. The message shows the time the limit resets (e.g. `Usage limit reached · limit resets 3:45pm`).
 
 ```
 Solution:
-1. Wait the specified time (5-hour rolling window)
+1. Wait until the reset time. If you leave the session open, it automatically continues after the reset (it does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
 2. While waiting, manually organize specifications and documentation
 3. Next time, be mindful of these saving techniques
 ```
@@ -51,7 +51,7 @@ Solution:
 | Use Sonnet with `/model sonnet` | Consumes less usage than Opus |
 | Reset with `/clear` per task | Prevent unnecessary context accumulation |
 | Give specific instructions | Fewer trial-and-error iterations |
-| Plan in Plan Mode first | Read-only mode uses fewer tokens than implementation |
+| Plan in Plan Mode first | It only investigates and plans, so rework drops |
 
 → See [Cost & Token Management](cost.md) for details
 
@@ -167,11 +167,26 @@ git add .gitignore && git commit -m "fix: exclude .env from git management"
 
 > **Important**: Once committed, credentials remain in history. If you've pushed .env with API keys, immediately revoke and regenerate those keys.
 
+#### Commit guard blocked my commit
+
+In projects created with `/kickstart`, a hook blocks commits that contain secrets or DB files. When blocked, unstage the files it lists.
+
+```bash
+git restore --staged <file>     # before the first commit, use git rm --cached <file>
+```
+
+- **Don't bypass the hook** (don't use `--no-verify`). Even if it looks like a false positive, first consider whether you can move that file elsewhere
+- If it says "the git pre-commit hook isn't enabled," run `git config core.hooksPath .githooks` (cloning alone doesn't enable it)
+
+→ See [Security Basics](security.md#commit-guard--stop-secrets-mechanically) for how it works
+
 #### Claude pushed unexpectedly
 
-In the default Claude Code configuration, there's always a confirmation before pushing. Even in Auto-Accept mode, pushes are confirmed. If you push unintentionally, get in the habit of reading approval prompts carefully.
+Claude Code starts in **auto mode** by default. In auto mode, pushes to the current repository (including the default branch) and Pull Request creation **go through without confirmation**. If you always want a confirmation before pushing, add something like `Bash(git push *)` to `permissions.ask` in `.claude/settings.json` ([Security Basics](security.md#require-confirmation-before-push-and-pull-requests)). In projects created with `/kickstart`, this is set from the start.
 
-→ See [Permission Modes and Approvals](overview.md#permission-modes-and-approvals-important)
+In manual mode and Auto-Accept, a confirmation appears before pushing. When it does, read which branch and what is being pushed before approving.
+
+→ See [Permission Modes and Approvals](overview.md#permissions-modes-and-approval-important)
 
 ---
 

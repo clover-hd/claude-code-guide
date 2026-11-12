@@ -57,14 +57,11 @@ Next, have Claude write some code for you.
   Make the design modern.
 ```
 
-Claude will try to create `index.html`. **An approval prompt will appear**:
+Claude will create `index.html`. Claude Code starts in **auto mode** (you'll see `⏵⏵ auto mode on` at the bottom of the screen), so creating the file goes ahead without confirmation. A separate model watches for dangerous operations and blocks them.
 
-```
-Claude wants to create index.html
-Allow? [y/n/a]
-```
-
-Press `y` to allow it. The file will be created.
+> **If you'd rather confirm each step**, press `Shift+Tab` once to switch to manual mode (`⏸ manual mode on`). In manual mode, a confirmation like the following appears before the file is created.
+>
+> The confirmation lists options corresponding to "Yes (allow)", "don't ask again", and "No (deny)". Review the content and choose `Yes`, and the file will be created. If you choose "don't ask again" for file edits, it only applies for that session. For how to read confirmations, see [Permissions Modes and Approval](overview.md#permissions-modes-and-approval-important).
 
 ```bash
 # Open it in your browser to verify (in a separate terminal without exiting Claude Code)
@@ -145,14 +142,14 @@ Now you have freedom. Try one of these options:
 Before adding features to your app, use Plan Mode to plan it out.
 
 ```
-# Press Shift+Tab (you'll see "⏸ plan mode on" at the bottom)
+# Send with /plan to enter Plan Mode (you'll see "⏸ plan mode on" at the bottom)
 
-> I want to add a category feature to this Todo app.
+> /plan I want to add a category feature to this Todo app.
   I want to classify tasks by categories like "Work", "Personal", and "Shopping".
   Create an implementation plan.
 ```
 
-Claude will read the code and present **a plan of what and how to change**. Once satisfied with the plan, press `Shift+Tab` to exit Plan Mode, then instruct "Implement according to this plan."
+Claude will read the code and present **a plan of what and how to change**. Once satisfied with the plan, approve it from the options shown. Plan Mode ends and implementation starts right away. If you want changes, tell Claude without approving and it will rework the plan.
 
 ---
 

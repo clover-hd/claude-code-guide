@@ -21,6 +21,7 @@ Manages reservations and reviews for independent restaurants.
 - Base spec: docs/spec.md
 - Implementation policy (which way to lean when in doubt): docs/implementation-policy.md
 - Why we decided it: docs/decisions/
+- Tasks: docs/tasks.md. Add and close them with /task
 - Documentation policy: docs/README.md
 
 ## Common Commands
@@ -37,7 +38,7 @@ Manages reservations and reviews for independent restaurants.
 ```
 
 > **Why keep it short?**
-> CLAUDE.md is loaded into every conversation and every sub-agent. The longer it gets, the more likely its rules are ignored. Procedures like "run tests and review before committing" only need to live in the definition file of the agent that performs them. You also don't need to write things that are clear from reading the code (like naming conventions, which a formatter or linter can enforce).
+> CLAUDE.md is loaded into every conversation and most sub-agents. The longer it gets, the more likely its rules are ignored. Procedures like "run tests and review before committing" only need to live in the definition file of the agent that performs them. You also don't need to write things that are clear from reading the code (like naming conventions, which a formatter or linter can enforce).
 
 ## Hierarchical Structure
 

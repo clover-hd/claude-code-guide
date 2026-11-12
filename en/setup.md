@@ -11,7 +11,7 @@
 | **OS** | macOS 13.0+ / Windows 10 1809+ / Ubuntu 20.04+ |
 | **Memory** | 4GB or more |
 | **Network** | Internet connection required |
-| **Account** | Claude Pro, Max, Teams, or Enterprise (Free plan not supported) |
+| **Account** | A paid plan that includes Claude Code, or a Claude Console account (Free plan not supported. See the [pricing page](https://claude.com/pricing) for eligible plans) |
 
 > For this project, **your company covers the full cost of a Pro license**.
 
@@ -30,17 +30,28 @@ claude --version
 claude
 ```
 
-### Windows (WSL Recommended)
+### Windows
 
-Claude Code internally executes commands via Bash, so **using WSL (Windows Subsystem for Linux) is strongly recommended**. While it works with PowerShell, WSL is significantly more comfortable for these reasons:
+On Windows, you can use either **native** (PowerShell / CMD) or **WSL**.
 
-| | PowerShell | WSL (Recommended) |
+| | Native Windows | WSL 2 |
 |--|-----------|------------|
-| **Command Compatibility** | Linux commands may not work | Same commands as macOS/Linux work natively |
-| **Docker Integration** | Works indirectly via Docker Desktop | Natively with WSL 2 + Docker |
-| **Team Environments** | Differs from macOS team members | Everyone uses the same Bash environment |
-| **Claude Code Stability** | Requires additional config (uses Git Bash internally) | Works out of the box |
-| **Sandbox Support** | Not supported | Supported on WSL 2 (improved security) |
+| **Good for** | Working with Windows projects and tools | Using Linux tools. Matching the procedure with macOS team members |
+| **Requirements** | None (Git for Windows is optional) | Enable WSL 2 |
+| **Shell** | Runs commands in Git Bash if Git for Windows is installed, otherwise PowerShell | Same Bash as macOS/Linux |
+| **Sandbox Support** | Not supported | Supported |
+
+The command examples in this guide are written for Bash, so WSL 2 is easier if you want the team to follow the same procedure.
+
+**Native Windows (PowerShell):**
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+```
+
+For CMD, run `curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd`. You don't need to run it as administrator.
+
+**WSL:**
 
 ```bash
 # 1. Install WSL (run PowerShell as Administrator)
@@ -51,15 +62,11 @@ wsl --install -d Ubuntu-24.04
 
 # 3. Install Claude Code inside WSL (same command as macOS)
 curl -fsSL https://claude.ai/install.sh | bash
-
-# 4. Verify installation
-claude --version
-
-# 5. First launch
-claude
 ```
 
-> **npm installation is no longer recommended.** The native installer above is preferred. It also supports automatic updates.
+In either case, once installation finishes, open a new terminal, verify with `claude --version`, then launch with `claude`.
+
+> **About installation methods**: The native installer above is recommended. It updates automatically in the background. You can also install via Homebrew, WinGet, or npm, but Homebrew and WinGet don't auto-update, so you need to update them yourself.
 
 > **Tip**: You can access Windows files from WSL via `/mnt/c/Users/...`, but for performance, it's best to work in the WSL filesystem (like `~/projects/`).
 

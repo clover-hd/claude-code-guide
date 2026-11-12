@@ -30,13 +30,13 @@ Once agents are defined, there are three ways to call them. Choose based on your
 
 ### 1. @-mention (recommended)
 
-Type `@` to bring up the typeahead. Select the agent, then **continue typing your instructions** before pressing Enter.
+Type `@` and agents appear as candidates alongside files. Selecting an agent inserts something like `@"developer (agent)"`; continue with your instructions and send. Typing `@agent-developer` by hand works the same.
 
 ```
-> @.claude/agents/developer.md Following the detailed design in docs/_wip/feature-crud.md, implement this feature.
+> @agent-developer Following the detailed design in docs/_wip/feature-crud.md, implement this feature.
 ```
 
-> **Note**: The agent path and your instructions must be sent as **a single message**. If you press Enter after just the path, the agent will start running without any instructions.
+> **Note**: If you specify a file path like `@.claude/agents/developer.md`, you're passing the **file**, not calling the agent. To call an agent, select it from the candidates or write `@agent-<name>`.
 
 This is the most reliable method. You have explicit control over which agent runs.
 
@@ -51,12 +51,14 @@ Mention the agent's name in your prompt and Claude will decide whether to delega
 
 Convenient, but Claude may or may not delegate based on its judgment. Use @-mention when you need certainty.
 
+> To consult the advisor, the `/ask-advisor` skill returns answers in a fixed format (conclusion, reasons, rejected alternatives, etc.) ([Skills](skills.md)).
+
 ### 3. `--agent` flag for session-wide use
 
 Use this when you want the entire session to run as a single agent.
 
 ```bash
-claude --agent .claude/agents/developer.md
+claude --agent developer
 ```
 
 In this mode, all interactions in the session use that agent's system prompt, tool restrictions, and model settings.
@@ -120,6 +122,16 @@ Put the record in the same commit as the implementation that uses it.
 
 The advisor only returns a decision and a "draft record"; it doesn't write files. The consulting agent does the recording. This keeps decisions and implementation in the same commit.
 
+### Stop and hand back what only a human can decide
+
+If the advisor answers "only a human can decide this" (a change to the service's core philosophy, a costly choice, etc.), the developer doesn't decide on its own. It stops without committing and returns **the question for the human, the options it considered, and the advisor's assessment**.
+
+The caller decides how to handle the returned question. Normally the main conversation asks you on the spot; when running overnight with `/overnight`, it leaves it in "Awaiting Human Decision" and moves on to the next task ([Phase B](workflow-daily.md#advance-while-you-sleep--overnight)). The agent definitions are the same day and night; rules specific to overnight are confined to the `/overnight` skill.
+
+### Return discovered to-dos as candidates
+
+The developer doesn't turn "things worth doing" it finds during work into tasks on its own. It writes them one per line under "task candidates" in its report, and a human decides whether to add them with `/task add`. Only the status of the task it worked on (such as moving it to done) is updated by the developer, in the same commit as the implementation.
+
 ### Pre-commit flow
 
 Write the steps up to committing in the developer definition.
@@ -163,7 +175,7 @@ When frontend/backend split, mobile apps exist, or scale grows, expand division 
 | **ui-ux-designer** | Design system management needed |
 | **technical-writer** | Serious documentation phase begins |
 
-Add agents when you need them. No need to have all nine from day one.
+Add agents when you need them. No need to have them all from day one.
 
 ## How to Write Agent Definition Files
 

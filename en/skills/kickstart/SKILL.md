@@ -1394,7 +1394,7 @@ Project foundation is ready!
 
   0. /task                 → Pick the next task (add new ideas with /task add)
   1. /consult              → Brainstorm desired feature with Claude (requirements go to requirements.md)
-  2. Shift+Tab             → Make implementation plan in Plan Mode
+  2. /plan                 → Make implementation plan in Plan Mode
   2.5. Persistence         → Save plan to docs/_wip/<topic>.md as a detailed design
   3. Ask developer         → Implement → qa-engineer → code-reviewer → commit
   4. /ask-advisor milestone review → Get a full review when a chunk of features is done

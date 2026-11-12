@@ -124,6 +124,8 @@ Open browser, select a spot, and if the weather forecast card displays, perfect.
 
 > Even if the team's implementation doesn't work perfectly, that's fine. The demo's goal is **showing AI teams collaborating** — not perfect code.
 
+> **Note**: In this demo, members work in parallel in the same working tree. The developer's flow of "pass qa-engineer and code-reviewer before committing" doesn't run, so don't merge the demo's output into main as is. If you keep it, commit only after passing tests and review (the commit guard hook also applies to the team's commits).
+
 ---
 
 ## Post-Demo Notes (Good to Mention)

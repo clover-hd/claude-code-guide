@@ -93,14 +93,15 @@ Once requirements are locked, enter **Plan Mode** to create an implementation pl
 
 ### What is Plan Mode?
 
-Plan Mode is a **read-only exploration and design mode**. You can freely explore the codebase and devise an implementation strategy, but **make no file changes whatsoever**.
+Plan Mode is an **exploration and design mode**. You can freely explore the codebase and devise an implementation strategy, but **it does not edit source**.
 
 ```
-Can Do                              Can't Do
-✅ Read files                        ❌ Create/edit/delete files
-✅ Search codebase                   ❌ Run commands (npm, git, etc.)
-✅ Get latest info via web search    ❌ Install packages
-✅ Parallel investigation via sub-agents ❌ System-level changes
+Can Do                              Won't Do Until You Approve the Plan
+✅ Read and search files             ❌ Create/edit/delete source
+✅ Run commands for investigating
+   (through classifier review or confirmation)
+✅ Get latest info via web search
+✅ Parallel investigation via sub-agents
 ✅ Ask clarifying questions
 ```
 
@@ -108,21 +109,30 @@ Can Do                              Can't Do
 
 | Operation | How |
 |-----------|-----|
-| **Toggle ON/OFF** | Press `Shift + Tab` |
+| **Enter Plan Mode** | Type `/plan` (`/plan <what you want to do>` starts planning right away). Or press `Shift + Tab` a few times |
 | **Start in Plan Mode** | `claude --permission-mode plan` |
 | **Edit plan in editor** | `Ctrl + G` |
+| **Exit Plan Mode** | Approve the plan (once approved, implementation starts right away). To leave without approving, `Shift + Tab` |
 
-Each `Shift + Tab` toggles the mode:
+Each `Shift + Tab` cycles the mode. Claude Code starts in auto mode, so it takes three presses to reach Plan Mode:
 
 ```
-Normal Mode → Auto-Accept Mode → Plan Mode → Normal Mode → ...
-             ⏵⏵ accept edits on ⏸ plan mode on
+auto mode → manual mode → Auto-Accept → Plan Mode → auto mode → ...
+            ⏸ manual mode on   ⏵⏵ accept edits on   ⏸ plan mode on
 ```
+
+Once the plan is ready, Claude asks whether to approve it:
+
+| Option | What happens |
+|---|---|
+| **Yes, and use auto mode** | Approve and start implementing in auto mode |
+| **Yes, manually approve edits** | Approve and implement, confirming edits one by one |
+| **No, keep planning** | Stay in Plan Mode and tell Claude what to change |
 
 ### Using Plan Mode (Practical Example)
 
 ```
-# 1. Press Shift+Tab to enter Plan Mode (screen shows "⏸ plan mode on")
+# 1. Use /plan to enter Plan Mode (screen shows "⏸ plan mode on")
 
 You: I want to implement profile picture upload feature.
      Save to S3, max 5MB, JPEG/PNG support.
@@ -155,8 +165,8 @@ You: Also add resize processing. Want to resize to 800x800 before upload.
 Claude: I'll adjust the plan.
         Add Step 2.5: Image resize with sharp library...
 
-# 4. Approve plan by pressing Shift+Tab to exit Plan Mode
-# 5. Claude starts implementation following the plan
+# 4. If the plan is OK, ask it to save the detailed design as in Step 2.5 before approving
+#    (if you approve as-is, Plan Mode exits and implementation starts right away)
 ```
 
 ### Why Plan Mode Matters
@@ -164,7 +174,7 @@ Claude: I'll adjust the plan.
 | Without Plan | With Plan |
 |-------------|-----------|
 | Start coding immediately → discover design flaws → redo | Understand full scope first → implement correctly on first try |
-| Context wasted | Planning phase is read-only, lightweight |
+| Context wasted | Planning phase doesn't edit source, so it's lightweight |
 | "What will change?" unclear | Have file list in advance |
 | Motivation drops with rework | Steady progress with plan visible |
 
@@ -172,7 +182,7 @@ Claude: I'll adjust the plan.
 
 ## Step 2.5: Persistence — Save plan as detailed design
 
-The plan from Plan Mode lives only **within that session**. It disappears when you `/clear` or start a new session. That's why **saving the plan to a file as a detailed design once it's solid is critical**.
+The plan from Plan Mode lives only **within that session**. It disappears from the conversation when you `/clear` or start a new session (and it isn't kept in the repository either). That's why **saving the plan to a file as a detailed design once it's solid is critical**.
 
 ### Why persistence matters
 
@@ -191,19 +201,29 @@ Plan Mode plans are session-bound, but **documents persist across sessions**.
 ### Practical Flow
 
 ```
-# After planning is solid in Plan Mode, give this instruction:
+# Once the plan is solid in Plan Mode, choose "No, keep planning" in the approval options and give this instruction:
 
-You: Save this plan to docs/_wip/profile-image-upload.md as a detailed design.
-     Include:
+You: Save this plan to docs/_wip/profile-image-upload.md as a detailed design,
+     and stop without starting implementation.
+     The detailed design should include:
      - Feature overview
      - Technical design (API, DB schema, storage)
      - Affected file list
      - Implementation steps
 
-Claude: docs/_wip/profile-image-upload.md created.
+Claude: I've revised the plan to "save the detailed design and stop."
+        Shall I proceed with this plan?
+
+# Approve (choose Yes)
+
+Claude: docs/_wip/profile-image-upload.md created. Stopping here.
+
+# Free up context, then ask developer to implement (Step 3)
+You: /clear
+You: @agent-developer Implement according to the detailed design in docs/_wip/profile-image-upload.md.
 ```
 
-> **Tip**: Plan Mode is read-only, but document creation happens after exiting Plan Mode. Workflow: confirm plan → Shift+Tab to exit Plan Mode → instruct "save plan to docs" → continue.
+> **Tip**: Plan Mode doesn't edit source, so the detailed design file is also created only after you approve the plan. If you approve without saying anything, it goes straight on to implementation. For a small feature you're fine implementing in the same session, you can just ask "save the detailed design as the first step" and approve.
 
 ### Treat detailed designs as temporary
 
@@ -261,7 +281,7 @@ Claude: Added chat to the MVP in docs/requirements.md.
 
 ## Step 3: Implementation — Code per plan
 
-When you exit Plan Mode, Claude begins implementation following the established plan.
+Once the detailed design is ready, `/clear` and ask the developer agent to implement (`@agent-developer Implement according to the detailed design in docs/_wip/<topic>.md`). developer runs qa-engineer and code-reviewer before committing. If you'd rather proceed in small steps and check things yourself, you can also implement directly in the main conversation.
 
 ### Implementation Tips
 
@@ -549,7 +569,7 @@ The most thorough flow. For building brand-new features from scratch.
 Plan Mode (investigate) → Implementation (fix) → /commit
 ```
 
-When you don't know the bug's cause. Use Plan Mode to investigate read-only first, then fix.
+When you don't know the bug's cause. Use Plan Mode to investigate without editing source first, then fix.
 
 ### Pattern C: Small Fixes (Direct Implementation)
 

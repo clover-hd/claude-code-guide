@@ -222,8 +222,8 @@ Commit CLAUDE.md to git and edit collaboratively with your team. Value grows exp
 
 | Feature | Description |
 |------|------|
-| **`/fast`** | Faster output with same model. For simple tasks |
+| **`/fast`** | Makes Opus and Fable output faster. It costs more, and on subscription plans it's drawn from usage credits, so use it only for urgent interactive work |
 | **`claude -p "prompt"`** | Non-interactive mode. Call Claude Code from CI/scripts |
 | **Paste images** | Paste screenshots or designs directly and say "implement this" |
-| **Pipe input** | `cat error.log \| claude` to pass logs directly |
+| **Pipe input** | `cat error.log \| claude -p "find the cause"` to pass logs directly |
 | **Parallel sessions** | Run Claude Code simultaneously in multiple terminals. Writer/Reviewer pattern is powerful |

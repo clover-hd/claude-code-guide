@@ -40,31 +40,34 @@ Claude Code communicates with AI in the cloud. Do not enter:
 
 ## .gitignore Template
 
-When starting a new project, include at least this:
+When starting a new project, include at least this (it's the same as what `/kickstart` creates in A0):
 
 ```gitignore
 # Environment variables and secrets
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
-# Authentication info
+# Credentials
 credentials.json
 *.pem
 *.key
 service-account.json
 
-# Dependency packages
-node_modules/
+# Claude Code personal settings
+.claude/settings.local.json
 
-# Build artifacts
-dist/
-build/
-
-# OS and editor
+# OS and editors
 .DS_Store
+Thumbs.db
+*.swp
 .vscode/settings.json
+.idea/
 ```
+
+Once the tech stack is decided, add items for it (for Node.js: `node_modules/`, `dist/`, `build/`; for Python: `__pycache__/`, `.venv/`, etc.).
+
+> `.claude/settings.local.json` stores personal settings, such as rules where you chose "don't ask again" at an approval prompt. Settings shared with the team go in `.claude/settings.json`.
 
 ## Commit Guard — Stop Secrets Mechanically
 

@@ -30,7 +30,7 @@ Claude: Let me identify where the error is occurring...
 For complex bugs where the cause isn't immediately clear, it's safer to **investigate in Plan Mode before making fixes**.
 
 ```
-# Enter Plan Mode with Shift+Tab
+# Enter Plan Mode with /plan (pressing Shift+Tab a few times also works)
 
 You: There's a bug where sessions aren't maintained after login.
      These files seem related:
@@ -38,20 +38,20 @@ You: There's a bug where sessions aren't maintained after login.
      - src/middleware/auth.ts
      Find the cause. Don't fix it yet.
 
-Claude: (Reading codebase in read-only mode)
+Claude: (Investigating without editing source)
         I've identified the cause. In session.ts, the token refresh logic...
 
-# Once you understand the cause, exit Plan Mode with Shift+Tab to make fixes
+# Once you understand the cause, approve the plan or exit Plan Mode with Shift+Tab to make fixes
 ```
 
 ## Pattern 2: Pass Logs
 
 ```bash
 # Pipe error logs directly
-cat error.log | claude "Analyze this error log and tell me the cause and solution"
+cat error.log | claude -p "Analyze this error log and tell me the cause and solution"
 
 # Logs from Docker environment
-docker compose logs api-server --tail 50 | claude "Identify the error cause from this log"
+docker compose logs api-server --tail 50 | claude -p "Identify the error cause from this log"
 ```
 
 ## Pattern 3: Write a Reproduction Test First

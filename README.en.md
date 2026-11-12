@@ -79,9 +79,9 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 ```
 0. /task           → Pick the next task (add new ideas with /task add)
 1. /consult        → Brainstorm requirements
-2. Shift+Tab       → Plan Mode — design the approach
-2.5. Persist       → Save the plan to docs/_wip/ as a detailed design
-3. Shift+Tab       → Normal Mode — implement
+2. /plan           → Plan Mode — design the approach
+2.5. Persist       → Save the plan to docs/_wip/ as a detailed design, then stop
+3. developer       → /clear, then ask @agent-developer to implement
 3.5. Test          → Unit tests & E2E tests
 4. /commit         → Commit after review
 5. Milestone       → /ask-advisor milestone review, clean up docs/_wip/, /task done

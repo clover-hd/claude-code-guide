@@ -15,7 +15,7 @@ We recommend starting with the most affordable individual paid plan and consider
 ## Pro Plan Usage Limits
 
 - Usage resets in a **5-hour rolling window**
-- When the limit is reached, you'll see "Try again in X hours"
+- When the limit is reached, you'll see "Usage limit reached" along with the reset time. If you leave the session open, it automatically resumes after the reset (it does not wait automatically when the reset is 24 hours or more away, such as a weekly limit)
 - Opus consumes more tokens, so you'll hit the limit faster
 
 ## Set Up Status Line First
@@ -35,7 +35,7 @@ See [statusline.md](statusline.md) for setup instructions.
 | **Use `/compact`** | Compress context and extend session life | Run around 70% usage |
 | **Delegate to sub-agents** | Reduce main context consumption | "Investigate with sub-agent" |
 | **Give specific instructions** | Reduce trial-and-error iterations | Specify file names, function names, expected behavior |
-| **Plan first in Plan Mode** | Read-only mode is lighter than implementation | Always plan large tasks first |
+| **Plan first in Plan Mode** | Doesn't edit source, so it's lighter, and rework drops | Always plan large tasks first |
 
 For more details on model selection by workflow, see [Model Differences and Selection Guide](models.md#workflow-specific-selection-guide).
 

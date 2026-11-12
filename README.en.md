@@ -16,7 +16,7 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 
 **Sub-agent team architecture** — Start with a 4-agent starter team (advisor, developer, QA engineer, code reviewer) and scale up as your project grows, with practical guidance on when and how to delegate.
 
-**Task management and overnight runs** — Keep a task list that outlives sessions, pick and close tasks with `/task`, and let `/overnight` work through delegated tasks while you sleep — leaving decisions that need a human for the morning instead of guessing.
+**Task management and overnight runs** — Keep a task list that outlives sessions, pick and close tasks with `/task`, and let `/overnight` work through all delegated tasks while you sleep — leaving decisions that need a human for the morning instead of guessing, and continuing automatically after a usage limit resets.
 
 **Battle-tested patterns** — Anti-patterns, debugging strategies, cost management, and context window optimization learned from actual production use.
 
@@ -86,8 +86,10 @@ Most Claude Code resources are either reference docs, scattered tips, or collect
 4. /commit         → Commit after review
 5. Milestone       → /ask-advisor milestone review, clean up docs/_wip/, /task done
 
-Before bed        → /overnight works through delegated tasks until morning,
-                    leaving points that need a human decision and moving on
+Before bed        → /overnight works through delegated tasks until morning
+                    (no limit by default: all of them),
+                    leaving points that need a human decision and moving on,
+                    and continuing automatically after a usage limit resets
 ```
 
 ---

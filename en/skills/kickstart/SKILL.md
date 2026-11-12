@@ -58,6 +58,8 @@ Create it with the following content.
 | Implementation policy | implementation-policy.md | Which way to lean when in doubt. Don't write what can be read from the source |
 | Why we decided | decisions/ | What was decided, rejected alternatives, evidence, conditions for revisiting |
 
+Tasks (things to do) are not managed here; they live where spec.md's "Task Management" section says. Finished tasks are not kept (git history and the source record what was done).
+
 ## Detailed designs (docs/_wip/)
 
 - Write `docs/_wip/<topic>.md` when starting implementation. Table definitions, API shapes, screen details, etc. go here
@@ -288,6 +290,15 @@ Discuss these **one at a time** with the user. For each, present multiple option
 9. **Directory structure**: Propose a structure suited to the chosen stack
 10. **Branches and deployment**: Working branch (e.g., work on `develop`, keep `main` always working), whether to use Pull Requests, environments (local / staging / production)
 11. **Common commands**: Test, type check (static analysis), dev server, build. **Settle on a single entry point each for type checking and tests** (e.g., `npm run typecheck`, `npm test`)
+12. **Where tasks live**: Where to keep the list of things to do. Present these two options in a comparison table and let the user choose
+
+| Aspect | File in the repo (`docs/tasks.md`) | GitHub Issues (operated via `gh`) |
+|---|---|---|
+| Good fit | Solo development, not using GitHub | Team development, using Pull Requests |
+| Strengths | No extra tools. Status changes in the same commit as the code | No conflicts from simultaneous edits. Links to PRs and comments |
+| Watch out for | Conflicts easily when several people edit at once | Needs `gh` authentication. Writes outside the repo, so get human confirmation before creating |
+
+If the user is unsure, recommend the file for solo work and GitHub Issues for teams. If they want another tool (Linear, Jira, etc.), confirm it can be read and written via MCP, then build it along the same lines as the GitHub Issues option.
 
 ### Decision Criteria (explain to the user)
 
@@ -331,6 +342,10 @@ Record it in `docs/spec.md` with the following structure. Write **only the skele
 - Working branch: ...
 - Environments: local / staging / production
 - Deployment method: ...
+
+## Task Management
+- Location: docs/tasks.md / GitHub Issues (<owner>/<repo>)
+- Add and close tasks with the /task skill
 
 ## Common Commands
 - Type check: ...
@@ -377,7 +392,9 @@ Examples:
 - Ruby: `vendor/bundle/`, `.bundle/`
 - If using a local DB file (SQLite, etc.): that file
 
-**Completion criteria**: `docs/spec.md` created; tech stack, directory structure, branch workflow, and commands settled; `.gitignore` updated for the stack.
+The choice of where tasks live also has a rejected alternative, so record it in `docs/decisions/`.
+
+**Completion criteria**: `docs/spec.md` created; tech stack, directory structure, branch workflow, task location, and commands settled; `.gitignore` updated for the stack.
 
 ---
 
@@ -448,6 +465,7 @@ Keep CLAUDE.md to **an index and promises only**. Content goes in docs/, and eac
 - Base spec: [docs/spec.md](docs/spec.md)
 - Implementation policy (which way to lean when in doubt): [docs/implementation-policy.md](docs/implementation-policy.md)
 - Why we decided: [docs/decisions/](docs/decisions/)
+- Tasks: <[docs/tasks.md](docs/tasks.md) or GitHub Issues (<owner>/<repo>)>. Add and close them with `/task`
 - Documentation policy (what goes where): [docs/README.md](docs/README.md)
 
 ## Common Commands
@@ -543,8 +561,10 @@ Only when asked (when a chunk of features is done, end of day, etc.).
   - Has anything strayed from the leanings in `docs/implementation-policy.md`?
   - Anything left uncleaned in `docs/_wip/` (to move or delete)?
   - Any unrecorded decisions missing from `docs/decisions/`?
+  - Does the task list (<docs/tasks.md or GitHub Issues>) match reality? Tasks that are done but not closed, tasks stuck in progress for a long time
   - Is it in a state that can be merged into main and run?
 - Return format: "Must fix (most serious first)," "Think about before next milestone," "What got better." Keep each short
+- Mark items in "Must fix" and "Think about before next milestone" that would make good tasks with `→task`. The requester creates the tasks; you don't
 
 ## Don't
 
@@ -597,6 +617,20 @@ When consulting, tell advisor: what you want to decide, the options you consider
 - When starting implementation, write the detailed design (tables, API shapes, screen components, etc.) in `docs/_wip/<topic>.md`
 - Clean up when done. Move requirements, base spec, and decision reasons into `docs/`; delete the rest
 
+## Tasks
+
+<Write only one of the following, matching the location chosen in A4>
+
+(For docs/tasks.md)
+- If `docs/tasks.md` has a task matching the requested work, confirm its ID before starting
+- When done, move that task to "Done." Include this change in the same commit as the implementation
+
+(For GitHub Issues)
+- If there is an Issue matching the requested work, check its content with `gh issue view <number>` before starting
+- Put `#<number>` in the commit message. Closing the Issue is done by a human or `/task done` (or a PR's `Closes #<number>`), not by you
+
+Either way, don't create new tasks yourself. Write "things worth doing" you found during the work under "Task candidates" in your report.
+
 ## Don't Work in Parallel
 
 - Only one implementing agent commits in the same working tree at a time. If asked to work in parallel, create a separate working tree with `git worktree` and work there (a shared staging area lets other work's files slip into your commit)
@@ -612,7 +646,7 @@ When consulting, tell advisor: what you want to decide, the options you consider
 
 ## What to Return
 
-Finally, briefly report: what you did, test and review results, commit hash, decisions consulted and recorded, what remains.
+Finally, briefly report: what you did, test and review results, commit hash, decisions consulted and recorded, tasks handled, task candidates (things not done this time but worth doing; one line each).
 
 - When you write "passed," paste the tail of the last type check and test output (counts, errors or not). Don't just say "passed" in words
 ````
@@ -799,6 +833,78 @@ EOF
 - If the commit hook stops you, unstage that file. Don't use `--no-verify`
 - Push only when the user explicitly asks
 ````
+
+### Create /task Skill
+
+Create `.claude/skills/task/SKILL.md`. It is the single entry point for viewing, adding, and closing tasks. **For the procedure part, write only the one for the location chosen in A4** (don't keep both).
+
+````markdown
+---
+name: task
+description: View the task list and pick what to do next, add tasks, close finished tasks. Use when starting work, or when "things to do" come up during work or a milestone review.
+argument-hint: [add <content> | done <ID> | no argument for the list and next candidate]
+---
+
+# /task - Task Management
+
+Location: <docs/tasks.md or GitHub Issues (<owner>/<repo>)>
+
+## No argument: list and next candidate
+
+1. List tasks in progress and not started
+2. Against the MVP and principles in `docs/requirements.md`, recommend one to do next, with a one-line reason
+3. When the human picks one, mark it in progress
+
+## add <content>
+
+1. Split the content into "what to do" and "done when (how we know it's finished)." If it's too vague to write a done-when, ask the human
+2. Check it doesn't overlap with existing tasks
+3. Add it. When there are several (developer's task candidates, advisor's `→task`, etc.), list them and confirm with the human before adding
+
+## done <ID>
+
+1. Confirm the done-when is met, using commits and test results. If not, return what's missing and don't close it
+2. Close it
+
+## Procedure (for docs/tasks.md)
+
+- Follow the format at the top of `docs/tasks.md`. IDs are `T-` followed by a sequential number (e.g., `T-012`). Never reuse an ID
+- Move to "In Progress" when starting, and to "Done" when closing
+- Delete "Done" items after the milestone review (history stays in git)
+- After changes, commit with `/commit` (starting with `docs:`)
+
+## Procedure (for GitHub Issues)
+
+- List: `gh issue list --state open`
+- Add: `gh issue create --title "<what to do>" --body "<done when>"`. **Show the title and body to the human and get confirmation before creating** (it writes outside the repo)
+- Mark in progress: `gh issue edit <number> --add-assignee @me`
+- Close: `gh issue close <number> --comment "<commits that handled it>"`
+````
+
+#### Create docs/tasks.md (if the file was chosen)
+
+````markdown
+# Tasks
+
+Format: `- [ ] T-001 What to do — Done when: … — Design: docs/_wip/<topic>.md (if any)`
+Add and close tasks with `/task`. Delete "Done" items after the milestone review.
+
+## In Progress
+
+## Next (top to bottom)
+
+## Someday
+
+## Done
+````
+
+### Create the First Tasks
+
+Create the first tasks from the MVP in `docs/requirements.md`.
+
+- One MVP feature becomes one task. Split features that are too big (ones that won't finish in a single request)
+- Order them by the priority decided in A3. Put "features to add later" under "Someday" (for GitHub Issues, don't create them)
+- Show the list to the human and write it only after getting OK. For GitHub Issues, check authentication with `gh auth status` at this point
 
 ### Set Up the Commit Guard (Standard)
 
@@ -1040,17 +1146,18 @@ docs: create initial project documents
 - docs/implementation-policy.md (implementation policy)
 - docs/decisions/ (why we decided)
 - docs/README.md (documentation policy)
+- docs/tasks.md (first tasks, if the file was chosen)
 
 chore: set up development foundation
 
 - CLAUDE.md (index and promises)
 - .claude/agents/ (advisor, developer, qa-engineer, code-reviewer)
-- .claude/skills/ (consult, ask-advisor, commit)
+- .claude/skills/ (consult, ask-advisor, commit, task)
 - .claude/settings.json, .claude/hooks/, .githooks/, scripts/check-staged.sh (commit guard)
 - .gitignore
 ```
 
-**Completion criteria**: Skills and the commit guard created, the guard confirmed to block committing `.env`, initial commit done.
+**Completion criteria**: Skills and the commit guard created, the guard confirmed to block committing `.env`, first tasks created, initial commit done.
 
 ---
 
@@ -1110,20 +1217,23 @@ Project foundation is ready!
   docs/decisions/                 — Why we decided
   docs/_wip/                      — Detailed designs in progress (promote or delete when done)
   docs/README.md                  — Documentation policy
+  docs/tasks.md / GitHub Issues   — Tasks (first list created from the MVP)
   CLAUDE.md                       — Index and promises
   .claude/agents/                 — advisor, developer, qa-engineer, code-reviewer
-  .claude/skills/                 — consult, ask-advisor, commit
+  .claude/skills/                 — consult, ask-advisor, commit, task
   .claude/settings.json etc.      — Commit guard
   .gitignore                      — Security basics
 
 ■ How to Develop Going Forward (Phase B)
 
+  0. /task                 → Pick the next task (add new ideas with /task add)
   1. /consult              → Brainstorm desired feature with Claude (requirements go to requirements.md)
   2. Shift+Tab             → Make implementation plan in Plan Mode
   2.5. Persistence         → Save plan to docs/_wip/<topic>.md as a detailed design
   3. Ask developer         → Implement → qa-engineer → code-reviewer → commit
   4. /ask-advisor milestone review → Get a full review when a chunk of features is done
   5. Clean up              → Move docs/_wip/ content into docs/ or delete it
+                             Close with /task done; /task add the review's "→task" items and developer's task candidates
 
   ※ Consult /ask-advisor on uncertain decisions and record them in docs/decisions/.
     Sessions end, but documents remain.

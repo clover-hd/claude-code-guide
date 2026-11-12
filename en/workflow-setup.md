@@ -30,7 +30,8 @@ Phase A: Project Initialization
       ▼
   A4. Decide Base Spec                 ← Branching point
       │  Tech stack, directory structure,      Developer agent contents
-      │  branch strategy, common commands      depend on this
+      │  branch strategy, task location,       depend on this
+      │  common commands
       ▼
   A4.5. Implementation Policy
       │  Decide which way to lean when in doubt
@@ -42,7 +43,8 @@ Phase A: Project Initialization
       │  advisor / developer / qa-engineer / code-reviewer
       ▼
   A7. Skills, Commit Guard, Initial Commit
-      │  /ask-advisor, /commit, hooks that block secrets
+      │  /ask-advisor, /commit, /task, hooks that block secrets,
+      │  first tasks from the MVP
       ▼
   A8. Runbook Skills (optional)
       │  Irreversible operations such as deploys and migrations
@@ -66,11 +68,13 @@ docs/
 ├── implementation-policy.md   ← Implementation policy. Which way to lean when in doubt (A4.5)
 ├── decisions/                 ← Why we decided it. One decision per file
 │   └── 0001-orm-prisma.md
-└── _wip/                      ← Detailed design during implementation (promote or delete when done)
+├── _wip/                      ← Detailed design during implementation (promote or delete when done)
+└── tasks.md                   ← Tasks (if the file was chosen in A4)
 ```
 
 - **The source code is the source of truth for detailed design.** Table definitions and API details live in `docs/_wip/` only while you implement. When the implementation is done, move anything that counts as requirements, base spec, or reasoning behind a decision into docs/, and delete the rest. This prevents documents and source from drifting apart
 - **Record decisions in `docs/decisions/`.** The key is to write not just "what we decided" but also "rejected alternatives" and "when to revisit". Six months later you'll know why things are the way they are, and whether it's OK to change them now
+- **Tasks (things to do) aren't kept once finished.** Git history and the source record what was done. In A4 you choose where they live: `docs/tasks.md` or GitHub Issues
 
 ---
 
@@ -226,6 +230,7 @@ You: MVP requirements are solid. Let's decide the base spec.
      - Directory structure
      - Branch strategy and environments (local / staging / production)
      - Common commands (type check, tests, dev server)
+     - Where tasks live (docs/tasks.md or GitHub Issues)
 ```
 
 Claude will present multiple options. Discuss and decide. Once decided, record it as **`docs/spec.md`**. Write **only the stable skeleton** (table definitions and API details go into `docs/_wip/` during implementation).
@@ -251,6 +256,10 @@ src/
 - Work on develop; main always works
 - Environments: local / staging / production
 
+## Task Management
+- Location: docs/tasks.md
+- Add and close tasks with the /task skill
+
 ## Common Commands
 - Type check: npm run typecheck
 - Tests: npm test
@@ -259,6 +268,18 @@ src/
 > **Pick a single entry point for type checking and tests.** This stops agents from reporting "it passed" based on a partial check.
 
 Among your technology choices, record each one that had rejected alternatives (e.g., "Prisma rather than Drizzle for the ORM") in `docs/decisions/`, one file per decision.
+
+### Where Tasks Live
+
+Decide here where to keep the list of things to do.
+
+| Aspect | File in the repo (`docs/tasks.md`) | GitHub Issues (operated via `gh`) |
+|---|---|---|
+| Good fit | Solo development, not using GitHub | Team development, using Pull Requests |
+| Strengths | No extra tools. Status changes in the same commit as the code | No conflicts from simultaneous edits. Links to PRs and comments |
+| Watch out for | Conflicts easily when several people edit at once | Needs `gh` authentication. Writes outside the repo, so get human confirmation before creating |
+
+Either way, day-to-day operations go through the `/task` skill created in A7, so usage is the same.
 
 ---
 
@@ -292,6 +313,7 @@ Manages reservations and reviews for independent restaurants.
 - Base spec: docs/spec.md
 - Implementation policy (which way to lean when in doubt): docs/implementation-policy.md
 - Why we decided it: docs/decisions/
+- Tasks: docs/tasks.md. Add and close them with /task
 - Documentation policy: docs/README.md
 
 ## Common Commands
@@ -341,6 +363,10 @@ model: sonnet
 - Consult the advisor on decisions touching principles or data shape   ← name who to consult
 - Record what you decided after consulting in docs/decisions/ yourself
 
+## Tasks
+- Move finished tasks to "Done" in the same commit as the implementation   ← depends on task location
+- Don't create new tasks yourself; list them under "Task candidates" in the report
+
 ## Pre-commit flow
 1. Pass npm run typecheck and npm test                                 ← depends on base spec
 2. Ask qa-engineer to test
@@ -363,7 +389,8 @@ The final touch on your development infrastructure.
 ├── skills/
 │   ├── consult/SKILL.md      ← Created in A2
 │   ├── ask-advisor/SKILL.md  ← Consult the advisor
-│   └── commit/SKILL.md       ← Commit rules
+│   ├── commit/SKILL.md       ← Commit rules
+│   └── task/SKILL.md         ← View, add, and close tasks
 ├── agents/
 │   ├── advisor.md
 │   ├── developer.md
@@ -377,6 +404,8 @@ scripts/check-staged.sh       ← Check script called by both
 ```
 
 - **/ask-advisor**: A skill that sends a question to the advisor with `context: fork`. You get a decision without cluttering the main conversation (see [Skills](skills.md))
+- **/task**: The entry point for viewing the task list and picking what's next (no argument), adding (`add`), and closing (`done`). Only the procedure for the location chosen in A4 is written into it
+- **First tasks**: Created from the MVP in `docs/requirements.md`, one feature per task. The list is confirmed before being written
 - **Commit guard**: Mechanically blocks commits of secrets and DB files. For why it's placed in two layers—a git hook and a Claude Code hook—see [Security Basics](security.md#commit-guard--stop-secrets-mechanically)
 
 ---

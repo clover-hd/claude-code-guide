@@ -11,6 +11,9 @@ Once the foundation is in place (CLAUDE.md, agents, skills), daily development f
 ```
 ┌─────────────────────────────────────────────────────┐
 │                                                     │
+│   0. Pick        /task to pick the next task        │
+│       ↓          The list outlives sessions         │
+│                                                     │
 │   1. Ideation    /consult to bounce ideas          │
 │       ↓          Lock down "what to build"          │
 │                                                     │
@@ -31,9 +34,32 @@ Once the foundation is in place (CLAUDE.md, agents, skills), daily development f
 │                                                     │
 │   5. Milestone   Overall review, clean up _wip/    │
 │                  When a feature set is done         │
+│                  /task to close and add tasks       │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Step 0: Pick — Decide what's next with `/task`
+
+Sessions disappear, but the task list stays. When you start working, first pick what to do next from the list.
+
+```
+You: /task
+
+Claude: In progress: none
+        Next:
+        - T-003 Profile image upload — Done when: images up to 5MB can be registered and displayed
+        - T-004 Restaurant search — Done when: can filter by name and area
+        I recommend T-003 (first in the MVP, and T-004's restaurant images will reuse the same mechanism)
+
+You: T-003
+```
+
+When something new comes up, add it with `/task add <content>`. If it's too vague to write a done-when, Claude will ask back. In that case, firm it up with `/consult` in Step 1 before adding it.
+
+> Where tasks live (`docs/tasks.md` or GitHub Issues) was decided in Phase A's A4. `/task` works the same either way.
 
 ---
 
@@ -397,6 +423,8 @@ developer: Pass type checks and tests
 
 If the report just says "tests passed," ask it to **show the tail of the output**.
 
+The developer updates the status of the task it handled (for `docs/tasks.md`, it moves the task to "Done" in the same commit; for GitHub Issues, it puts `#number` in the commit message). "Things worth doing" it finds during work aren't turned into tasks on its own—they come back under "Task candidates" in the report. You decide whether to add them.
+
 ### When you commit yourself
 
 ```
@@ -444,6 +472,15 @@ You: Clean up docs/_wip/profile-image-upload.md.
      Move anything that counts as requirements, base spec, or decision rationale into docs/, and delete the rest.
 ```
 
+Finally, tidy up the tasks. The advisor marks findings that would make good tasks with `→task`, so add those together with the developer's task candidates.
+
+```
+You: /task done T-003
+You: /task add Decide when to delete images (advisor's →task)
+```
+
+For `docs/tasks.md`, delete tasks moved to "Done" at this point. Git history keeps what was done.
+
 ---
 
 ## Workflow Application Patterns
@@ -451,7 +488,7 @@ You: Clean up docs/_wip/profile-image-upload.md.
 ### Pattern A: New Feature Development (Full Course)
 
 ```
-/consult → Plan Mode → save to docs/_wip/ → Implementation → tests & review → commit → milestone review & cleanup
+/task → /consult → Plan Mode → save to docs/_wip/ → Implementation → tests & review → commit → milestone review & cleanup & /task done
 ```
 
 The most thorough flow. For building brand-new features from scratch.

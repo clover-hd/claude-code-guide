@@ -17,6 +17,7 @@ Claude Code walks through [Phase A steps](workflow-setup.md) (A0-A8) interactive
 - Initialize project (`.gitignore`, docs/ structure and documentation policy, git init)
 - Articulate requirements (principles to keep, what we won't build) and validate them
 - Decide and record the base spec and implementation policy (which way to lean when in doubt)
+- Decide where tasks live (`docs/tasks.md` or GitHub Issues) and create the first tasks from the MVP
 - Build CLAUDE.md (an index and a few rules), four sub-agents, and skills
 - Set up a commit guard that blocks commits of secrets
 - Make initial commit
@@ -136,6 +137,7 @@ my-new-project/
 │   ├── spec.md                            ← Base spec (only the stable skeleton)
 │   ├── implementation-policy.md           ← Implementation policy (which way to lean when in doubt)
 │   ├── decisions/                         ← Why we decided it (one decision per file)
+│   ├── tasks.md                           ← Tasks (if the file was chosen)
 │   └── _wip/                              ← Detailed design during implementation (promote or delete when done)
 └── .claude/
     ├── settings.json                      ← Hook registration
@@ -143,7 +145,8 @@ my-new-project/
     ├── skills/
     │   ├── consult/SKILL.md               ← Requirements consultation skill
     │   ├── ask-advisor/SKILL.md           ← Consult the advisor
-    │   └── commit/SKILL.md                ← Commit skill
+    │   ├── commit/SKILL.md                ← Commit skill
+    │   └── task/SKILL.md                  ← View, add, and close tasks
     └── agents/
         ├── advisor.md                     ← Advisor and milestone review (read-only)
         ├── developer.md                   ← Implementation
@@ -152,6 +155,7 @@ my-new-project/
 ```
 
 > **Note**: Start with 4 agents and add more as the project grows. The advisor uses Opus by default. To switch it to Fable, see [Sub-agents](sub-agents.md#using-fable-for-the-advisor).
+> If you chose GitHub Issues as the task location in A4, `docs/tasks.md` is not created and the first tasks are created as Issues (you'll be asked to confirm before they are created).
 > The hook is written in the language chosen in A4 (`guard-bash.mjs` for Node.js, `guard_bash.py` for Python). If you create runbook skills in A8, they are added under `.claude/skills/`.
 
 Claude displays **Phase B Transition Guide** (daily development cycle, model selection, context management tips) and completes.
@@ -168,11 +172,11 @@ For details and rationale on each step, see [Phase A: Project Setup](workflow-se
 | **A1** | Requirements — what to build, principles to keep, what we won't build | Sonnet |
 | **A2** | /consult skill — create a consultation partner | Sonnet |
 | **A3** | Validate requirements — finalize MVP and priorities | Sonnet |
-| **A4** | Base spec — tech stack, branch strategy, commands | **Opus** |
+| **A4** | Base spec — tech stack, branch strategy, task location, commands | **Opus** |
 | **A4.5** | Implementation policy — which way to lean when in doubt | **Opus** |
 | **A5** | CLAUDE.md — an index and a few rules | Sonnet |
 | **A6** | Sub-agents — advisor / developer / qa-engineer / code-reviewer | Sonnet |
-| **A7** | Skills, commit guard, and initial commit | Sonnet |
+| **A7** | Skills, commit guard, first tasks, and initial commit | Sonnet |
 | **A8** | Runbook skills (optional) — irreversible operations | Sonnet |
 
 ## FAQ
@@ -200,6 +204,10 @@ No. **A1-A3 on Day 1, A4-A8 on Day 2** is recommended. Sleeping on requirements 
 ### The generated agents or skills aren't perfect
 
 Edit `.claude/agents/` or `.claude/skills/` files manually. Or instruct Claude Code "Add X to the developer agent's scope of consultation" and it will fix it. Project settings grow as you use them.
+
+### Which task location should I choose?
+
+For solo development, `docs/tasks.md`; for a team using Pull Requests, GitHub Issues. Either way, day-to-day operations go through the `/task` skill, so usage is the same. To switch later, rewrite the procedure in the `/task` skill and the task sections in the developer and advisor definitions, then record it in `docs/decisions/` as a new decision.
 
 ### I want to change .gitignore contents
 

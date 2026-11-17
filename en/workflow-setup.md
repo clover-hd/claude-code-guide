@@ -158,7 +158,7 @@ Build a "thinking partner who always reads your A1 document before answering".
 ```markdown
 ---
 name: consult
-description: Consult on service requirements and planning
+description: Discuss service requirements and planning-level ideas. Use when you want to brainstorm a new feature or screen idea before deciding whether and what to build. Not for how to implement it.
 ---
 
 # /consult - Service Requirements Consultation

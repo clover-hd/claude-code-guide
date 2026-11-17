@@ -194,7 +194,7 @@ Create `.claude/skills/consult/SKILL.md` based on the A1 document.
 ```markdown
 ---
 name: consult
-description: Discuss service requirements and planning
+description: Discuss service requirements and planning-level ideas. Use when you want to brainstorm a new feature or screen idea before deciding whether and what to build. Not for how to implement it.
 ---
 
 # /consult - Service Requirements Discussion
@@ -766,11 +766,13 @@ A `context: fork` skill runs in the background by default, and the answer arrive
 ---
 name: ask-advisor
 description: Consult advisor. Use when unsure about principles, data shape, screen flow, or choices that change the user experience. Also use to request a milestone full review.
-argument-hint: <what to consult about, or "milestone review">
+argument-hint: [what to consult about, or "milestone review"]
 context: fork
 agent: advisor
 background: false
 ---
+
+# /ask-advisor - Consult advisor
 
 Answer the following consultation.
 
@@ -949,8 +951,8 @@ disable-model-invocation: true
 2. Show the task list and have the human choose which tasks to delegate. Recommend every task in "Next" that has a done-when (worked from the top). Don't delegate tasks without a done-when
 3. Decide the limit: number of tasks or time (use $ARGUMENTS if given; otherwise set no limit and work through all the delegated tasks). A time limit counts elapsed time from the start (including time spent waiting for a usage reset)
 4. Check the setting that continues automatically after a usage limit resets (`autoContinueAtUsageLimit`; in `/config`, **Continue automatically at usage limit**; on by default)
-   - Read `~/.claude/settings.json`. If it's `false`, it's off
-   - If none of user settings, `--settings`, or managed settings has this key, but `.claude/settings.json` or `.claude/settings.local.json` does, it's off regardless of the value (because this key is read only from user settings, `--settings`, and managed settings)
+   - Extract only this key with `jq '.autoContinueAtUsageLimit' ~/.claude/settings.json` (without `jq`, `grep autoContinueAtUsageLimit ~/.claude/settings.json`). If it's `false`, it's off. Don't read the whole file (its `env` may contain API keys and the like)
+   - If none of user settings, `--settings`, or managed settings has this key, but `.claude/settings.json` or `.claude/settings.local.json` does (check by extracting only the key, the same way), it's off regardless of the value (because this key is read only from user settings, `--settings`, and managed settings)
    - Finally, ask the human to open `/config`. If there's a **Continue automatically at usage limit** row, have them check its value. If there's no row, it's set by managed settings or `--settings` and can't be changed from here. Since you can't tell whether it's on, tell them work may stop at a usage limit until morning
    - If it's off, ask the human whether to turn it on. The human turns it on in the `/config` panel (the `/config autoContinueAtUsageLimit=true` form can't turn it on). If it stays off, tell them work will stop at the usage limit until morning
 5. Create and switch to `overnight/YYYY-MM-DD` from `<working branch>`. If there's a time limit, note the start time with `date`

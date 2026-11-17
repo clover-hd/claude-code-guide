@@ -119,7 +119,7 @@ Stage related files → Use HEREDOC to commit
 ```markdown
 ---
 name: consult
-description: Consult on service requirements and planning
+description: Discuss service requirements and planning-level ideas. Use when you want to brainstorm a new feature or screen idea before deciding whether and what to build. Not for how to implement it.
 ---
 
 # /consult - Service requirements consultation
@@ -147,11 +147,13 @@ A `context: fork` skill runs in the background by default, and the result arrive
 ---
 name: ask-advisor
 description: Consult the advisor. Use when unsure about principles, data shape, screen flow, or choices that change the user experience. Also use to request a milestone review.
-argument-hint: <what you want to consult on, or "milestone review">
+argument-hint: [what you want to consult on, or "milestone review"]
 context: fork
 agent: advisor
 background: false
 ---
+
+# /ask-advisor - Consult advisor
 
 Answer the following consultation.
 

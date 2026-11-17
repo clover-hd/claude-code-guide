@@ -119,7 +119,7 @@ git status / git diff --stat / git log --oneline -5
 ```markdown
 ---
 name: consult
-description: サービスの要件・企画レベルの相談を行う
+description: サービスの要件・企画レベルの相談に乗る。新しい機能や画面のアイデアを、作るかどうか・何を作るかを決める前に壁打ちしたいときに使う。どう実装するかの相談には使わない。
 ---
 
 # /consult - サービス要件相談
@@ -147,11 +147,13 @@ description: サービスの要件・企画レベルの相談を行う
 ---
 name: ask-advisor
 description: advisor に相談する。方針、データの形、画面の流れ、使い心地が変わる選択で迷ったとき。区切りの全体レビューを頼むときにも使う。
-argument-hint: <相談したいこと、または「区切りのレビュー」>
+argument-hint: [相談したいこと、または「区切りのレビュー」]
 context: fork
 agent: advisor
 background: false
 ---
+
+# /ask-advisor - advisor に相談する
 
 次の相談に答えてください。
 

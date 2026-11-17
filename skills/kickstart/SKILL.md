@@ -195,7 +195,7 @@ A1のドキュメントを踏まえて `.claude/skills/consult/SKILL.md` を作�
 ```markdown
 ---
 name: consult
-description: サービスの要件・企画レベルの相談を行う
+description: サービスの要件・企画レベルの相談に乗る。新しい機能や画面のアイデアを、作るかどうか・何を作るかを決める前に壁打ちしたいときに使う。どう実装するかの相談には使わない。
 ---
 
 # /consult - サービス要件相談
@@ -767,11 +767,13 @@ tools: Read, Grep, Glob, Bash
 ---
 name: ask-advisor
 description: advisor に相談する。方針、データの形、画面の流れ、使い心地が変わる選択で迷ったとき。区切りの全体レビューを頼むときにも使う。
-argument-hint: <相談したいこと、または「区切りのレビュー」>
+argument-hint: [相談したいこと、または「区切りのレビュー」]
 context: fork
 agent: advisor
 background: false
 ---
+
+# /ask-advisor - advisor に相談する
 
 次の相談に答えてください。
 
@@ -950,8 +952,8 @@ disable-model-invocation: true
 2. タスクの一覧を見せ、任せるタスクを決めてもらう。勧めるのは「次にやる」にある、完了条件のあるタスクすべて（上から順に進める）。完了条件のないタスクは任せない
 3. 上限を決める。件数か時間（$ARGUMENTS にあればそれを使う。なければ上限は設けず、任せたタスクをすべて進める）。時間の上限は、始めてからの経過時間で数える（使用量のリセットを待つ時間も含む）
 4. 使用量の上限に達したあと、リセットされたら自動で続ける設定（`autoContinueAtUsageLimit`、`/config` では **Continue automatically at usage limit**。既定はオン）を確かめる
-   - `~/.claude/settings.json` を読む。`false` ならオフ
-   - ユーザー設定・`--settings`・管理設定のどれにもこのキーがなく、`.claude/settings.json` か `.claude/settings.local.json` に書かれていれば、値によらずオフになる（このキーはユーザー設定・`--settings`・管理設定からしか読まれないため）
+   - `jq '.autoContinueAtUsageLimit' ~/.claude/settings.json` で、このキーだけを取り出す（`jq` がなければ `grep autoContinueAtUsageLimit ~/.claude/settings.json`）。`false` ならオフ。ファイルを丸ごと読まない（`env` に API キーなどが入っていることがあるため）
+   - ユーザー設定・`--settings`・管理設定のどれにもこのキーがなく、`.claude/settings.json` か `.claude/settings.local.json` に書かれていれば（同じようにキーだけを取り出して見る）、値によらずオフになる（このキーはユーザー設定・`--settings`・管理設定からしか読まれないため）
    - 最後は人間に `/config` を開いてもらう。**Continue automatically at usage limit** の行があれば、その値を見てもらう。行がなければ、管理設定か `--settings` で決まっていて、ここからは変えられない。オンかどうか分からないので、上限に達すると朝まで止まることがあると伝える
    - オフなら、オンにするかを人間に聞く。オンにするのは人間が `/config` の画面で行う（`/config autoContinueAtUsageLimit=true` の形ではオンにできない）。オフのままなら、上限に達した時点で朝まで止まることを伝える
 5. `<作業ブランチ>` から `overnight/YYYY-MM-DD` を作って切り替える。時間の上限があれば、`date` で始めた時刻を控える
